@@ -15,6 +15,10 @@ class LoginViewModel(context: Context) : ViewModel() {
 
     var rememberMe by mutableStateOf(false)
 
+    fun login() {
+        // Login logic
+    }
+
 }
 
 class LoginViewModelFactory(private val context: Context) : ViewModelProvider.Factory {

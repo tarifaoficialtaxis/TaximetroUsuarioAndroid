@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModelFactory
@@ -139,20 +140,15 @@ class TermsConditionsActivity : AppCompatActivity() {
                     }
                 }
 
-                Button(
-                    onClick = { onAcceptClicked() },
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.main)),
-                    shape = RoundedCornerShape(50),
+                Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, top = 29.dp, end = 20.dp, bottom = 29.dp)
+                        .padding(horizontal = 29.dp)
+                        .padding(bottom = 29.dp)
                 ) {
-                    Text(
+                    CustomButton(
                         text = stringResource(id = R.string.accept_continue).uppercase(),
-                        fontFamily = MontserratFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        onClick = onAcceptClicked
                     )
                 }
             }

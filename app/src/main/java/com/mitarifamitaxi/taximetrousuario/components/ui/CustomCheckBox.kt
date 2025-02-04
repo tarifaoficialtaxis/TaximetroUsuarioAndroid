@@ -28,7 +28,6 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomCheckBox(
     text: String,

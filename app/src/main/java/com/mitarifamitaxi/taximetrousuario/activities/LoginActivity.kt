@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -175,6 +176,17 @@ class LoginActivity : AppCompatActivity() {
                                         textAlign = TextAlign.End,
                                     )
                                 }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .padding(vertical = 29.dp)
+                            ) {
+
+                                CustomButton(
+                                    text = stringResource(id = R.string.login).uppercase(),
+                                    onClick = { viewModel.login() }
+                                )
                             }
 
 

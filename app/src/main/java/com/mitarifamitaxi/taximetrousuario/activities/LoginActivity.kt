@@ -6,17 +6,23 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -32,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
@@ -76,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .align(Alignment.BottomCenter)
-                                    .offset(y = 16.dp)
+                                    .offset(y = 40.dp)
                             )
 
                             Image(
@@ -115,21 +122,61 @@ class LoginActivity : AppCompatActivity() {
                                 textAlign = TextAlign.Center,
                             )
 
-                            CustomTextField(
-                                value = viewModel.userName,
-                                onValueChange = { viewModel.userName = it },
-                                placeholder = stringResource(id = R.string.user_name),
-                                leadingIcon = Icons.Rounded.Person,
-                                keyboardType = KeyboardType.Email
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(17.dp),
+                                modifier = Modifier
+                                    .padding(bottom = 10.dp)
+                            ) {
+                                CustomTextField(
+                                    value = viewModel.userName,
+                                    onValueChange = { viewModel.userName = it },
+                                    placeholder = stringResource(id = R.string.user_name),
+                                    leadingIcon = Icons.Rounded.Person,
+                                    keyboardType = KeyboardType.Email
+                                )
 
-                            CustomTextField(
-                                value = viewModel.password,
-                                onValueChange = { viewModel.password = it },
-                                placeholder = stringResource(id = R.string.password),
-                                isSecure = true,
-                                leadingIcon = Icons.Rounded.Lock,
-                            )
+                                CustomTextField(
+                                    value = viewModel.password,
+                                    onValueChange = { viewModel.password = it },
+                                    placeholder = stringResource(id = R.string.password),
+                                    isSecure = true,
+                                    leadingIcon = Icons.Rounded.Lock,
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+
+                                ) {
+
+                                CustomCheckBox(
+                                    text = stringResource(id = R.string.remember_me),
+                                    onValueChange = { viewModel.rememberMe = it }
+                                )
+
+                                Button(
+                                    onClick = { },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colorResource(id = R.color.transparent),
+                                    ),
+                                    modifier = Modifier
+                                        .width(180.dp),
+                                    contentPadding = PaddingValues(0.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.recover_password),
+                                        fontFamily = MontserratFamily,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = colorResource(id = R.color.main),
+                                        textAlign = TextAlign.End,
+                                    )
+                                }
+                            }
+
 
                         }
                     }

@@ -1,7 +1,9 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,17 +36,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModel
+import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModelFactory
 
 class TermsConditionsActivity : AppCompatActivity() {
+
+    private val viewModel: TermsConditionsViewModel by viewModels {
+        TermsConditionsViewModelFactory(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MainView()
+            MainView(
+                onAcceptClicked = {
+                    viewModel.saveAcceptedTerms()
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+            )
         }
     }
 
     @Composable
-    private fun MainView() {
+    private fun MainView(
+        onAcceptClicked: () -> Unit
+    ) {
         Column {
             Box(
                 modifier = Modifier
@@ -123,7 +140,7 @@ class TermsConditionsActivity : AppCompatActivity() {
                 }
 
                 Button(
-                    onClick = {},
+                    onClick = { onAcceptClicked() },
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.main)),
                     shape = RoundedCornerShape(50),
                     modifier = Modifier

@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.material3.android)
 
+    implementation(libs.androidx.material.icons.extended)
+
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.firebase.components)
 

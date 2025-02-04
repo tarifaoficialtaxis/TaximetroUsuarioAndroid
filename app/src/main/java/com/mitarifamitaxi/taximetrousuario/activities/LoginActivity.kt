@@ -2,7 +2,7 @@ package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,11 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -28,15 +27,22 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
+import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
 
 class LoginActivity : AppCompatActivity() {
+
+    private val viewModel: LoginViewModel by viewModels {
+        LoginViewModelFactory(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -98,47 +104,38 @@ class LoginActivity : AppCompatActivity() {
                                 .padding(top = 29.dp, bottom = 70.dp, start = 29.dp, end = 29.dp)
                         ) {
                             Text(
-                                text = stringResource(id = R.string.terms_title),
+                                text = stringResource(id = R.string.welcome),
                                 fontFamily = MontserratFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
+                                color = colorResource(id = R.color.main),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = 25.dp),
                                 textAlign = TextAlign.Center,
                             )
 
-                            Column(
-                                modifier = Modifier
-                                    .verticalScroll(rememberScrollState())
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.terms_body),
-                                    fontFamily = MontserratFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 12.sp,
-                                )
-                            }
+                            CustomTextField(
+                                value = viewModel.userName,
+                                onValueChange = { viewModel.userName = it },
+                                placeholder = stringResource(id = R.string.user_name),
+                                leadingIcon = Icons.Rounded.Person,
+                                keyboardType = KeyboardType.Email
+                            )
+
+                            CustomTextField(
+                                value = viewModel.password,
+                                onValueChange = { viewModel.password = it },
+                                placeholder = stringResource(id = R.string.password),
+                                isSecure = true,
+                                leadingIcon = Icons.Rounded.Lock,
+                            )
+
                         }
                     }
                 }
 
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.main)),
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, top = 29.dp, end = 20.dp, bottom = 29.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.accept_continue).uppercase(),
-                        fontFamily = MontserratFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
+
             }
         }
     }

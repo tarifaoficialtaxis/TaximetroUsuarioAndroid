@@ -30,5 +30,6 @@
     <string name="already_account">¿Ya tienes una cuenta?</string>
     <string name="login_here">Inicia sesión aquí</string>
 
+    <string name="welcome_home">!Bienvenido,</string>
 
 </resources>

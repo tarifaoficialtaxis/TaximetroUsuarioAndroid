@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mitarifamitaxi.taximetrousuario.R
@@ -35,13 +38,19 @@ class HomeActivity : AppCompatActivity() {
     private fun MainView(
 
     ) {
-        Column {
-
-            Button() {
-                viewModel.logout()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Button(onClick = {
+                viewModel.logout(
+                    onLogoutComplete = {
+                        startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
+                        finish()
+                    }
+                )
+            }) {
+                Text("Logout")
             }
-
-            Text("Home")
         }
     }
 }

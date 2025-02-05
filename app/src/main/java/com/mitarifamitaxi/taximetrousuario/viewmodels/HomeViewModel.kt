@@ -9,14 +9,14 @@ class HomeViewModel(context: Context) : ViewModel() {
 
     private val appContext = context.applicationContext
 
-    fun logout() {
+    fun logout(onLogoutComplete: () -> Unit) {
         val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             remove("USER_OBJECT")
             apply()
         }
+        onLogoutComplete()
     }
-
 
 }
 

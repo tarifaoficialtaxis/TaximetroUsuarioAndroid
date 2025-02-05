@@ -1,10 +1,10 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
@@ -41,21 +41,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.gson.Gson
+import androidx.lifecycle.lifecycleScope
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
-import com.mitarifamitaxi.taximetrousuario.models.User
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
@@ -63,137 +57,49 @@ class LoginActivity : AppCompatActivity() {
         LoginViewModelFactory(this)
     }
 
-    // Firebase Auth
-    private lateinit var auth: FirebaseAuth
-
-    // One Tap client
-    private lateinit var oneTapClient: SignInClient
-
-    // Request code for starting One Tap UI
-    private val REQ_ONE_TAP = 2
-
-    companion object {
-        private const val TAG = "LoginActivity"
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            viewModel.handleSignInResult(result.data) { success ->
+                if (success) {
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    finish()
+                } else {
+                    Log.e("LoginActivity", "Google sign-in failed")
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        auth = FirebaseAuth.getInstance()
-
-        // Initialize the One Tap Client
-        oneTapClient = Identity.getSignInClient(this)
         setContent {
             MainView(
                 onRegisterClicked = {
                     startActivity(Intent(this, RegisterActivity::class.java))
+                },
+                onGoogleSignIn = {
+                    lifecycleScope.launch {
+                        viewModel.signInWithGoogle(this@LoginActivity) { intentSenderRequest ->
+                            if (intentSenderRequest != null) {
+                                googleSignInLauncher.launch(intentSenderRequest)
+                            } else {
+                                Log.e("LoginActivity", "Google sign-in intent failed")
+                            }
+                        }
+                    }
                 }
             )
         }
-    }
-
-    private fun signInWithGoogle() {
-        val signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    // Your server's client ID (from strings.xml)
-                    .setServerClientId(getString(R.string.default_web_client_id))
-                    // Show all accounts on the device (not only previously signed in)
-                    .setFilterByAuthorizedAccounts(false)
-                    .build()
-            )
-            // Whether to show the "auto-select" UI.
-            // If true, Google might automatically sign in with the last used account.
-            .setAutoSelectEnabled(false)
-            .build()
-
-        oneTapClient.beginSignIn(signInRequest)
-            .addOnSuccessListener { result ->
-                try {
-                    // Launch the sign-in flow
-                    startIntentSenderForResult(
-                        result.pendingIntent.intentSender,
-                        REQ_ONE_TAP,
-                        null, 0, 0, 0
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}")
-                }
-            }
-            .addOnFailureListener { e ->
-                // One Tap Sign-In failed
-                Log.e(TAG, "One Tap failed: ${e.localizedMessage}")
-            }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            REQ_ONE_TAP -> {
-                try {
-                    val credential = oneTapClient.getSignInCredentialFromIntent(data)
-                    val idToken = credential.googleIdToken
-                    when {
-                        idToken != null -> {
-                            // Got an ID token from Google. Use it to authenticate
-                            // with Firebase.
-                            Log.d(TAG, "Got ID token.")
-                            firebaseAuthWithGoogle(idToken)
-                        }
-
-                        else -> {
-                            // Shouldn't happen.
-                            Log.d(TAG, "No ID token!")
-                        }
-                    }
-                } catch (e: ApiException) {
-                    // ...
-                }
-            }
-        }
-    }
-
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Sign-in succeeded
-                    val user = auth.currentUser
-                    Log.d(TAG, "Firebase Sign-In success. User: ${user?.displayName}")
-
-                    val localUser = user?.displayName?.let {
-                        user.email?.let { it1 ->
-                            User(
-                                user.uid,
-                                it,
-                                it1
-                            )
-                        }
-                    }
-                    val userJson = Gson().toJson(localUser)
-
-                    val sharedPref = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        putString("USER_OBJECT", userJson)
-                        apply()
-                    }
-
-                    startActivity(Intent(this, HomeActivity::class.java))
-
-                } else {
-                    // Sign-in failed
-                    Log.e(TAG, "Firebase Sign-In failed: ${task.exception}")
-                }
-            }
     }
 
 
     @Composable
     private fun MainView(
-        onRegisterClicked: () -> Unit
+        onRegisterClicked: () -> Unit,
+        onGoogleSignIn: () -> Unit
     ) {
 
 
@@ -365,7 +271,7 @@ class LoginActivity : AppCompatActivity() {
 
                             Button(
                                 onClick = {
-                                    signInWithGoogle()
+                                    onGoogleSignIn()
                                 },
                                 modifier = Modifier
                                     .width(133.dp)

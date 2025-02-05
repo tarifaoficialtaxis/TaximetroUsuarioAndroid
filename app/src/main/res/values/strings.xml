@@ -1,4 +1,8 @@
 <resources>
+
+    <string name="default_web_client_id">178227041122-l4cahm8bm5d9ftb8ur22jmmgp2pto95l.apps.googleusercontent.com</string>
+
+
     <string name="app_name">TaximetroUsuarioNative</string>
     <string name="app_header">TaximetroUsuarioNative</string>
     <string name="terms_title">Términos y Condiciones</string>
@@ -14,6 +18,17 @@
     <string name="connect_with">Conectate con:</string>
     <string name="no_account">Aún no tienes cuenta?</string>
     <string name="register_here">Registrate Aquí</string>
+
+    <string name="register">¡Registrate!</string>
+
+    <string name="firstName">Nombres*</string>
+    <string name="lastName">Apellidos*</string>
+    <string name="mobilePhone">Celular*</string>
+    <string name="email">Correo electrónico*</string>
+    <string name="confirm_password">Confirmar contraseña*</string>
+
+    <string name="already_account">¿Ya tienes una cuenta?</string>
+    <string name="login_here">Inicia sesión aquí</string>
 
 
 </resources>

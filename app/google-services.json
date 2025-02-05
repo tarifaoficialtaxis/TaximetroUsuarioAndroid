@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "178227041122",
+    "project_id": "mitarifamitaxi-4a0e2",
+    "storage_bucket": "mitarifamitaxi-4a0e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178227041122:android:712540e4c15ccb4e0e923b",
+        "android_client_info": {
+          "package_name": "com.mitarifamitaxi.taximetrousuario"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178227041122-7rch6gs9qv7nj6keklq9i5quukc6d2bq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mitarifamitaxi.taximetrousuario",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "178227041122-eoqq5unhngc85fbilc19i7he3ogpof7i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mitarifamitaxi.taximetrousuario",
+            "certificate_hash": "73f70516cfdefe68bc4af35fc1823c1e28a452af"
+          }
+        },
+        {
+          "client_id": "178227041122-l4cahm8bm5d9ftb8ur22jmmgp2pto95l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5AlC4tA-PRf6N3btnr-fKZl391hoFqyo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178227041122-l4cahm8bm5d9ftb8ur22jmmgp2pto95l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "178227041122-q3g58u0c51ml1navd4p7n3hahpa0sq3u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mitarifamitaxi.taximetrousuario"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

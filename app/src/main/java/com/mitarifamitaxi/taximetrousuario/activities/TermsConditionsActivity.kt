@@ -67,6 +67,7 @@ class TermsConditionsActivity : AppCompatActivity() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(colorResource(id = R.color.white))
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
 

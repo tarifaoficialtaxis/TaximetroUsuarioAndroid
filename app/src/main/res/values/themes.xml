@@ -2,5 +2,6 @@
     <!-- Base application theme. -->
     <style name="Theme.TaximetroUsuarioNative" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/main</item>
+        <item name="android:windowBackground">@color/black</item>
     </style>
 </resources>

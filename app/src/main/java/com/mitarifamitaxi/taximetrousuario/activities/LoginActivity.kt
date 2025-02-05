@@ -101,8 +101,6 @@ class LoginActivity : AppCompatActivity() {
         onRegisterClicked: () -> Unit,
         onGoogleSignIn: () -> Unit
     ) {
-
-
         Column {
             Box(
                 modifier = Modifier

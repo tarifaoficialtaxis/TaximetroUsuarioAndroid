@@ -57,7 +57,6 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended)
 
-    implementation(libs.androidx.core.splashscreen)
     implementation(libs.firebase.components)
 
     implementation(platform(libs.firebase.bom))
@@ -67,6 +66,9 @@ dependencies {
     implementation(libs.play.services.auth)
 
     implementation(libs.gson)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

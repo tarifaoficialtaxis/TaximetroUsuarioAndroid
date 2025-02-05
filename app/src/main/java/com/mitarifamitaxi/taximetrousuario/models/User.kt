@@ -1,7 +1,15 @@
 package com.mitarifamitaxi.taximetrousuario.models
 
-data class User(
-    val id: String,
-    val name: String,
-    val email: String
+data class LocalUser(
+    val id: String? = null,
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val mobilePhone: String? = null,
+    val email: String? = null,
+    val countryCodeWhatsapp: String? = null,
+    val city: String? = null,
+    val location: Location? = null,
+    val familyNumber: String? = null,
+    val supportNumber: String? = null
 )
+

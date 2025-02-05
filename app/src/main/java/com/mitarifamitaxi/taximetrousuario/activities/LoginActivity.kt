@@ -61,10 +61,12 @@ class LoginActivity : AppCompatActivity() {
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            viewModel.handleSignInResult(result.data) { success ->
-                if (success) {
+            viewModel.handleSignInResult(result.data) { signInResult ->
+                if (signInResult.first == "home") {
                     startActivity(Intent(this, HomeActivity::class.java))
                     finish()
+                } else if (signInResult.first == "complete_profile") {
+                    startActivity(Intent(this, CompleteProfileActivity::class.java))
                 } else {
                     Log.e("LoginActivity", "Google sign-in failed")
                 }

@@ -117,7 +117,7 @@ class HomeActivity : AppCompatActivity() {
                     )
 
                     Text(
-                        text = "Hugo Ospina",
+                        text = viewModel.userData?.firstName ?: "",
                         color = colorResource(id = R.color.main),
                         fontSize = 20.sp,
                         fontFamily = MontserratFamily,
@@ -128,7 +128,7 @@ class HomeActivity : AppCompatActivity() {
                     Spacer(modifier = Modifier.height(5.dp))
 
                     Text(
-                        text = "Barranquilla",
+                        text = viewModel.userData?.city ?: "",
                         color = colorResource(id = R.color.white),
                         fontSize = 14.sp,
                         fontFamily = MontserratFamily,

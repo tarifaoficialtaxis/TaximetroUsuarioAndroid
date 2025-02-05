@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
@@ -66,7 +67,10 @@ class LoginActivity : AppCompatActivity() {
                     startActivity(Intent(this, HomeActivity::class.java))
                     finish()
                 } else if (signInResult.first == "complete_profile") {
-                    startActivity(Intent(this, CompleteProfileActivity::class.java))
+                    val userJson = Gson().toJson(signInResult.second)
+                    val intent = Intent(this, CompleteProfileActivity::class.java)
+                    intent.putExtra("user_data", userJson)
+                    startActivity(intent)
                 } else {
                     Log.e("LoginActivity", "Google sign-in failed")
                 }

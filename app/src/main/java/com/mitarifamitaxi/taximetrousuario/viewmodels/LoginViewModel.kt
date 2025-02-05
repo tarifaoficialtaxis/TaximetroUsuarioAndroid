@@ -13,6 +13,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -74,7 +75,7 @@ class LoginViewModel(context: Context) : ViewModel() {
     }
 
 
-    fun handleSignInResult(data: Intent?, onResult: (Pair<String, String?>) -> Unit) {
+    fun handleSignInResult(data: Intent?, onResult: (Pair<String, LocalUser?>) -> Unit) {
         try {
             val credential = oneTapClient.getSignInCredentialFromIntent(data)
             val idToken = credential.googleIdToken
@@ -90,7 +91,10 @@ class LoginViewModel(context: Context) : ViewModel() {
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String, onResult: (Pair<String, String?>) -> Unit) {
+    private fun firebaseAuthWithGoogle(
+        idToken: String,
+        onResult: (Pair<String, LocalUser?>) -> Unit
+    ) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
@@ -103,7 +107,17 @@ class LoginViewModel(context: Context) : ViewModel() {
                             if (it) {
                                 onResult(Pair("home", null))
                             } else {
-                                onResult(Pair("complete_profile", "userData"))
+
+                                user?.let {
+                                    val userData = LocalUser(
+                                        id = it.uid,
+                                        email = it.email,
+                                        firstName = it.displayName?.split(" ")?.get(0),
+                                        lastName = it.displayName?.split(" ")?.get(1),
+                                        mobilePhone = it.phoneNumber
+                                    )
+                                    onResult(Pair("complete_profile", userData))
+                                }
                             }
                         })
                     }

@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
@@ -59,7 +60,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private val googleSignInLauncher = registerForActivityResult(
-        ActivityResultContracts.StartIntentSenderForResult()
+        ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             viewModel.handleSignInResult(result.data) { signInResult ->
@@ -81,20 +82,16 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         setContent {
             MainView(
                 onRegisterClicked = {
                     startActivity(Intent(this, RegisterActivity::class.java))
                 },
                 onGoogleSignIn = {
-                    lifecycleScope.launch {
-                        viewModel.signInWithGoogle(this@LoginActivity) { intentSenderRequest ->
-                            if (intentSenderRequest != null) {
-                                googleSignInLauncher.launch(intentSenderRequest)
-                            } else {
-                                Log.e("LoginActivity", "Google sign-in intent failed")
-                            }
-                        }
+                    viewModel.googleSignInClient.revokeAccess().addOnCompleteListener {
+                        val signInIntent = viewModel.googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
                     }
                 }
             )

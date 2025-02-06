@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
-
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
@@ -16,24 +15,137 @@ import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.Location
+import com.google.android.gms.location.*
+
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.Task
+import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
+import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import java.util.concurrent.Executor
+
 class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
     var userData: LocalUser? by mutableStateOf(null)
+
+    private lateinit var locationCallback: LocationCallback
+
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    private val executor: Executor = ContextCompat.getMainExecutor(context)
 
     var dialogType by mutableStateOf(DialogType.SUCCESS)
     var showDialog by mutableStateOf(false)
     var dialogTitle by mutableStateOf("")
     var dialogMessage by mutableStateOf("")
 
-
     private val _trips = mutableStateOf<List<Trip>>(emptyList())
     val trips: State<List<Trip>> = _trips
 
     init {
         loadUserData()
-
         getTripsByUserId()
+    }
+
+
+    fun requestLocationPermission(activity: HomeActivity) {
+        if (ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            activity.locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        } else {
+            getCurrentLocation()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation() {
+        val cancellationTokenSource = CancellationTokenSource()
+
+        val task: Task<Location> = fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        )
+
+        task.addOnSuccessListener(executor) { location ->
+            if (location != null) {
+
+                getCityFromCoordinates(
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    callbackSuccess = { city, countryCodeWhatsapp ->
+                        updateUserData(
+                            location = UserLocation(
+                                latitude = location.latitude,
+                                longitude = location.longitude
+                            ),
+                            city = city ?: "",
+                            countryCodeWhatsapp = countryCodeWhatsapp ?: ""
+                        )
+                    },
+                    callbackError = { error ->
+                        showErrorMessage(
+                            appContext.getString(R.string.something_went_wrong),
+                            appContext.getString(R.string.error_fetching_city)
+                        )
+                    }
+                )
+
+            } else {
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_fetching_location)
+                )
+            }
+        }.addOnFailureListener {
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_fetching_location)
+            )
+        }
+    }
+
+    fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    private fun updateUserData(location: UserLocation, city: String, countryCodeWhatsapp: String) {
+        userData = userData?.copy(
+            location = location,
+            city = city,
+            countryCodeWhatsapp = countryCodeWhatsapp
+        )
+
+        userData?.let { saveUserState(it) }
+
+    }
+
+    private fun saveUserState(user: LocalUser) {
+        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("USER_OBJECT", Gson().toJson(user))
+            apply()
+        }
     }
 
     private fun loadUserData() {
@@ -71,15 +183,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                 Log.e("HomeViewModel", "Unexpected error: ${e.message}")
             }
 
-            /*if (snapshot != null && !snapshot.isEmpty) {
-                val trips = snapshot.documents
-                val sortedTrips = trips.sortedByDescending { it.getDate("endHour")?.time ?: 0L }
-
-
-
-            } else {
-                // Handle empty trips list
-            }*/
         }
     }
 
@@ -93,7 +196,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         onLogoutComplete()
     }
 
-    private fun showErrorMessage(title: String, message: String) {
+    fun showErrorMessage(title: String, message: String) {
         showDialog = true
         dialogType = DialogType.ERROR
         dialogTitle = title

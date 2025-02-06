@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,11 +48,40 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TripItem
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
+import android.Manifest
+import android.os.Bundle
 
 class HomeActivity : BaseActivity() {
 
     private val viewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(this, appViewModel)
+    }
+
+
+    val locationPermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+            val coarseLocationGranted =
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+            if (fineLocationGranted || coarseLocationGranted) {
+                viewModel.getCurrentLocation()
+            } else {
+                viewModel.showErrorMessage(
+                    "Permission Denied",
+                    "Location permission is required for this feature."
+                )
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.requestLocationPermission(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.stopLocationUpdates()
     }
 
 

@@ -145,5 +145,8 @@
     <string name="time_trip">Tiempo de viaje</string>
     <string name="finish_trip">Finalizar Viaje</string>
 
+    <string name="error_fetching_location">Ha ocurrido un error al intentar obtener tu ubicación. Por favor, verifica que el GPS esté activado y que la aplicación tenga permisos para acceder a tu ubicación.</string>
+    <string name="error_fetching_city">Ha ocurrido un error al intentar obtener tu ciudad.</string>
+
 
 </resources>

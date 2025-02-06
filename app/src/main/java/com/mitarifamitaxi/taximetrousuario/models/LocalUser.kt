@@ -8,7 +8,7 @@ data class LocalUser(
     val email: String? = null,
     val countryCodeWhatsapp: String? = null,
     val city: String? = null,
-    val location: Location? = null,
+    val location: UserLocation? = null,
     val familyNumber: String? = null,
     val supportNumber: String? = null
 )

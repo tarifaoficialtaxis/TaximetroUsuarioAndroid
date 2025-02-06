@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
 
     implementation(libs.coil.compose)
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

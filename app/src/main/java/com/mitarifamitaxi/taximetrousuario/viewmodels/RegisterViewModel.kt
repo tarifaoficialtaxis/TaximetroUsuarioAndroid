@@ -16,7 +16,7 @@ import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class RegisterViewModel(context: Context) : ViewModel() {
+class RegisterViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
     var firstName by mutableStateOf("")
@@ -26,8 +26,7 @@ class RegisterViewModel(context: Context) : ViewModel() {
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-
-    fun register() {
+    fun register(onResult: (Pair<Boolean, String?>) -> Unit) {
         // Login logic
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty() || password.isEmpty()) {
             // Show error message
@@ -38,11 +37,12 @@ class RegisterViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             try {
                 // Show loading indicator
-                //setIsLoading(true)
+                appViewModel.isLoading = true
 
                 // Create user with email and password in Firebase Auth
                 val authResult =
-                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                    FirebaseAuth.getInstance()
+                        .createUserWithEmailAndPassword(email.trim(), password.trim())
                         .await()
                 val user = authResult.user ?: throw Exception("User creation failed")
 
@@ -58,7 +58,7 @@ class RegisterViewModel(context: Context) : ViewModel() {
                     .await()
 
                 // Hide loading indicator
-                //setIsLoading(false)
+                appViewModel.isLoading = false
 
                 // Save user in SharedPreferences
                 val localUser = LocalUser(
@@ -70,13 +70,13 @@ class RegisterViewModel(context: Context) : ViewModel() {
                 )
                 saveUserState(localUser)
 
-                // Show success message
-                Toast.makeText(appContext, R.string.success_register, Toast.LENGTH_SHORT).show()
+                onResult(Pair(true, null))
+
             } catch (e: Exception) {
                 // Hide loading indicator
-                //setIsLoading(false)
+                appViewModel.isLoading = false
                 // Show error message
-                Toast.makeText(appContext, e.message, Toast.LENGTH_SHORT).show()
+                onResult(Pair(false, e.message))
             }
 
         }
@@ -92,12 +92,15 @@ class RegisterViewModel(context: Context) : ViewModel() {
 
 }
 
-class RegisterViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class RegisterViewModelFactory(
+    private val context: Context,
+    private val appViewModel: AppViewModel
+) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
-            return RegisterViewModel(context) as T
+            return RegisterViewModel(context, appViewModel) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

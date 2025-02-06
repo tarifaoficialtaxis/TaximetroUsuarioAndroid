@@ -75,10 +75,6 @@ class LoginActivity : BaseActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     @Composable
     override fun Content() {
         MainView(

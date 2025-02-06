@@ -1,9 +1,8 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
+import android.content.Intent
+import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -40,38 +37,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RegisterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RegisterViewModelFactory
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : BaseActivity() {
 
     private val viewModel: RegisterViewModel by viewModels {
-        RegisterViewModelFactory(this)
+        RegisterViewModelFactory(this, appViewModel)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            MainView(
-                onLoginClicked = {
-                    finish()
+    @Composable
+    override fun Content() {
+        MainView(
+            onLoginClicked = {
+                finish()
+            },
+            onRegisterClicked = {
+                viewModel.register { registerResult ->
+                    if (registerResult.first) {
+                        startActivity(Intent(this, HomeActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, registerResult.second, Toast.LENGTH_SHORT).show()
+                    }
                 }
-            )
-        }
+            }
+
+        )
     }
 
     @Composable
     private fun MainView(
-        onLoginClicked: () -> Unit
+        onLoginClicked: () -> Unit,
+        onRegisterClicked: () -> Unit,
     ) {
         Column {
             Box(
@@ -197,7 +201,7 @@ class RegisterActivity : AppCompatActivity() {
 
                             CustomButton(
                                 text = stringResource(id = R.string.register).uppercase(),
-                                onClick = { viewModel.register() }
+                                onClick = { onRegisterClicked() }
                             )
 
                             Spacer(modifier = Modifier.weight(1.0f))

@@ -104,6 +104,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
         idToken: String,
         onResult: (Pair<String, LocalUser?>) -> Unit
     ) {
+        appViewModel.isLoading = true
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
@@ -113,6 +114,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
 
                     viewModelScope.launch {
                         getUserInformation(user?.uid ?: "", userExistsCallback = {
+                            appViewModel.isLoading = false
                             if (it) {
                                 onResult(Pair("home", null))
                             } else {
@@ -130,6 +132,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                         })
                     }
                 } else {
+                    appViewModel.isLoading = false
                     Log.e(TAG, "Firebase Sign-In failed: ${task.exception}")
                     onResult(Pair("Error signing in with Google", null))
                 }

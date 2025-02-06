@@ -2,7 +2,6 @@ package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

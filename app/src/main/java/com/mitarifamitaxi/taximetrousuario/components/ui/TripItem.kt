@@ -1,18 +1,40 @@
 package com.mitarifamitaxi.taximetrousuario.components.ui
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
+import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
+import com.mitarifamitaxi.taximetrousuario.helpers.tripCardFormatDate
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 
 @Composable
@@ -28,14 +50,94 @@ fun TripItem(trip: Trip) {
             containerColor = colorResource(id = R.color.white)
         )
     ) {
-        Column(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp),
             modifier = Modifier
                 .padding(15.dp)
                 .fillMaxWidth()
         ) {
-            Text("Destination: ${trip.endAddress}", fontWeight = FontWeight.Bold)
-            Text("Start: ${trip.startHour}")
-            Text("End: ${trip.endHour}")
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(
+                    text = tripCardFormatDate(trip.startHour ?: ""),
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = colorResource(id = R.color.gray1),
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(15.dp)
+                            .border(2.dp, colorResource(id = R.color.yellow2), CircleShape)
+                            .background(colorResource(id = R.color.main), shape = CircleShape),
+                    )
+
+                    Text(
+                        text = trip.startAddress?.getShortAddress() ?: "",
+                        fontFamily = MontserratFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = colorResource(id = R.color.gray1),
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = colorResource(id = R.color.main),
+                        modifier = Modifier.size(15.dp)
+                    )
+
+                    Text(
+                        text = trip.endAddress?.getShortAddress() ?: "",
+                        fontFamily = MontserratFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = colorResource(id = R.color.gray1),
+                    )
+                }
+
+                Text(
+                    text = "$ ${trip.total?.formatNumberWithDots()} COP",
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = colorResource(id = R.color.main),
+                )
+            }
+
+            OutlinedButton(
+                onClick = { },
+                modifier = Modifier.size(30.dp),
+                shape = CircleShape,
+                border = BorderStroke(0.dp, Color.Transparent),
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = colorResource(id = R.color.main),
+                    contentColor = colorResource(id = R.color.black)
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = "content description"
+                )
+            }
+
         }
     }
 }

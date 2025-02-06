@@ -1,7 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -45,7 +44,6 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
-import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
 

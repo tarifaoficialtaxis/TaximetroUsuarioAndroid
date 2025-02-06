@@ -1,11 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,7 +18,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -45,8 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import coil.compose.rememberAsyncImagePainter
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
@@ -55,8 +47,6 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TripItem
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
-import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
-import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
 
 class HomeActivity : BaseActivity() {
 

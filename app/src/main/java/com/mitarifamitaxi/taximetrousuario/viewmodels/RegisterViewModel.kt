@@ -1,7 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -26,13 +27,37 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
+    var dialogType by mutableStateOf(DialogType.SUCCESS)
+    var showDialog by mutableStateOf(false)
+    var dialogTitle by mutableStateOf("")
+    var dialogMessage by mutableStateOf("")
+
     fun register(onResult: (Pair<Boolean, String?>) -> Unit) {
         // Login logic
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            // Show error message
-            Toast.makeText(appContext, R.string.all_fields_required, Toast.LENGTH_SHORT).show()
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.all_fields_required)
+            )
             return
         }
+
+        if (!email.isValidEmail()) {
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_invalid_email)
+            )
+            return
+        }
+
+        if (password != confirmPassword) {
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.passwords_do_not_match)
+            )
+            return
+        }
+
 
         viewModelScope.launch {
             try {
@@ -51,8 +76,8 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
                     "id" to user.uid,
                     "firstName" to firstName,
                     "lastName" to lastName,
-                    "mobilePhone" to mobilePhone,
-                    "email" to email
+                    "mobilePhone" to mobilePhone.trim(),
+                    "email" to email.trim()
                 )
                 FirebaseFirestore.getInstance().collection("users").document(user.uid).set(userMap)
                     .await()
@@ -65,8 +90,8 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
                     id = user.uid,
                     firstName = firstName,
                     lastName = lastName,
-                    mobilePhone = mobilePhone,
-                    email = email
+                    mobilePhone = mobilePhone.trim(),
+                    email = email.trim()
                 )
                 saveUserState(localUser)
 
@@ -75,8 +100,10 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
             } catch (e: Exception) {
                 // Hide loading indicator
                 appViewModel.isLoading = false
-                // Show error message
-                onResult(Pair(false, e.message))
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_registering_user)
+                )
             }
 
         }
@@ -90,6 +117,12 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
         }
     }
 
+    private fun showErrorMessage(title: String, message: String) {
+        showDialog = true
+        dialogType = DialogType.ERROR
+        dialogTitle = title
+        dialogMessage = message
+    }
 }
 
 class RegisterViewModelFactory(

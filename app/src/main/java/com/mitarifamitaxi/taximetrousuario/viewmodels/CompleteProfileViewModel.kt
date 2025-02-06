@@ -1,7 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -26,11 +27,25 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
     var mobilePhone by mutableStateOf("")
     var email by mutableStateOf("")
 
+    var dialogType by mutableStateOf(DialogType.SUCCESS)
+    var showDialog by mutableStateOf(false)
+    var dialogTitle by mutableStateOf("")
+    var dialogMessage by mutableStateOf("")
 
     fun completeProfile(onResult: (Pair<Boolean, String?>) -> Unit) {
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty()) {
-            // Show error message
-            Toast.makeText(appContext, R.string.all_fields_required, Toast.LENGTH_SHORT).show()
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.all_fields_required)
+            )
+            return
+        }
+
+        if (!email.isValidEmail()) {
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_invalid_email)
+            )
             return
         }
 
@@ -44,8 +59,8 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
                     "id" to userId,
                     "firstName" to firstName,
                     "lastName" to lastName,
-                    "mobilePhone" to mobilePhone,
-                    "email" to email
+                    "mobilePhone" to mobilePhone.trim(),
+                    "email" to email.trim()
                 )
                 FirebaseFirestore.getInstance().collection("users").document(userId).set(userMap)
                     .await()
@@ -82,6 +97,13 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
             putString("USER_OBJECT", Gson().toJson(user))
             apply()
         }
+    }
+
+    private fun showErrorMessage(title: String, message: String) {
+        showDialog = true
+        dialogType = DialogType.ERROR
+        dialogTitle = title
+        dialogMessage = message
     }
 
 }

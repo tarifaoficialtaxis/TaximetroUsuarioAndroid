@@ -51,5 +51,8 @@
 
     <string name="error_getting_user_info">Ha occurrido un error al intentar obtener la información del usuario.</string>
 
+    <string name="passwords_do_not_match">Las contraseñas no coinciden.</string>
+    <string name="error_registering_user">Ha ocurrido un error al intentar registrar el usuario.</string>
+
 
 </resources>

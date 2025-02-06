@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RegisterViewModel
@@ -63,13 +64,20 @@ class RegisterActivity : BaseActivity() {
                     if (registerResult.first) {
                         startActivity(Intent(this, HomeActivity::class.java))
                         finish()
-                    } else {
-                        Toast.makeText(this, registerResult.second, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
 
         )
+
+        if (viewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = viewModel.dialogType,
+                title = viewModel.dialogTitle,
+                message = viewModel.dialogMessage,
+                onDismiss = { viewModel.showDialog = false },
+            )
+        }
     }
 
     @Composable

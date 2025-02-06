@@ -34,5 +34,7 @@
 
     <string name="complete_profile">Completa tu perfil</string>
     <string name="complete_profile_action">Completar perfil</string>
+    <string name="all_fields_required">Todos los campos son requeridos</string>
+    <string name="success_register">Registro exitoso</string>
 
 </resources>

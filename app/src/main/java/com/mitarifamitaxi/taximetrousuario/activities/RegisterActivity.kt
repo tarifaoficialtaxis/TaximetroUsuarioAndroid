@@ -15,10 +15,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Mail
@@ -125,6 +128,7 @@ class RegisterActivity : AppCompatActivity() {
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(top = 29.dp, bottom = 10.dp, start = 29.dp, end = 29.dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
                             Text(
                                 text = stringResource(id = R.string.register),
@@ -141,6 +145,7 @@ class RegisterActivity : AppCompatActivity() {
                                 modifier = Modifier
                                     .padding(bottom = 10.dp)
                             ) {
+
                                 CustomTextField(
                                     value = viewModel.firstName,
                                     onValueChange = { viewModel.firstName = it },

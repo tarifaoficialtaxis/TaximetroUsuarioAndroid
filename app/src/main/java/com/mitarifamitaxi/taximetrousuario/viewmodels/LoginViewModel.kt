@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -8,16 +7,12 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -27,7 +22,7 @@ import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class LoginViewModel(context: Context) : ViewModel() {
+class LoginViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
 
@@ -35,20 +30,50 @@ class LoginViewModel(context: Context) : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // One Tap client
-    private val oneTapClient: SignInClient = Identity.getSignInClient(appContext)
-
     // Example username/password states
     var userName by mutableStateOf("")
     var password by mutableStateOf("")
     var rememberMe by mutableStateOf(false)
 
+
     companion object {
         private const val TAG = "LoginViewModel"
     }
 
-    fun login() {
-        // Do your normal email/password login...
+    fun login(onResult: (Pair<Boolean, String?>) -> Unit) {
+
+        if (userName.isEmpty() || password.isEmpty()) {
+            Log.e(TAG, "Error: Email and password are required")
+            onResult(Pair(false, appContext.getString(R.string.all_fields_required)))
+            return
+        }
+
+        appViewModel.isLoading = true
+
+        viewModelScope.launch {
+            try {
+                val userCredential =
+                    auth.signInWithEmailAndPassword(userName.trim(), password).await()
+                val user = userCredential.user
+                if (user != null) {
+                    getUserInformation(user.uid) { userExists ->
+                        appViewModel.isLoading = false
+                        if (userExists) {
+                            Log.d(TAG, "Login successful")
+                            onResult(Pair(true, null))
+                        } else {
+                            Log.d(TAG, "User needs to complete profile")
+                            onResult(Pair(false, null))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                appViewModel.isLoading = false
+                Log.e(TAG, "Login Error: ${e.message}")
+                onResult(Pair(false, e.message))
+            }
+        }
+
     }
 
     val googleSignInClient: GoogleSignInClient by lazy {
@@ -142,11 +167,12 @@ class LoginViewModel(context: Context) : ViewModel() {
 /**
  * A simple factory to provide the LoginViewModel with a context.
  */
-class LoginViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class LoginViewModelFactory(private val context: Context, private val appViewModel: AppViewModel) :
+    ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(context) as T
+            return LoginViewModel(context, appViewModel) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

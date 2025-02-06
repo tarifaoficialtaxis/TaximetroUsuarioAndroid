@@ -3,10 +3,9 @@ package com.mitarifamitaxi.taximetrousuario.activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.compose.setContent
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,8 +40,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
@@ -51,12 +48,11 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
-import kotlinx.coroutines.launch
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private val viewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(this)
+        LoginViewModelFactory(this, appViewModel)
     }
 
     private val googleSignInLauncher = registerForActivityResult(
@@ -81,26 +77,37 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
 
-
-        setContent {
-            MainView(
-                onRegisterClicked = {
-                    startActivity(Intent(this, RegisterActivity::class.java))
-                },
-                onGoogleSignIn = {
-                    viewModel.googleSignInClient.revokeAccess().addOnCompleteListener {
-                        val signInIntent = viewModel.googleSignInClient.signInIntent
-                        googleSignInLauncher.launch(signInIntent)
+    @Composable
+    override fun Content() {
+        MainView(
+            onLoginClicked = {
+                viewModel.login { loginResult ->
+                    if (loginResult.first) {
+                        startActivity(Intent(this, HomeActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, loginResult.second, Toast.LENGTH_SHORT).show()
                     }
                 }
-            )
-        }
+            },
+            onRegisterClicked = {
+                startActivity(Intent(this, RegisterActivity::class.java))
+            },
+            onGoogleSignIn = {
+                viewModel.googleSignInClient.revokeAccess().addOnCompleteListener {
+                    val signInIntent = viewModel.googleSignInClient.signInIntent
+                    googleSignInLauncher.launch(signInIntent)
+                }
+            }
+        )
     }
 
 
     @Composable
     private fun MainView(
+        onLoginClicked: () -> Unit,
         onRegisterClicked: () -> Unit,
         onGoogleSignIn: () -> Unit
     ) {
@@ -232,7 +239,7 @@ class LoginActivity : AppCompatActivity() {
 
                                 CustomButton(
                                     text = stringResource(id = R.string.login).uppercase(),
-                                    onClick = { viewModel.login() }
+                                    onClick = { onLoginClicked() }
                                 )
                             }
 

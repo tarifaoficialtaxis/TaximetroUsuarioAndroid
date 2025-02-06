@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -23,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.NoTripsView
@@ -52,20 +49,19 @@ import android.Manifest
 import android.os.Bundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 
 class HomeActivity : BaseActivity() {
 
+    override fun isDrawerEnabled(): Boolean = true
+
     private val viewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(this, appViewModel)
     }
-
 
     val locationPermissionRequest =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -112,7 +108,7 @@ class HomeActivity : BaseActivity() {
     private fun MainView(
 
     ) {
-
+        val openDrawer = LocalOpenDrawer.current
         val trips by viewModel.trips
 
         Column(
@@ -120,7 +116,6 @@ class HomeActivity : BaseActivity() {
                 .fillMaxSize()
                 .background(colorResource(id = R.color.white)),
         ) {
-
 
             Box(
                 modifier = Modifier
@@ -151,7 +146,7 @@ class HomeActivity : BaseActivity() {
                 ) {
 
                     OutlinedButton(
-                        onClick = { },
+                        onClick = { openDrawer() },
                         modifier = Modifier
                             .size(45.dp)
                             .border(2.dp, colorResource(id = R.color.white), CircleShape),

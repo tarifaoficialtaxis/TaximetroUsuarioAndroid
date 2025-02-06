@@ -1,9 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -45,7 +43,9 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
 
@@ -68,8 +68,6 @@ class LoginActivity : BaseActivity() {
                     val intent = Intent(this, CompleteProfileActivity::class.java)
                     intent.putExtra("user_data", userJson)
                     startActivity(intent)
-                } else {
-                    Log.e("LoginActivity", "Google sign-in failed")
                 }
             }
         }
@@ -77,14 +75,14 @@ class LoginActivity : BaseActivity() {
 
     @Composable
     override fun Content() {
+
+
         MainView(
             onLoginClicked = {
                 viewModel.login { loginResult ->
                     if (loginResult.first) {
                         startActivity(Intent(this, HomeActivity::class.java))
                         finish()
-                    } else {
-                        Toast.makeText(this, loginResult.second, Toast.LENGTH_SHORT).show()
                     }
                 }
             },
@@ -98,6 +96,15 @@ class LoginActivity : BaseActivity() {
                 }
             }
         )
+
+        if (viewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = viewModel.dialogType,
+                title = viewModel.dialogTitle,
+                message = viewModel.dialogMessage,
+                onDismiss = { viewModel.showDialog = false },
+            )
+        }
     }
 
 

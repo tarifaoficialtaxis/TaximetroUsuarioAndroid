@@ -44,18 +44,16 @@ import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity() {
 
     private val viewModel: HomeViewModel by viewModels {
-        HomeViewModelFactory(this)
+        HomeViewModelFactory(this, appViewModel)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-        setContent {
-            MainView()
-        }
+    @Composable
+    override fun Content() {
+        MainView()
     }
 
     @Composable

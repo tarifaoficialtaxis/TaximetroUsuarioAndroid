@@ -1,17 +1,14 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,12 +19,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Mail
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PhoneIphone
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -50,10 +44,10 @@ import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import com.mitarifamitaxi.taximetrousuario.viewmodels.CompleteProfileViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.CompleteProfileViewModelFactory
 
-class CompleteProfileActivity : AppCompatActivity() {
+class CompleteProfileActivity : BaseActivity() {
 
     private val viewModel: CompleteProfileViewModel by viewModels {
-        CompleteProfileViewModelFactory(this)
+        CompleteProfileViewModelFactory(this, appViewModel)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,20 +58,35 @@ class CompleteProfileActivity : AppCompatActivity() {
             val gson = Gson()
             val userData = gson.fromJson(it, LocalUser::class.java)
 
+            viewModel.userId = userData.id ?: ""
             viewModel.firstName = userData.firstName ?: ""
             viewModel.lastName = userData.lastName ?: ""
             viewModel.email = userData.email ?: ""
             viewModel.mobilePhone = userData.mobilePhone ?: ""
         }
+    }
 
-        setContent {
-            MainView()
-        }
+    @Composable
+    override fun Content() {
+        MainView(
+            onCompleteProfile = {
+                viewModel.completeProfile(onResult = { result ->
+                    if (result.first) {
+                        startActivity(Intent(this, HomeActivity::class.java))
+                        finish()
+                    } else {
+                        // Show error message
+                        Toast.makeText(this, result.second, Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+        )
     }
 
 
     @Composable
     private fun MainView(
+        onCompleteProfile: () -> Unit
     ) {
         Column {
             Box(
@@ -193,7 +202,7 @@ class CompleteProfileActivity : AppCompatActivity() {
 
                             CustomButton(
                                 text = stringResource(id = R.string.complete_profile_action).uppercase(),
-                                onClick = { viewModel.completeProfile() }
+                                onClick = { onCompleteProfile() }
                             )
 
 

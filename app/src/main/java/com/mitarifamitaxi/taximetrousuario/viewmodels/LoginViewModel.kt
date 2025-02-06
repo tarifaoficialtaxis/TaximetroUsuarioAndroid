@@ -13,11 +13,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -30,11 +35,14 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // Example username/password states
     var userName by mutableStateOf("")
     var password by mutableStateOf("")
     var rememberMe by mutableStateOf(false)
 
+    var dialogType by mutableStateOf(DialogType.SUCCESS)
+    var showDialog by mutableStateOf(false)
+    var dialogTitle by mutableStateOf("")
+    var dialogMessage by mutableStateOf("")
 
     companion object {
         private const val TAG = "LoginViewModel"
@@ -43,8 +51,19 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
     fun login(onResult: (Pair<Boolean, String?>) -> Unit) {
 
         if (userName.isEmpty() || password.isEmpty()) {
-            Log.e(TAG, "Error: Email and password are required")
-            onResult(Pair(false, appContext.getString(R.string.all_fields_required)))
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.all_fields_required)
+            )
+            return
+        }
+
+
+        if (!userName.isValidEmail()) {
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_invalid_email)
+            )
             return
         }
 
@@ -59,21 +78,44 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                     getUserInformation(user.uid) { userExists ->
                         appViewModel.isLoading = false
                         if (userExists) {
-                            Log.d(TAG, "Login successful")
                             onResult(Pair(true, null))
                         } else {
-                            Log.d(TAG, "User needs to complete profile")
                             onResult(Pair(false, null))
                         }
                     }
                 }
             } catch (e: Exception) {
                 appViewModel.isLoading = false
-                Log.e(TAG, "Login Error: ${e.message}")
-                onResult(Pair(false, e.message))
+
+                Log.e(TAG, "Error logging in: ${e.message}")
+
+                val errorMessage = when (e) {
+                    is FirebaseAuthInvalidCredentialsException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    is FirebaseAuthInvalidUserException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    is FirebaseAuthException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    else -> appContext.getString(R.string.something_went_wrong)
+                }
+
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    errorMessage
+                )
+
             }
         }
 
+    }
+
+    private fun getFirebaseAuthErrorMessage(errorCode: String): String {
+        return when (errorCode) {
+            "ERROR_INVALID_EMAIL" -> appContext.getString(R.string.error_invalid_email)
+            "ERROR_INVALID_CREDENTIAL" -> appContext.getString(R.string.error_wrong_credentials)
+            "ERROR_USER_NOT_FOUND" -> appContext.getString(R.string.error_user_not_found)
+            "ERROR_USER_DISABLED" -> appContext.getString(R.string.error_user_disabled)
+            "ERROR_TOO_MANY_REQUESTS" -> appContext.getString(R.string.error_too_many_requests)
+            "ERROR_OPERATION_NOT_ALLOWED" -> appContext.getString(R.string.error_operation_not_allowed)
+            else -> appContext.getString(R.string.error_authentication_failed)
+        }
     }
 
     val googleSignInClient: GoogleSignInClient by lazy {
@@ -92,11 +134,18 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 firebaseAuthWithGoogle(account.idToken!!, onResult)
             } else {
                 Log.e(TAG, "Google Sign-In failed: No account found")
-                onResult(Pair("Error signing in with Google", null))
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_google_sign_in)
+                )
             }
         } catch (e: ApiException) {
             Log.e(TAG, "Google Sign-In failed: ${e.localizedMessage}")
-            onResult(Pair("Error signing in with Google", null))
+            //onResult(Pair("Error signing in with Google", null))
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_google_sign_in)
+            )
         }
     }
 
@@ -111,7 +160,6 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     Log.d(TAG, "Firebase Sign-In success. User: ${user?.displayName}")
-
                     viewModelScope.launch {
                         getUserInformation(user?.uid ?: "", userExistsCallback = {
                             appViewModel.isLoading = false
@@ -134,7 +182,10 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 } else {
                     appViewModel.isLoading = false
                     Log.e(TAG, "Firebase Sign-In failed: ${task.exception}")
-                    onResult(Pair("Error signing in with Google", null))
+                    showErrorMessage(
+                        appContext.getString(R.string.something_went_wrong),
+                        appContext.getString(R.string.error_google_sign_in)
+                    )
                 }
             }
     }
@@ -155,6 +206,10 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error getting user information", e)
+            showErrorMessage(
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_getting_user_info)
+            )
         }
     }
 
@@ -165,11 +220,15 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
             apply()
         }
     }
+
+    private fun showErrorMessage(title: String, message: String) {
+        showDialog = true
+        dialogType = DialogType.ERROR
+        dialogTitle = title
+        dialogMessage = message
+    }
 }
 
-/**
- * A simple factory to provide the LoginViewModel with a context.
- */
 class LoginViewModelFactory(private val context: Context, private val appViewModel: AppViewModel) :
     ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")

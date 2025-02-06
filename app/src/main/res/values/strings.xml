@@ -37,4 +37,19 @@
     <string name="all_fields_required">Todos los campos son requeridos</string>
     <string name="success_register">Registro exitoso</string>
 
+    <string name="something_went_wrong">¡Algo salió mal!</string>
+
+    <string name="error_invalid_email">La dirección de correo electrónico tiene un formato incorrecto.</string>
+    <string name="error_wrong_credentials">Las credenciales son incorrectas. Inténtalo de nuevo.</string>
+    <string name="error_user_not_found">No se encontró un usuario con este correo electrónico.</string>
+    <string name="error_user_disabled">Esta cuenta de usuario ha sido deshabilitada.</string>
+    <string name="error_too_many_requests">Demasiados intentos fallidos. Inténtalo de nuevo más tarde.</string>
+    <string name="error_operation_not_allowed">Este método de inicio de sesión no está habilitado.</string>
+    <string name="error_authentication_failed">La autenticación falló. Por favor, inténtalo de nuevo.</string>
+
+    <string name="error_google_sign_in">Error al iniciar sesón con Google.</string>
+
+    <string name="error_getting_user_info">Ha occurrido un error al intentar obtener la información del usuario.</string>
+
+
 </resources>

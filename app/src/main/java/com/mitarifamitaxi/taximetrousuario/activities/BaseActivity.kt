@@ -14,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import com.mitarifamitaxi.taximetrousuario.R
@@ -33,7 +35,10 @@ open class BaseActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BaseScreen()
+
+            MyTheme {
+                BaseScreen()
+            }
         }
     }
 
@@ -64,6 +69,20 @@ open class BaseActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    @Composable
+    fun MyTheme(content: @Composable () -> Unit) {
+        val customColorScheme = lightColorScheme(
+            primary = colorResource(id = R.color.main),
+            onPrimary = Color.White,
+            secondary = colorResource(id = R.color.yellow1)
+        )
+
+        MaterialTheme(
+            colorScheme = customColorScheme,
+            content = content
+        )
     }
 
     @Composable

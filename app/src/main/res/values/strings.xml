@@ -54,5 +54,96 @@
     <string name="passwords_do_not_match">Las contraseñas no coinciden.</string>
     <string name="error_registering_user">Ha ocurrido un error al intentar registrar el usuario.</string>
 
+    <string name="my_trips">Mis Viajes</string>
+    <string name="registration_success">Registro exitoso</string>
+    <string name="mi_taximetro">Mi Taxímetro</string>
+    <string name="new_ride">Solicitar servicio</string>
+    <string name="trip_summary">Resumen de viaje</string>
+    <string name="trip_details">Detalles de tu viaje</string>
+
+    <string name="message_alert_sos">De conformidad con lo establecido en el artículo 35 del Código de Policía, utilizar de forma inadecuada la línea de atención de emergencia, será sancionado con multa.</string>
+    <string name="no_trips_found">Aún no tienes viajes registrados</string>
+    <string name="this_is_my_location">Esta es la ubicación donde me encuentro</string>
+    <string name="sos_animal_care">Esta es la ubicación donde se evidencia maltrato animal/animal herido/abandonado</string>
+    <string name="my_profile">Mi Perfil</string>
+
+    <string name="plate">Placa</string>
+    <string name="my_cedula">Mi cédula</string>
+    <string name="other_reason">Ingrese motivo</string>
+
+    <string name="reason_complaint">Motivo de la denuncia</string>
+
+    <string name="high_fare">Tarifa muy alta</string>
+    <string name="user_mistreated">Mal trato al usuario</string>
+    <string name="service_abandonment">Abandono del servicio</string>
+    <string name="unauthorized_charges">Cobro de recargos no autorizados</string>
+    <string name="no_fare_notice">No porta aviso de tarifas</string>
+    <string name="dangerous_driving">Conducción peligrosa</string>
+    <string name="other">Otro</string>
+
+    <string name="create_pqr">Radicar PQR</string>
+
+    <string name="email_template_not_found">Plantilla de correo no encontrada</string>
+    <string name="select_complaint_reason">Selecciona el motivo de la denuncia</string>
+
+    <string name="fare">Tarifa:</string>
+
+    <string name="start_address">Dirección de recogida</string>
+    <string name="destination_address">Dirección de destino</string>
+
+    <string name="recovery_password">Recuperar Contraseña</string>
+    <string name="register_title">¡Regístrate!</string>
+    <string name="go_back">VOLVER</string>
+
+    <string name="home">Inicio</string>
+    <string name="taximeter">Taxímetro</string>
+    <string name="sos">SOS</string>
+    <string name="pqrs">PQRS</string>
+
+    <string name="getting_location">Obteniendo ubicación...</string>
+
+    <string name="see_all">Ver Todos</string>
+    <string name="start_your_trip">Comienza tu viaje</string>
+    <string name="no_trips_made">No tienes viajes realizados.</string>
+    <string name="start_one_now">¡Inicia uno ahora!</string>
+    <string name="profile">Perfil</string>
+    <string name="trips_made">Viajes realizados</string>
+    <string name="km_made">Kilómetros Recorridos</string>
+    <string name="close_session">Cerrar Sesión</string>
+    <string name="share">Compartir</string>
+    <string name="finish">Finalizar</string>
+
+    <string name="distance_made">Distancia recorrida</string>
+    <string name="units">Unidades:</string>
+
+    <string name="without_recharges">Sin Recargos</string>
+    <string name="recharges">Recargos</string>
+    <string name="airport_surcharge">Recargo Aeropuerto:</string>
+    <string name="holiday_surcharge">Recargo nocturno dominical o festivo:</string>
+    <string name="door_to_door_surcharge">Recargo puerta a puerta:</string>
+
+    <string name="begin_your_trip">Inicia tu viaje</string>
+    <string name="select_start_and_end">Selecciona inicio y fin de tu viaje,</string>
+    <string name="we_will_show_best_route">te mostramos la mejor ruta</string>
+
+    <string name="start_point">Punto de origen</string>
+    <string name="end_point">Punto de destino</string>
+    <string name="start_trip">Iniciar Viaje</string>
+
+    <string name="select_start_and_end_points">Selecciona punto de origen y destino para continuar.</string>
+    <string name="attention">Atención</string>
+
+    <string name="set_point_on_map">Fijar punto de inicio en el mapa</string>
+    <string name="set_end_point_on_map">Fijar punto de destino en el mapa</string>
+
+    <string name="drag_to_set_start_point">Arrastra el mapa para fijar el punto de inicio</string>
+    <string name="drag_to_set_end_point">Arrastra el mapa para fijar el punto de destino</string>
+
+    <string name="set_start">Fijar inicio</string>
+    <string name="set_end">Fijar destino</string>
+    <string name="price_to_pay">PRECIO A PAGAR</string>
+    <string name="time_trip">Tiempo de viaje</string>
+    <string name="finish_trip">Finalizar Viaje</string>
+
 
 </resources>

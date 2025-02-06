@@ -47,6 +47,8 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
     var dialogTitle by mutableStateOf("")
     var dialogMessage by mutableStateOf("")
 
+    var isGettingLocation by mutableStateOf(false)
+
     private val _trips = mutableStateOf<List<Trip>>(emptyList())
     val trips: State<List<Trip>> = _trips
 
@@ -80,6 +82,8 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
     @SuppressLint("MissingPermission")
     fun getCurrentLocation() {
+
+        isGettingLocation = true
         val cancellationTokenSource = CancellationTokenSource()
 
         val task: Task<Location> = fusedLocationClient.getCurrentLocation(
@@ -94,6 +98,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                     latitude = location.latitude,
                     longitude = location.longitude,
                     callbackSuccess = { city, countryCodeWhatsapp ->
+                        isGettingLocation = false
                         updateUserData(
                             location = UserLocation(
                                 latitude = location.latitude,
@@ -104,6 +109,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         )
                     },
                     callbackError = { error ->
+                        isGettingLocation = false
                         showErrorMessage(
                             appContext.getString(R.string.something_went_wrong),
                             appContext.getString(R.string.error_fetching_city)
@@ -112,12 +118,14 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                 )
 
             } else {
+                isGettingLocation = false
                 showErrorMessage(
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_fetching_location)
                 )
             }
         }.addOnFailureListener {
+            isGettingLocation = false
             showErrorMessage(
                 appContext.getString(R.string.something_went_wrong),
                 appContext.getString(R.string.error_fetching_location)

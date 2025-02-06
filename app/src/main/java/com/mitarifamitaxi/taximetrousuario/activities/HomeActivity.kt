@@ -50,6 +50,15 @@ import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
 import android.Manifest
 import android.os.Bundle
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 
 class HomeActivity : BaseActivity() {
 
@@ -141,14 +150,25 @@ class HomeActivity : BaseActivity() {
                         .padding(20.dp),
                 ) {
 
-                    Image(
-                        painter = rememberAsyncImagePainter("https://nypost.com/wp-content/uploads/sites/2/2023/01/Bianca-Censori-09.jpg"),
-                        contentDescription = null,
+                    OutlinedButton(
+                        onClick = { },
                         modifier = Modifier
-                            .size(50.dp)
-                            .border(2.dp, colorResource(id = R.color.white), CircleShape)
-                            .clip(CircleShape)
-                    )
+                            .size(45.dp)
+                            .border(2.dp, colorResource(id = R.color.white), CircleShape),
+                        shape = CircleShape,
+                        border = BorderStroke(0.dp, Color.Transparent),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = colorResource(id = R.color.main),
+                            contentColor = colorResource(id = R.color.white)
+                        ),
+                    ) {
+                        androidx.compose.material3.Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "content description"
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(18.dp))
                     Text(
                         text = stringResource(id = R.string.welcome_home),
@@ -193,127 +213,149 @@ class HomeActivity : BaseActivity() {
                 )
             }
 
-            Column(
-                Modifier
-                    .padding(horizontal = 29.dp)
-                    .padding(top = 40.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-
-                OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp),
-                    border = null,
-                    contentPadding = PaddingValues(0.dp),
-                    shape = RoundedCornerShape(20.dp)
+            if (viewModel.isGettingLocation) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.home_taximetro_button),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillWidth,
+                    Spacer(modifier = Modifier.height(60.dp))
+                    Text(
+                        text = stringResource(id = R.string.getting_location),
+                        color = colorResource(id = R.color.black),
+                        fontSize = 20.sp,
+                        fontFamily = MontserratFamily,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp)
+                    )
+                    CircularProgressIndicator(
+                        color = colorResource(id = R.color.black)
                     )
                 }
+            } else {
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(11.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 11.dp)
+                Column(
+                    Modifier
+                        .padding(horizontal = 29.dp)
+                        .padding(top = 40.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
+
                     OutlinedButton(
                         onClick = {},
                         modifier = Modifier
-                            .weight(1.0f)
-                            .height(140.dp),
+                            .fillMaxWidth()
+                            .height(160.dp),
                         border = null,
                         contentPadding = PaddingValues(0.dp),
                         shape = RoundedCornerShape(20.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.home_sos_button),
+                            painter = painterResource(id = R.drawable.home_taximetro_button),
                             contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
+                            contentScale = ContentScale.FillWidth,
                             modifier = Modifier
                                 .fillMaxSize()
                         )
                     }
 
-                    OutlinedButton(
-                        onClick = {},
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(11.dp),
                         modifier = Modifier
-                            .weight(1.0f)
-                            .height(140.dp),
-                        border = null,
-                        contentPadding = PaddingValues(0.dp),
-                        shape = RoundedCornerShape(20.dp)
+                            .fillMaxWidth()
+                            .padding(vertical = 11.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.home_pqrs_button),
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
+                        OutlinedButton(
+                            onClick = {},
                             modifier = Modifier
-                                .fillMaxSize()
-                        )
-                    }
-                }
-
-                Column {
-                    Row {
-                        Text(
-                            text = stringResource(id = R.string.my_trips),
-                            color = colorResource(id = R.color.black),
-                            fontSize = 16.sp,
-                            fontFamily = MontserratFamily,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .padding(top = 15.dp)
-                        )
-
-                        Spacer(modifier = Modifier.weight(1.0f))
-
-                        if (trips.isNotEmpty()) {
-                            TextButton(onClick = { }) {
-                                Text(
-                                    text = stringResource(id = R.string.see_all),
-                                    color = colorResource(id = R.color.main),
-                                    textDecoration = TextDecoration.Underline,
-                                    fontSize = 14.sp,
-                                    fontFamily = MontserratFamily,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        }
-                    }
-
-
-                    if (trips.isEmpty()) {
-                        NoTripsView()
-                    } else {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(colorResource(id = R.color.white))
-                                .padding(top = 10.dp)
-                                .padding(bottom = 40.dp)
+                                .weight(1.0f)
+                                .height(140.dp),
+                            border = null,
+                            contentPadding = PaddingValues(0.dp),
+                            shape = RoundedCornerShape(20.dp)
                         ) {
-                            trips.forEach { trip ->
-                                TripItem(trip)
-                            }
+                            Image(
+                                painter = painterResource(id = R.drawable.home_sos_button),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+
+                        OutlinedButton(
+                            onClick = {},
+                            modifier = Modifier
+                                .weight(1.0f)
+                                .height(140.dp),
+                            border = null,
+                            contentPadding = PaddingValues(0.dp),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.home_pqrs_button),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
                         }
                     }
 
+                    Column {
+                        Row {
+                            Text(
+                                text = stringResource(id = R.string.my_trips),
+                                color = colorResource(id = R.color.black),
+                                fontSize = 16.sp,
+                                fontFamily = MontserratFamily,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .padding(top = 15.dp)
+                            )
+
+                            Spacer(modifier = Modifier.weight(1.0f))
+
+                            if (trips.isNotEmpty()) {
+                                TextButton(onClick = { }) {
+                                    Text(
+                                        text = stringResource(id = R.string.see_all),
+                                        color = colorResource(id = R.color.main),
+                                        textDecoration = TextDecoration.Underline,
+                                        fontSize = 14.sp,
+                                        fontFamily = MontserratFamily,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                }
+                            }
+                        }
+
+
+                        if (trips.isEmpty()) {
+                            NoTripsView()
+                        } else {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(colorResource(id = R.color.white))
+                                    .padding(top = 10.dp)
+                                    .padding(bottom = 40.dp)
+                            ) {
+                                trips.forEach { trip ->
+                                    TripItem(trip)
+                                }
+                            }
+                        }
+
+                    }
+
                 }
+
 
             }
-
-            Spacer(modifier = Modifier.weight(1.0f))
-
-            Button(onClick = {
+            /*Button(onClick = {
                 viewModel.logout(
                     onLogoutComplete = {
                         startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
@@ -322,7 +364,7 @@ class HomeActivity : BaseActivity() {
                 )
             }) {
                 Text("Logout")
-            }
+            }*/
         }
     }
 }

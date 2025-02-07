@@ -15,35 +15,48 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.models.ItemSideMenu
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 
 
 @Composable
-fun DrawerContent(userData: LocalUser) {
+fun DrawerContent(
+    userData: LocalUser,
+    onProfileClicked: () -> Unit,
+    onSectionClicked: (ItemSideMenu) -> Unit
+) {
+
+    val sideMenuItems = sideMenuItems()
 
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(0.dp)
@@ -77,85 +90,170 @@ fun DrawerContent(userData: LocalUser) {
 
                 )
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(11.dp),
+                Button(
+                    onClick = { onProfileClicked() },
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    shape = RectangleShape
                 ) {
-                    OutlinedButton(
-                        onClick = {  },
-                        modifier = Modifier
-                            .size(65.dp)
-                            .border(2.dp, colorResource(id = R.color.white), CircleShape),
-                        shape = CircleShape,
-                        border = BorderStroke(0.dp, Color.Transparent),
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colorResource(id = R.color.blue1),
-                            contentColor = colorResource(id = R.color.white)
-                        ),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(11.dp),
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "content description",
+                        Box(
                             modifier = Modifier
-                                .size(45.dp),
-                        )
-                    }
+                                .size(65.dp)
+                                .background(colorResource(id = R.color.blue1), shape = CircleShape)
+                                .border(2.dp, colorResource(id = R.color.white), CircleShape),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "content description",
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(45.dp),
+                                tint = colorResource(id = R.color.white),
 
-                    Column {
-                        Text(
-                            text = userData.firstName + " " + userData.lastName,
-                            color = colorResource(id = R.color.white),
-                            fontSize = 20.sp,
-                            fontFamily = MontserratFamily,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
+                                )
+                        }
 
-                        Text(
-                            text = userData.city ?: "",
-                            color = colorResource(id = R.color.white),
-                            fontSize = 16.sp,
-                            fontFamily = MontserratFamily,
-                            fontWeight = FontWeight.Normal,
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
+                        Column {
+                            Text(
+                                text = userData.firstName + " " + userData.lastName,
+                                color = colorResource(id = R.color.white),
+                                fontSize = 20.sp,
+                                fontFamily = MontserratFamily,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.Start)
+                            )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                            Text(
+                                text = userData.city ?: "",
+                                color = colorResource(id = R.color.white),
+                                fontSize = 16.sp,
+                                fontFamily = MontserratFamily,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier
+                                    .align(Alignment.Start)
+                            )
+                        }
 
-                    OutlinedButton(
-                        onClick = {  },
-                        modifier = Modifier
-                            .size(28.dp),
-                        border = BorderStroke(0.dp, Color.Transparent),
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colorResource(id = R.color.transparent),
-                            contentColor = colorResource(id = R.color.white)
-                        ),
-                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+
+
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = "content description",
+                            tint = colorResource(id = R.color.white),
                             modifier = Modifier
                                 .size(45.dp),
                         )
+
                     }
                 }
+
 
             }
 
 
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 29.dp)
+                    .padding(top = 10.dp)
+            ) {
+                sideMenuItems.forEach { item ->
+                    Button(
+                        onClick = { onSectionClicked(item) },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RectangleShape,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        SideMenuItemRow(item)
+                    }
+                }
+            }
 
-
-            Text(text = "Home", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Settings", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "About", style = MaterialTheme.typography.titleMedium)
         }
     }
+}
+
+@Composable
+fun sideMenuItems(): List<ItemSideMenu> {
+    return listOf(
+        ItemSideMenu(
+            id = "HOME",
+            icon = Icons.Outlined.Home,
+            iconColor = colorResource(id = R.color.gray1),
+            name = stringResource(id = R.string.home)
+        ),
+        ItemSideMenu(
+            id = "TAXIMETER",
+            icon = Icons.Default.Speed,
+            iconColor = colorResource(id = R.color.main),
+            name = stringResource(id = R.string.taximeter)
+        ),
+        ItemSideMenu(
+            id = "SOS",
+            icon = Icons.Default.WarningAmber,
+            iconColor = colorResource(id = R.color.red1),
+            name = stringResource(id = R.string.sos)
+        ),
+        ItemSideMenu(
+            id = "PQRS",
+            icon = Icons.AutoMirrored.Outlined.Chat,
+            iconColor = colorResource(id = R.color.blue2),
+            name = stringResource(id = R.string.pqrs)
+        ),
+        ItemSideMenu(
+            id = "MY_TRIPS",
+            icon = Icons.Default.Speed,
+            iconColor = colorResource(id = R.color.purple1),
+            name = stringResource(id = R.string.my_trips)
+        ),
+    )
+}
+
+@Composable
+fun SideMenuItemRow(item: ItemSideMenu) {
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = item.name,
+                tint = item.iconColor
+            )
+            Spacer(modifier = Modifier.width(15.dp))
+            Text(
+                text = item.name,
+                color = colorResource(id = R.color.blue1),
+                fontSize = 15.sp,
+                fontFamily = MontserratFamily,
+                fontWeight = FontWeight.Bold,
+            )
+
+
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(colorResource(id = R.color.gray3))
+        )
+    }
+
+
 }

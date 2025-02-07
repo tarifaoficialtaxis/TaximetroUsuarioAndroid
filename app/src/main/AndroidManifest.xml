@@ -25,6 +25,21 @@
         android:theme="@style/Theme.TaximetroUsuarioNative"
         tools:targetApi="31">
         <activity
+            android:name=".activities.MyTripsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.PqrsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.SosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.TaximeterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.BaseActivity"
             android:exported="false" />
         <activity

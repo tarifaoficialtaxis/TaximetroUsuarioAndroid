@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,14 +39,42 @@ open class BaseActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyTheme {
-                BaseScreen()
+                BaseScreen(
+                    onMenuSectionClicked = { sectionId ->
+                        when (sectionId) {
+                            "PROFILE" -> {
+                                startActivity(Intent(this, ProfileActivity::class.java))
+                            }
+
+                            "HOME" -> {
+                                startActivity(Intent(this, HomeActivity::class.java))
+                            }
+
+                            "TAXIMETER" -> {
+                                startActivity(Intent(this, TaximeterActivity::class.java))
+                            }
+
+                            "SOS" -> {
+                                startActivity(Intent(this, SosActivity::class.java))
+                            }
+
+                            "PQRS" -> {
+                                startActivity(Intent(this, PqrsActivity::class.java))
+                            }
+
+                            "MY_TRIPS" -> {
+                                startActivity(Intent(this, MyTripsActivity::class.java))
+                            }
+                        }
+                    }
+                )
             }
         }
     }
 
 
     @Composable
-    fun BaseScreen() {
+    fun BaseScreen(onMenuSectionClicked: (String) -> Unit) {
         if (isDrawerEnabled()) {
             // Remember the drawer state and provide a lambda to open the drawer.
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -62,7 +91,9 @@ open class BaseActivity : ComponentActivity() {
                     drawerContent = {
                         appViewModel.userData?.let {
                             DrawerContent(
-                                userData = it
+                                userData = it,
+                                onProfileClicked = { onMenuSectionClicked("PROFILE") },
+                                onSectionClicked = { onMenuSectionClicked(it.id) }
                             )
                         }
                     }

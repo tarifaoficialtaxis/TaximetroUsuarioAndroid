@@ -34,7 +34,10 @@ fun NoTripsView() {
 
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(top = 20.dp)
+            .padding(bottom = 40.dp)
+        ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 

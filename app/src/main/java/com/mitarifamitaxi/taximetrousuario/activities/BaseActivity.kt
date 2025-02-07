@@ -21,7 +21,6 @@ import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModelFactory
 import kotlinx.coroutines.launch
 
-
 val LocalOpenDrawer = compositionLocalOf<() -> Unit> {
     error("LocalOpenDrawer not provided")
 }
@@ -31,7 +30,6 @@ open class BaseActivity : ComponentActivity() {
     val appViewModel: AppViewModel by viewModels {
         AppViewModelFactory(this)
     }
-
 
     open fun isDrawerEnabled(): Boolean = false
 
@@ -43,33 +41,46 @@ open class BaseActivity : ComponentActivity() {
                     onMenuSectionClicked = { sectionId ->
                         when (sectionId) {
                             "PROFILE" -> {
-                                startActivity(Intent(this, ProfileActivity::class.java))
+                                if (this !is ProfileActivity) {
+                                    startActivity(Intent(this, ProfileActivity::class.java))
+                                }
                             }
 
                             "HOME" -> {
-                                startActivity(Intent(this, HomeActivity::class.java))
+                                if (this !is HomeActivity) {
+                                    startActivity(Intent(this, HomeActivity::class.java))
+                                }
                             }
 
                             "TAXIMETER" -> {
-                                startActivity(Intent(this, TaximeterActivity::class.java))
+                                if (this !is TaximeterActivity) {
+                                    startActivity(Intent(this, TaximeterActivity::class.java))
+                                }
                             }
 
                             "SOS" -> {
-                                startActivity(Intent(this, SosActivity::class.java))
+                                if (this !is SosActivity) {
+                                    startActivity(Intent(this, SosActivity::class.java))
+                                }
                             }
 
                             "PQRS" -> {
-                                startActivity(Intent(this, PqrsActivity::class.java))
+                                if (this !is PqrsActivity) {
+                                    startActivity(Intent(this, PqrsActivity::class.java))
+                                }
                             }
 
                             "MY_TRIPS" -> {
-                                startActivity(Intent(this, MyTripsActivity::class.java))
+                                if (this !is MyTripsActivity) {
+                                    startActivity(Intent(this, MyTripsActivity::class.java))
+                                }
                             }
                         }
                     }
                 )
             }
         }
+
     }
 
 

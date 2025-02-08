@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
@@ -112,7 +114,10 @@ class LoginActivity : BaseActivity() {
         onRegisterClicked: () -> Unit,
         onGoogleSignIn: () -> Unit
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -166,6 +171,7 @@ class LoginActivity : BaseActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
                                 .padding(top = 29.dp, bottom = 10.dp, start = 29.dp, end = 29.dp)
                         ) {
                             Text(
@@ -300,6 +306,7 @@ class LoginActivity : BaseActivity() {
                             Button(
                                 onClick = { onRegisterClicked() },
                                 modifier = Modifier
+                                    //.background(colorResource(id = R.color.main))
                                     .fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(id = R.color.transparent),

@@ -75,7 +75,7 @@ fun DrawerContent(
                         colorResource(id = R.color.main),
                         shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
                     )
-                    .padding(top = 20.dp, start = 29.dp, end = 29.dp)
+                    .padding(top = 20.dp)
 
             ) {
                 Image(
@@ -96,7 +96,10 @@ fun DrawerContent(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent
                     ),
-                    shape = RectangleShape
+                    shape = RectangleShape,
+                    modifier =
+                    Modifier
+                        .padding(horizontal = 29.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +134,7 @@ fun DrawerContent(
                             )
 
                             Text(
-                                text = userData.city ?: "",
+                                text = userData.city ?: "-",
                                 color = colorResource(id = R.color.white),
                                 fontSize = 16.sp,
                                 fontFamily = MontserratFamily,

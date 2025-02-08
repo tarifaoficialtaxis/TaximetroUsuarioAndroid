@@ -11,7 +11,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
@@ -85,13 +88,13 @@ class MainActivity : AppCompatActivity() {
                     useController = false // Hides playback controls
                     setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     resizeMode =
-                        AspectRatioFrameLayout.RESIZE_MODE_ZOOM // Crops video to fullscreen
+                        AspectRatioFrameLayout.RESIZE_MODE_FILL // Crops video to fullscreen
 
                     val player = ExoPlayer.Builder(ctx).build()
                     this.player = player
 
                     val mediaItem =
-                        MediaItem.fromUri(Uri.parse("android.resource://${ctx.packageName}/${R.raw.splash_video}"))
+                        MediaItem.fromUri(Uri.parse("android.resource://${ctx.packageName}/${R.raw.splash}"))
                     player.setMediaItem(mediaItem)
 
                     player.addListener(object : Player.Listener {

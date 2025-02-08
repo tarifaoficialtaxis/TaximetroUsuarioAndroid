@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
 
         //validateNextScreen()
 
-
     }
 
     private fun validateNextScreen() {
@@ -79,34 +78,47 @@ class MainActivity : AppCompatActivity() {
     @OptIn(UnstableApi::class)
     @Composable
     fun SplashScreen(onVideoFinished: () -> Unit) {
+        val context = LocalContext.current
+        // Remember the player instance across recompositions
+        val player = remember {
+            ExoPlayer.Builder(context).build().apply {
+                val mediaItem =
+                    MediaItem.fromUri(Uri.parse("android.resource://${context.packageName}/${R.raw.splash}"))
+                setMediaItem(mediaItem)
+                prepare()
+                playWhenReady = true
+            }
+        }
+
+        // Add a listener with a flag to ensure single execution
+        DisposableEffect(player) {
+            val listener = object : Player.Listener {
+                private var hasFinished = false
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED && !hasFinished) {
+                        hasFinished = true
+                        onVideoFinished()
+                    }
+                }
+            }
+            player.addListener(listener)
+            onDispose {
+                player.removeListener(listener)
+                player.release()
+            }
+        }
+
         AndroidView(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colorResource(id = R.color.black)),
             factory = { ctx ->
                 PlayerView(ctx).apply {
-                    useController = false // Hides playback controls
+                    useController = false
                     setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-                    resizeMode =
-                        AspectRatioFrameLayout.RESIZE_MODE_FILL // Crops video to fullscreen
-
-                    val player = ExoPlayer.Builder(ctx).build()
+                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
                     this.player = player
-
-                    val mediaItem =
-                        MediaItem.fromUri(Uri.parse("android.resource://${ctx.packageName}/${R.raw.splash}"))
-                    player.setMediaItem(mediaItem)
-
-                    player.addListener(object : Player.Listener {
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            if (playbackState == Player.STATE_ENDED) {
-                                onVideoFinished()
-                            }
-                        }
-                    })
-
-                    player.prepare()
-                    player.playWhenReady = true
                 }
             }
         )

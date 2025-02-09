@@ -168,5 +168,13 @@
 
     <string name="error_deleting_account">Ha ocurrido un error al intentar eliminar tu cuenta. Por favor, inténtalo de nuevo.</string>
 
+    <string name="delete_trip">Eliminar Viaje</string>
+    <string name="delete_trip_message">¿Eliminar este viaje? No podrás recuperarlo.</string>
+    <string name="delete">Eliminar</string>
+
+    <string name="error_on_delete_trip">Ocurrió un error eliminando el viaje</string>
+    <string name="trip_deleted_successfully">Viaje eliminado correctamente</string>
+
+    <string name="success">Éxito</string>
 
 </resources>

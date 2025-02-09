@@ -39,14 +39,14 @@ fun CustomPopupDialog(
     val primaryColor: Color = when (dialogType) {
         DialogType.SUCCESS -> colorResource(id = R.color.main)
         DialogType.ERROR -> colorResource(id = R.color.red1)
-        DialogType.WARNING -> Color.Yellow
+        DialogType.WARNING -> colorResource(id = R.color.main)
         DialogType.INFO -> Color.Blue
     }
 
     val secondaryColor: Color = when (dialogType) {
         DialogType.SUCCESS -> colorResource(id = R.color.yellow2)
         DialogType.ERROR -> colorResource(id = R.color.red2)
-        DialogType.WARNING -> Color.Yellow
+        DialogType.WARNING -> colorResource(id = R.color.yellow2)
         DialogType.INFO -> Color.Blue
     }
 

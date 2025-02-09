@@ -6,21 +6,16 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationServices
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
-import java.util.concurrent.Executor
 
 
 class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
     private val appContext = context.applicationContext
-
 
     var dialogType by mutableStateOf(DialogType.SUCCESS)
     var showDialog by mutableStateOf(false)
@@ -40,7 +35,6 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
         val tripsRef = db.collection("trips")
             .whereEqualTo("userId", appViewModel.userData?.id)
             .orderBy("endHour", Query.Direction.DESCENDING)
-            .limit(3)
 
         tripsRef.addSnapshotListener { snapshot, error ->
             if (error != null) {

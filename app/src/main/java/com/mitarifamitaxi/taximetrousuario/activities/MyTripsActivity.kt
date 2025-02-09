@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.NoTripsView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripItem
+import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.viewmodels.MyTripsViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.MyTripsViewModelFactory
 
@@ -33,7 +36,14 @@ class MyTripsActivity : BaseActivity() {
 
     @Composable
     override fun Content() {
-        MainView()
+        MainView(
+            onTripClicked = { trip ->
+                val tripJson = Gson().toJson(trip)
+                val intent = Intent(this, TripSummaryActivity::class.java)
+                intent.putExtra("trip_data", tripJson)
+                startActivity(intent)
+            }
+        )
 
         if (viewModel.showDialog) {
             CustomPopupDialog(
@@ -47,7 +57,7 @@ class MyTripsActivity : BaseActivity() {
     }
 
     @Composable
-    private fun MainView() {
+    private fun MainView(onTripClicked: (Trip) -> Unit) {
 
         val trips by viewModel.trips
 
@@ -80,7 +90,7 @@ class MyTripsActivity : BaseActivity() {
                             .fillMaxWidth()
                     ) {
                         trips.forEach { trip ->
-                            TripItem(trip)
+                            TripItem(trip, onTripClicked = { onTripClicked(trip) })
                         }
                     }
                 }

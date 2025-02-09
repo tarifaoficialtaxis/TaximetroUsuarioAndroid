@@ -15,5 +15,6 @@ data class Trip(
     val imageRoute: String? = null,
     val isHolidaySurcharge: Boolean? = null,
     val isDoorToDoorSurcharge: Boolean? = null,
-    val isAirportSurcharge: Boolean? = null
+    val isAirportSurcharge: Boolean? = null,
+    val routeImage: String? = null
 )

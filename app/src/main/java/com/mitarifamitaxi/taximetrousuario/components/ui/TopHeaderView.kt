@@ -108,7 +108,7 @@ fun TopHeaderView(
                         imageVector = trailingIcon,
                         contentDescription = "content description",
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(30.dp)
                             .padding(0.dp),
                         tint = trailingColor,
                     )

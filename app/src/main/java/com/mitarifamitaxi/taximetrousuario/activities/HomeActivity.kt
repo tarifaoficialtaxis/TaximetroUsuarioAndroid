@@ -55,6 +55,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import com.google.gson.Gson
+import com.mitarifamitaxi.taximetrousuario.models.Trip
 
 class HomeActivity : BaseActivity() {
 
@@ -104,6 +106,12 @@ class HomeActivity : BaseActivity() {
             },
             onMyTripsClick = {
                 startActivity(Intent(this, MyTripsActivity::class.java))
+            },
+            onTripClicked = { trip ->
+                val tripJson = Gson().toJson(trip)
+                val intent = Intent(this, TripSummaryActivity::class.java)
+                intent.putExtra("trip_data", tripJson)
+                startActivity(intent)
             }
         )
 
@@ -122,7 +130,8 @@ class HomeActivity : BaseActivity() {
         onTaximeterClick: () -> Unit,
         onSosClick: () -> Unit,
         onPqrsClick: () -> Unit,
-        onMyTripsClick: () -> Unit
+        onMyTripsClick: () -> Unit,
+        onTripClicked: (Trip) -> Unit
     ) {
         val openDrawer = LocalOpenDrawer.current
         val trips by viewModel.trips
@@ -355,7 +364,12 @@ class HomeActivity : BaseActivity() {
                                     .padding(bottom = 40.dp)
                             ) {
                                 trips.forEach { trip ->
-                                    TripItem(trip)
+                                    TripItem(
+                                        trip, onTripClicked = {
+                                            onTripClicked(trip)
+                                        }
+
+                                    )
                                 }
                             }
                         }

@@ -89,7 +89,6 @@ class HomeActivity : BaseActivity() {
         viewModel.stopLocationUpdates()
     }
 
-
     @Composable
     override fun Content() {
         MainView()
@@ -105,9 +104,7 @@ class HomeActivity : BaseActivity() {
     }
 
     @Composable
-    private fun MainView(
-
-    ) {
+    private fun MainView() {
         val openDrawer = LocalOpenDrawer.current
         val trips by viewModel.trips
 
@@ -176,7 +173,7 @@ class HomeActivity : BaseActivity() {
                     )
 
                     Text(
-                        text = viewModel.userData?.firstName ?: "",
+                        text = appViewModel.userData?.firstName ?: "",
                         color = colorResource(id = R.color.main),
                         fontSize = 20.sp,
                         fontFamily = MontserratFamily,
@@ -187,7 +184,7 @@ class HomeActivity : BaseActivity() {
                     Spacer(modifier = Modifier.height(5.dp))
 
                     Text(
-                        text = viewModel.userData?.city ?: "",
+                        text = appViewModel.userData?.city ?: "",
                         color = colorResource(id = R.color.white),
                         fontSize = 14.sp,
                         fontFamily = MontserratFamily,

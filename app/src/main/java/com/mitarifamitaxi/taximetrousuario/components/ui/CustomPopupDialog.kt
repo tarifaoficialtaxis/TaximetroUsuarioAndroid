@@ -24,7 +24,15 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 
 @Composable
-fun CustomPopupDialog(dialogType: DialogType, title: String, message: String, onDismiss: () -> Unit) {
+fun CustomPopupDialog(
+    dialogType: DialogType,
+    title: String,
+    message: String,
+    primaryActionButton: String? = null,
+    showCloseButton: Boolean = true,
+    onDismiss: () -> Unit,
+    onPrimaryActionClicked: () -> Unit = {}
+) {
 
     val primaryColor: Color = when (dialogType) {
         DialogType.SUCCESS -> colorResource(id = R.color.main)
@@ -39,8 +47,6 @@ fun CustomPopupDialog(dialogType: DialogType, title: String, message: String, on
         DialogType.WARNING -> Color.Yellow
         DialogType.INFO -> Color.Blue
     }
-
-
 
     Box(
         modifier = Modifier
@@ -106,34 +112,36 @@ fun CustomPopupDialog(dialogType: DialogType, title: String, message: String, on
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                /*Button(
-                    onClick = onRetry,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-                ) {
-                    Text(
-                        text = "REINTENTAR",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
-                }*/
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.size(42.dp),
-                    shape = CircleShape,
-                    border = BorderStroke(0.dp, Color.Transparent),
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = colorResource(id = R.color.gray7),
-                        contentColor = colorResource(id = R.color.white)
-                    ),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "content description"
+                primaryActionButton?.let {
+                    CustomButton(
+                        text = it.uppercase(),
+                        onClick = onPrimaryActionClicked,
+                        color = primaryColor,
                     )
+                }
+
+
+                if (showCloseButton) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(42.dp),
+                        shape = CircleShape,
+                        border = BorderStroke(0.dp, Color.Transparent),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = colorResource(id = R.color.gray7),
+                            contentColor = colorResource(id = R.color.white)
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "content description"
+                        )
+                    }
+
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

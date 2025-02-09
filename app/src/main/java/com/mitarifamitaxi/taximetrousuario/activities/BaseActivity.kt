@@ -8,8 +8,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +19,7 @@ import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModelFactory
 import kotlinx.coroutines.launch
 
+// Provide a CompositionLocal for opening the drawer
 val LocalOpenDrawer = compositionLocalOf<() -> Unit> {
     error("LocalOpenDrawer not provided")
 }
@@ -80,9 +79,7 @@ open class BaseActivity : ComponentActivity() {
                 )
             }
         }
-
     }
-
 
     @Composable
     fun BaseScreen(onMenuSectionClicked: (String) -> Unit) {
@@ -92,19 +89,25 @@ open class BaseActivity : ComponentActivity() {
             val scope = rememberCoroutineScope()
             val openDrawer: () -> Unit = {
                 scope.launch { drawerState.open() }
-                Unit
             }
 
-            // Provide the openDrawer lambda via a CompositionLocal.
+            // Lambda that closes the drawer before handling the menu click.
+            val handleMenuClick: (String) -> Unit = { sectionId ->
+                scope.launch {
+                    drawerState.close() // Close the drawer first.
+                    onMenuSectionClicked(sectionId) // Then handle the menu click.
+                }
+            }
+
             CompositionLocalProvider(LocalOpenDrawer provides openDrawer) {
                 ModalNavigationDrawer(
                     drawerState = drawerState,
                     drawerContent = {
-                        appViewModel.userData?.let {
+                        appViewModel.userData?.let { userData ->
                             DrawerContent(
-                                userData = it,
-                                onProfileClicked = { onMenuSectionClicked("PROFILE") },
-                                onSectionClicked = { onMenuSectionClicked(it.id) }
+                                userData = userData,
+                                onProfileClicked = { handleMenuClick("PROFILE") },
+                                onSectionClicked = { handleMenuClick(it.id) }
                             )
                         }
                     }

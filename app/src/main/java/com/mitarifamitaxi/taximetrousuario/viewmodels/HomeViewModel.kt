@@ -35,7 +35,6 @@ import java.util.concurrent.Executor
 class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
-    var userData: LocalUser? by mutableStateOf(null)
 
     private lateinit var locationCallback: LocationCallback
 
@@ -53,10 +52,13 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
     val trips: State<List<Trip>> = _trips
 
     init {
-        loadUserData()
         getTripsByUserId()
     }
 
+    override fun onCleared() {
+        stopLocationUpdates()
+        super.onCleared()
+    }
 
     fun requestLocationPermission(activity: HomeActivity) {
         if (ActivityCompat.checkSelfPermission(
@@ -109,6 +111,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         )
                     },
                     callbackError = { error ->
+                        Log.e("HomeViewModel", "Error getting city: $error")
                         isGettingLocation = false
                         showErrorMessage(
                             appContext.getString(R.string.something_went_wrong),
@@ -134,17 +137,19 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
     }
 
     fun stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        if (::locationCallback.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
     }
 
     private fun updateUserData(location: UserLocation, city: String, countryCodeWhatsapp: String) {
-        userData = userData?.copy(
+        appViewModel.userData = appViewModel.userData?.copy(
             location = location,
             city = city,
             countryCodeWhatsapp = countryCodeWhatsapp
         )
 
-        userData?.let { saveUserState(it) }
+        appViewModel.userData?.let { saveUserState(it) }
 
     }
 
@@ -156,18 +161,10 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         }
     }
 
-    private fun loadUserData() {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val userJson = sharedPref.getString("USER_OBJECT", null)
-
-        userData = Gson().fromJson(userJson, LocalUser::class.java)
-    }
-
-
     private fun getTripsByUserId() {
         val db = FirebaseFirestore.getInstance()
         val tripsRef = db.collection("trips")
-            .whereEqualTo("userId", userData?.id)
+            .whereEqualTo("userId", appViewModel.userData?.id)
             .orderBy("endHour", Query.Direction.DESCENDING)
             .limit(3)
 
@@ -194,15 +191,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         }
     }
 
-
-    fun logout(onLogoutComplete: () -> Unit) {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            remove("USER_OBJECT")
-            apply()
-        }
-        onLogoutComplete()
-    }
 
     fun showErrorMessage(title: String, message: String) {
         showDialog = true

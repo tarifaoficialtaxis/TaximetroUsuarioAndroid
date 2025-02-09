@@ -156,4 +156,11 @@
     <string name="delete_account">Eliminar cuenta</string>
     <string name="update">Actualizar</string>
 
+    <string name="error_fetching_trips">Ha ocurrido un error al intentar obtener tus viajes.</string>
+    <string name="error_updating_profile">Ha ocurrido un error al actualizar la información del perfil.</string>
+
+    <string name="profile_updated">¡Perfil Actualizado!</string>
+    <string name="user_updated_successfully">La información de tu perfil ha sido actualizada correctamente.</string>
+    <string name="accept">Aceptar</string>
+
 </resources>

@@ -1,6 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.os.Bundle
+import android.content.Intent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.ProfileViewModel
@@ -64,23 +65,48 @@ class ProfileActivity : BaseActivity() {
         ProfileViewModelFactory(this, appViewModel)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     @Composable
     override fun Content() {
         MainView(
             onClickBack = {
                 finish()
+            },
+            onUpdateClicked = {
+                viewModel.handleUpdate()
+            },
+            onLogOutClicked = {
+                viewModel.logOut {
+                    val intent = Intent(this, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
+                }
             }
         )
+
+        if (viewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = viewModel.dialogType,
+                title = viewModel.dialogTitle,
+                message = viewModel.dialogMessage,
+                showCloseButton = viewModel.dialogShowCloseButton,
+                primaryActionButton = viewModel.dialogPrimaryAction,
+                onDismiss = { viewModel.showDialog = false },
+                onPrimaryActionClicked = {
+                    viewModel.showDialog = false
+                    finish()
+                }
+            )
+        }
 
     }
 
     @Composable
     private fun MainView(
-        onClickBack: () -> Unit
+        onClickBack: () -> Unit,
+        onUpdateClicked: () -> Unit,
+        onLogOutClicked: () -> Unit,
     ) {
 
         Column(
@@ -216,7 +242,7 @@ class ProfileActivity : BaseActivity() {
                         {
 
                             Text(
-                                text = "500",
+                                text = viewModel.tripsCount.toString(),
                                 color = colorResource(id = R.color.white),
                                 fontSize = 16.sp,
                                 fontFamily = MontserratFamily,
@@ -252,7 +278,7 @@ class ProfileActivity : BaseActivity() {
                         ) {
 
                             Text(
-                                text = "1200",
+                                text = viewModel.distanceCount.toString(),
                                 color = colorResource(id = R.color.white),
                                 fontSize = 16.sp,
                                 fontFamily = MontserratFamily,
@@ -368,12 +394,12 @@ class ProfileActivity : BaseActivity() {
                     ) {
                         CustomButton(
                             text = stringResource(id = R.string.update).uppercase(),
-                            onClick = { }
+                            onClick = { onUpdateClicked() },
                         )
 
                         CustomButton(
                             text = stringResource(id = R.string.close_session).uppercase(),
-                            onClick = { },
+                            onClick = { onLogOutClicked() },
                             color = colorResource(id = R.color.gray1),
                             leadingIcon = Icons.AutoMirrored.Rounded.Logout
                         )

@@ -46,6 +46,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
@@ -91,7 +92,20 @@ class HomeActivity : BaseActivity() {
 
     @Composable
     override fun Content() {
-        MainView()
+        MainView(
+            onTaximeterClick = {
+                startActivity(Intent(this, TaximeterActivity::class.java))
+            },
+            onSosClick = {
+                startActivity(Intent(this, SosActivity::class.java))
+            },
+            onPqrsClick = {
+                startActivity(Intent(this, PqrsActivity::class.java))
+            },
+            onMyTripsClick = {
+                startActivity(Intent(this, MyTripsActivity::class.java))
+            }
+        )
 
         if (viewModel.showDialog) {
             CustomPopupDialog(
@@ -104,7 +118,12 @@ class HomeActivity : BaseActivity() {
     }
 
     @Composable
-    private fun MainView() {
+    private fun MainView(
+        onTaximeterClick: () -> Unit,
+        onSosClick: () -> Unit,
+        onPqrsClick: () -> Unit,
+        onMyTripsClick: () -> Unit
+    ) {
         val openDrawer = LocalOpenDrawer.current
         val trips by viewModel.trips
 
@@ -235,7 +254,7 @@ class HomeActivity : BaseActivity() {
                 ) {
 
                     OutlinedButton(
-                        onClick = {},
+                        onClick = onTaximeterClick,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(160.dp),
@@ -259,7 +278,7 @@ class HomeActivity : BaseActivity() {
                             .padding(vertical = 11.dp)
                     ) {
                         OutlinedButton(
-                            onClick = {},
+                            onClick = onSosClick,
                             modifier = Modifier
                                 .weight(1.0f)
                                 .height(140.dp),
@@ -277,7 +296,7 @@ class HomeActivity : BaseActivity() {
                         }
 
                         OutlinedButton(
-                            onClick = {},
+                            onClick = onPqrsClick,
                             modifier = Modifier
                                 .weight(1.0f)
                                 .height(140.dp),
@@ -310,7 +329,7 @@ class HomeActivity : BaseActivity() {
                             Spacer(modifier = Modifier.weight(1.0f))
 
                             if (trips.isNotEmpty()) {
-                                TextButton(onClick = { }) {
+                                TextButton(onClick = onMyTripsClick) {
                                     Text(
                                         text = stringResource(id = R.string.see_all),
                                         color = colorResource(id = R.color.main),
@@ -328,7 +347,7 @@ class HomeActivity : BaseActivity() {
                             NoTripsView()
                         } else {
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(11.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(colorResource(id = R.color.white))

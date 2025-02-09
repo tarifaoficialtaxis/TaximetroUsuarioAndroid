@@ -150,5 +150,10 @@
 
     <string name="city_param">Ciudad: %1$s</string>
 
+    <string name="family_number">Número de familia</string>
+    <string name="support_number">Número de grupo de apoyo</string>
+
+    <string name="delete_account">Eliminar cuenta</string>
+    <string name="update">Actualizar</string>
 
 </resources>

@@ -163,4 +163,10 @@
     <string name="user_updated_successfully">La información de tu perfil ha sido actualizada correctamente.</string>
     <string name="accept">Aceptar</string>
 
+    <string name="delete_account_question">¿Eliminar tu cuenta?</string>
+    <string name="delete_account_message">Esta acción es permanente y no se puede deshacer. Perderás todos tus datos y viajes guardados. ¿Quieres continuar?</string>
+
+    <string name="error_deleting_account">Ha ocurrido un error al intentar eliminar tu cuenta. Por favor, inténtalo de nuevo.</string>
+
+
 </resources>

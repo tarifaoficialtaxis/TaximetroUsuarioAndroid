@@ -1,6 +1,10 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -65,22 +69,46 @@ class ProfileActivity : BaseActivity() {
         ProfileViewModelFactory(this, appViewModel)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.hideKeyboardEvent.observe(this) { shouldHide ->
+            if (shouldHide == true) {
+                hideKeyboard()
+                viewModel.resetHideKeyboardEvent()
+            }
+        }
+    }
+
+    private fun hideKeyboard() {
+        this.currentFocus?.let { currentFocus ->
+            val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+        }
+    }
+
+    private fun logOutAction() {
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
     @Composable
     override fun Content() {
         MainView(
             onClickBack = {
                 finish()
             },
+            onDeleteAccountClicked = {
+                viewModel.showDeleteAccountMessage()
+            },
             onUpdateClicked = {
                 viewModel.handleUpdate()
             },
             onLogOutClicked = {
                 viewModel.logOut {
-                    val intent = Intent(this, LoginActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                    startActivity(intent)
-                    finish()
+                    logOutAction()
                 }
             }
         )
@@ -95,7 +123,15 @@ class ProfileActivity : BaseActivity() {
                 onDismiss = { viewModel.showDialog = false },
                 onPrimaryActionClicked = {
                     viewModel.showDialog = false
-                    finish()
+                    if (viewModel.dialogPrimaryAction == getString(R.string.delete_account)) {
+                        viewModel.handleDeleteAccount {
+                            viewModel.logOut {
+                                logOutAction()
+                            }
+                        }
+                    } else {
+                        finish()
+                    }
                 }
             )
         }
@@ -105,6 +141,7 @@ class ProfileActivity : BaseActivity() {
     @Composable
     private fun MainView(
         onClickBack: () -> Unit,
+        onDeleteAccountClicked: () -> Unit,
         onUpdateClicked: () -> Unit,
         onLogOutClicked: () -> Unit,
     ) {
@@ -366,7 +403,7 @@ class ProfileActivity : BaseActivity() {
                 ) {
 
                     Button(
-                        onClick = { },
+                        onClick = { onDeleteAccountClicked() },
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(id = R.color.red2)

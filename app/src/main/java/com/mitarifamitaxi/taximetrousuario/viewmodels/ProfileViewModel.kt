@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -39,10 +41,17 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     var dialogShowCloseButton by mutableStateOf(true)
     var dialogPrimaryAction: String? by mutableStateOf(null)
 
+    private val _hideKeyboardEvent = MutableLiveData<Boolean>()
+    val hideKeyboardEvent: LiveData<Boolean> get() = _hideKeyboardEvent
+
     init {
         viewModelScope.launch {
             getTripsByUserId(appViewModel.userData?.id ?: "")
         }
+    }
+
+    fun resetHideKeyboardEvent() {
+        _hideKeyboardEvent.value = false
     }
 
     private suspend fun getTripsByUserId(userId: String) {
@@ -156,20 +165,77 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     }
 
     private fun showErrorMessage(title: String, message: String) {
+        _hideKeyboardEvent.value = true
         showDialog = true
         dialogType = DialogType.ERROR
         dialogTitle = title
         dialogMessage = message
         dialogShowCloseButton = true
+        dialogPrimaryAction = null
     }
 
     private fun showSuccessMessage(title: String, message: String, primaryAction: String) {
+        _hideKeyboardEvent.value = true
         showDialog = true
         dialogType = DialogType.SUCCESS
         dialogTitle = title
         dialogMessage = message
         dialogPrimaryAction = primaryAction
         dialogShowCloseButton = false
+    }
+
+    fun showDeleteAccountMessage() {
+        _hideKeyboardEvent.value = true
+        showDialog = true
+        dialogType = DialogType.ERROR
+        dialogTitle = appContext.getString(R.string.delete_account_question)
+        dialogMessage = appContext.getString(R.string.delete_account_message)
+        dialogPrimaryAction = appContext.getString(R.string.delete_account)
+        dialogShowCloseButton = true
+    }
+
+    fun handleDeleteAccount(onLogoutComplete: () -> Unit) {
+
+        viewModelScope.launch {
+            try {
+                appViewModel.isLoading = true
+
+                // Delete all trips with userId
+                val tripsSnapshot = FirebaseFirestore.getInstance()
+                    .collection("trips")
+                    .whereEqualTo("userId", appViewModel.userData?.id ?: "")
+                    .get()
+                    .await()
+
+                if (tripsSnapshot.documents.size > 0) {
+                    for (trip in tripsSnapshot.documents) {
+                        trip.reference.delete().await()
+                    }
+                }
+
+                // Delete the user
+                val userSnapshot = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .whereEqualTo("id", appViewModel.userData?.id ?: "")
+                    .get()
+                    .await()
+
+                if (userSnapshot.documents.size > 0) {
+                    userSnapshot.documents.first().reference.delete().await()
+                }
+
+                appViewModel.isLoading = false
+                onLogoutComplete()
+            } catch (error: Exception) {
+                Log.e("ProfileViewModel", "Error deleting account: ${error.message}")
+                appViewModel.isLoading = false
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_deleting_account)
+                )
+            }
+        }
+
     }
 
     fun logOut(onLogoutComplete: () -> Unit) {

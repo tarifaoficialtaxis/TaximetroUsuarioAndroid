@@ -10,44 +10,35 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.icons.rounded.PhoneIphone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
-import com.mitarifamitaxi.taximetrousuario.models.DialogType
 
 @Composable
-fun CustomPopupDialog(
-    dialogType: DialogType,
+fun CustomTextFieldDialog(
     title: String,
     message: String,
-    primaryActionButton: String? = null,
-    showCloseButton: Boolean = true,
+    textFieldValue: MutableState<String>,
+    textButton: String,
     onDismiss: () -> Unit,
-    onPrimaryActionClicked: () -> Unit = {}
+    onButtonClicked: () -> Unit
 ) {
 
-    val primaryColor: Color = when (dialogType) {
-        DialogType.SUCCESS -> colorResource(id = R.color.main)
-        DialogType.ERROR -> colorResource(id = R.color.red1)
-        DialogType.WARNING -> colorResource(id = R.color.main)
-        DialogType.INFO -> Color.Blue
-    }
-
-    val secondaryColor: Color = when (dialogType) {
-        DialogType.SUCCESS -> colorResource(id = R.color.yellow2)
-        DialogType.ERROR -> colorResource(id = R.color.red2)
-        DialogType.WARNING -> colorResource(id = R.color.yellow2)
-        DialogType.INFO -> Color.Blue
-    }
+    colorResource(id = R.color.main)
+    colorResource(id = R.color.yellow2)
 
     Box(
         modifier = Modifier
@@ -79,12 +70,12 @@ fun CustomPopupDialog(
                 Box(
                     modifier = Modifier
                         .size(100.dp)
-                        .border(8.dp, secondaryColor, CircleShape)
-                        .background(primaryColor, shape = CircleShape),
+                        .border(8.dp, colorResource(id = R.color.yellow2), CircleShape)
+                        .background(colorResource(id = R.color.main), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Default.PriorityHigh,
                         contentDescription = "Error Icon",
                         tint = Color.White,
                         modifier = Modifier.size(55.dp)
@@ -98,7 +89,7 @@ fun CustomPopupDialog(
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = primaryColor
+                    color = colorResource(id = R.color.main)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -117,36 +108,46 @@ fun CustomPopupDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
-                primaryActionButton?.let {
-                    CustomButton(
-                        text = it.uppercase(),
-                        onClick = onPrimaryActionClicked,
-                        color = primaryColor,
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    CustomTextField(
+                        value = textFieldValue.value,
+                        onValueChange = { textFieldValue.value = it },
+                        placeholder = stringResource(id = R.string.mobilePhone),
+                        leadingIcon = Icons.Rounded.PhoneIphone,
+                        keyboardType = KeyboardType.Phone
                     )
                 }
 
 
-                if (showCloseButton) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(15.dp))
 
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(42.dp),
-                        shape = CircleShape,
-                        border = BorderStroke(0.dp, Color.Transparent),
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colorResource(id = R.color.gray7),
-                            contentColor = colorResource(id = R.color.white)
-                        ),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "content description"
-                        )
-                    }
+                CustomButton(
+                    text = textButton.uppercase(),
+                    onClick = onButtonClicked,
+                    color = colorResource(id = R.color.main),
+                )
 
+                Spacer(modifier = Modifier.height(15.dp))
+
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(42.dp),
+                    shape = CircleShape,
+                    border = BorderStroke(0.dp, Color.Transparent),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = colorResource(id = R.color.gray7),
+                        contentColor = colorResource(id = R.color.white)
+                    ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "content description"
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

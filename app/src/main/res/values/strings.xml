@@ -176,5 +176,13 @@
     <string name="trip_deleted_successfully">Viaje eliminado correctamente</string>
 
     <string name="success">Éxito</string>
+    <string name="share_trip">Compartir información de viaje</string>
+    <string name="share_trip_message">Ingresa el número de teléfono con el cual quieres compartir la información de tu viaje</string>
+
+
+    <string name="send">Enviar</string>
+
+    <string name="whatsapp_not_installed">No tienes WhatsApp instalado en tu dispositivo. No se puede compartir la información de tu viaje.</string>
+
 
 </resources>

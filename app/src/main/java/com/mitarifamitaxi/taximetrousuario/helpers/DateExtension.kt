@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.helpers
 
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -53,3 +54,8 @@ fun hourFormatDate(dateString: String): String {
         .replace("p. m.", "PM")
 }
 
+fun shareFormatDate(dateString: String): String {
+    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    val date = formatter.parse(dateString)
+    return date?.let { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(it) } ?: ""
+}

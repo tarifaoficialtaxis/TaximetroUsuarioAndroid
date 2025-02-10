@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
@@ -18,9 +19,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +39,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextFieldDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripInfoRow
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -73,6 +79,12 @@ class TripSummaryActivity : BaseActivity() {
                     getString(R.string.delete_trip_message),
                     getString(R.string.delete)
                 )
+            },
+            onSosAction = {
+                startActivity(Intent(this, SosActivity::class.java))
+            },
+            onShareAction = {
+                viewModel.showShareDialog = true
             }
         )
 
@@ -95,10 +107,32 @@ class TripSummaryActivity : BaseActivity() {
             )
         }
 
+        if (viewModel.showShareDialog) {
+            CustomTextFieldDialog(
+                title = getString(R.string.share_trip),
+                message = getString(R.string.share_trip_message),
+                textButton = getString(R.string.send),
+                textFieldValue = viewModel.shareNumber,
+                onDismiss = { viewModel.showShareDialog = false },
+                onButtonClicked = {
+                    viewModel.showShareDialog = false
+                    viewModel.sendWatsAppMessage(
+                        onIntentReady = { intent ->
+                            startActivity(intent)
+                        }
+                    )
+                }
+            )
+        }
+
     }
 
     @Composable
-    private fun MainView(onDeleteAction: () -> Unit) {
+    private fun MainView(
+        onDeleteAction: () -> Unit,
+        onSosAction: () -> Unit,
+        onShareAction: () -> Unit
+    ) {
 
         Column(
             modifier = Modifier
@@ -264,6 +298,26 @@ class TripSummaryActivity : BaseActivity() {
                             value = "$ ${viewModel.tripData.doorToDoorSurcharge?.formatNumberWithDots()} COP"
                         )
                     }
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.padding(vertical = 20.dp)
+                    ) {
+                        CustomButton(
+                            text = stringResource(id = R.string.sos).uppercase(),
+                            onClick = onSosAction,
+                            color = colorResource(id = R.color.red1),
+                            leadingIcon = Icons.Rounded.WarningAmber
+                        )
+
+                        CustomButton(
+                            text = stringResource(id = R.string.share).uppercase(),
+                            onClick = onShareAction,
+                            leadingIcon = Icons.Rounded.Share
+                        )
+                    }
+
+
                 }
             }
 

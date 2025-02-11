@@ -184,5 +184,6 @@
 
     <string name="whatsapp_not_installed">No tienes WhatsApp instalado en tu dispositivo. No se puede compartir la información de tu viaje.</string>
 
+    <string name="error_missing_phone_number">Debes ingresar un número de celular.</string>
 
 </resources>

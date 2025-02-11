@@ -113,9 +113,9 @@ class TripSummaryActivity : BaseActivity() {
                 message = getString(R.string.share_trip_message),
                 textButton = getString(R.string.send),
                 textFieldValue = viewModel.shareNumber,
+                isTextFieldError = viewModel.isShareNumberError,
                 onDismiss = { viewModel.showShareDialog = false },
                 onButtonClicked = {
-                    viewModel.showShareDialog = false
                     viewModel.sendWatsAppMessage(
                         onIntentReady = { intent ->
                             startActivity(intent)

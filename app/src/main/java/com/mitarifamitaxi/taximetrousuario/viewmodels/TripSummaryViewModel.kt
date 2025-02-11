@@ -36,6 +36,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
 
     var showShareDialog by mutableStateOf(false)
     var shareNumber = mutableStateOf("")
+    var isShareNumberError = mutableStateOf(false)
 
     fun deleteTrip(tripId: String) {
 
@@ -81,7 +82,16 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
     }
 
     fun sendWatsAppMessage(onIntentReady: (Intent) -> Unit) {
+
+        if (shareNumber.value.isEmpty()) {
+            isShareNumberError.value = true
+            return
+        }
+
+        showShareDialog = false
+
         val message = buildString {
+            append("*Esta es la información de mi viaje:*\n")
             append("*Dirección de origen:* ${tripData.startAddress}\n")
             append("*Dirección de destino:* ${tripData.endAddress}\n")
             append("*Fecha de recogida:* ${tripData.startHour?.let { shareFormatDate(it) }}\n")

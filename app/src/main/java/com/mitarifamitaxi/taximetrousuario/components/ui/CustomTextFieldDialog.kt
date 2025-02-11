@@ -32,6 +32,7 @@ fun CustomTextFieldDialog(
     title: String,
     message: String,
     textFieldValue: MutableState<String>,
+    isTextFieldError: MutableState<Boolean>,
     textButton: String,
     onDismiss: () -> Unit,
     onButtonClicked: () -> Unit
@@ -118,7 +119,9 @@ fun CustomTextFieldDialog(
                         onValueChange = { textFieldValue.value = it },
                         placeholder = stringResource(id = R.string.mobilePhone),
                         leadingIcon = Icons.Rounded.PhoneIphone,
-                        keyboardType = KeyboardType.Phone
+                        keyboardType = KeyboardType.Phone,
+                        isError = isTextFieldError.value,
+                        errorMessage = stringResource(id = R.string.error_missing_phone_number)
                     )
                 }
 

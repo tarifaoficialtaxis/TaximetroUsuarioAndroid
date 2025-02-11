@@ -189,6 +189,25 @@
     <string name="warning">Advertencia</string>
     <string name="article_35_message">De conformidad con lo establecido en el artículo 35 del Código de Policía, utilizar de forma inadecuada la línea de atención de emergencia será sancionado con multa.</string>
     <string name="confirm">Confirmar</string>
+    <string name="send_message">Enviar mensaje</string>
+    <string name="call">Llamar</string>
+    <string name="select_one_action">Selecciona una acción</string>
+    <string name="error_no_contacts_found">No se encontraron contactos para la ciudad especificada</string>
+    <string name="error_no_city_set">No se ha podido obtener la ciudad de tu ubicación.</string>
 
+    <string name="general_error">Ha ocurrido un error. Por favor, inténtalo de nuevo.</string>
 
+    <string name="police">Policía</string>
+    <string name="fire_fighters">Bomberos</string>
+    <string name="ambulance">Ambulancia</string>
+    <string name="animal_care">Defensoría animal</string>
+    <string name="support">Grupo de apoyo</string>
+    <string name="family">Familia</string>
+    <string name="support_number_not_found">Contacto de grupo de apoyo no encontrado</string>
+    <string name="set_up_support_number">Por favor, configura el número del grupo de apoyo en tu perfil para continuar.</string>
+
+    <string name="family_number_not_found">Contacto de familia no encontrado</string>
+    <string name="set_up_family_number">Por favor, configura el número de familia en tu perfil para continuar.</string>
+
+    <string name="add_number">Agregar número</string>
 </resources>

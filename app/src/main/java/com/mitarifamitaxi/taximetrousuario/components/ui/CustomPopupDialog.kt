@@ -104,6 +104,7 @@ fun CustomPopupDialog(
 
                 Text(
                     text = title,
+                    textAlign = TextAlign.Center,
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,

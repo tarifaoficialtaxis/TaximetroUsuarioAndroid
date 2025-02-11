@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButtonActionDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomImageButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
@@ -28,6 +30,11 @@ class SosActivity : BaseActivity() {
 
     private val viewModel: SosViewModel by viewModels {
         SosViewModelFactory(this, appViewModel)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        appViewModel.reloadUserData()
     }
 
     @Composable
@@ -44,6 +51,31 @@ class SosActivity : BaseActivity() {
                 onDismiss = { viewModel.showDialog = false },
                 onPrimaryActionClicked = {
                     viewModel.showDialog = false
+                    if (viewModel.dialogTitle == getString(R.string.support_number_not_found) || viewModel.dialogTitle == getString(
+                            R.string.family_number_not_found
+                        )
+                    ) {
+                        startActivity(Intent(this, ProfileActivity::class.java))
+                    }
+                }
+            )
+        }
+
+        if (viewModel.showContactDialog) {
+            CustomButtonActionDialog(
+                title = stringResource(id = R.string.select_one_action),
+                onDismiss = { viewModel.showContactDialog = false },
+                onPrimaryActionClicked = {
+                    viewModel.showContactDialog = false
+                    viewModel.validateSendMessageAction(onIntentReady = {
+                        startActivity(it)
+                    })
+                },
+                onSecondaryActionClicked = {
+                    viewModel.showContactDialog = false
+                    viewModel.validateCallAction(onIntentReady = {
+                        startActivity(it)
+                    })
                 }
             )
         }
@@ -117,7 +149,8 @@ class SosActivity : BaseActivity() {
                             image = item.image,
                             height = item.height,
                             onClick = {
-                                //viewModel.onSosButtonClicked(item.id)
+                                viewModel.showContactDialog = true
+                                viewModel.itemSelected = item
                             }
                         )
                     }

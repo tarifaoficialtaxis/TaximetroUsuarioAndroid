@@ -21,6 +21,10 @@ class AppViewModel(context: Context) : ViewModel() {
         loadUserData()
     }
 
+    fun reloadUserData() {
+        loadUserData()
+    }
+
     private fun loadUserData() {
         val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val userJson = sharedPref.getString("USER_OBJECT", null)

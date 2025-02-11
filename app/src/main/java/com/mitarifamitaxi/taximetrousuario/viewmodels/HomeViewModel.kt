@@ -78,7 +78,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                 )
             )
         } else {
-            //getCurrentLocation()
+            getCurrentLocation()
         }
     }
 

@@ -1,29 +1,86 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomImageButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
+import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
+import com.mitarifamitaxi.taximetrousuario.models.ItemImageButton
+import com.mitarifamitaxi.taximetrousuario.viewmodels.SosViewModel
+import com.mitarifamitaxi.taximetrousuario.viewmodels.SosViewModelFactory
 
 class SosActivity : BaseActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+
+    private val viewModel: SosViewModel by viewModels {
+        SosViewModelFactory(this, appViewModel)
     }
 
     @Composable
     override fun Content() {
         MainView()
 
+        if (viewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = viewModel.dialogType,
+                title = viewModel.dialogTitle,
+                message = viewModel.dialogMessage,
+                showCloseButton = viewModel.dialogShowCloseButton,
+                primaryActionButton = viewModel.dialogPrimaryAction,
+                onDismiss = { viewModel.showDialog = false },
+                onPrimaryActionClicked = {
+                    viewModel.showDialog = false
+                }
+            )
+        }
+
     }
+
+
+    @Composable
+    fun sosItems(): List<ItemImageButton> {
+        return listOf(
+            ItemImageButton(
+                id = "POLICE",
+                image = painterResource(id = R.drawable.sos_police_button),
+            ),
+            ItemImageButton(
+                id = "FIRE_FIGHTERS",
+                image = painterResource(id = R.drawable.sos_firefighters_button),
+            ),
+            ItemImageButton(
+                id = "AMBULANCE",
+                image = painterResource(id = R.drawable.sos_ambulance_button),
+            ),
+            ItemImageButton(
+                id = "FAMILY",
+                image = painterResource(id = R.drawable.sos_family_button),
+            ),
+            ItemImageButton(
+                id = "SUPPORT",
+                image = painterResource(id = R.drawable.sos_support_button),
+            ),
+            ItemImageButton(
+                id = "ANIMAL_CARE",
+                image = painterResource(id = R.drawable.sos_animal_care_button),
+            )
+        )
+    }
+
 
     @Composable
     private fun MainView(
@@ -33,9 +90,42 @@ class SosActivity : BaseActivity() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorResource(id = R.color.white)),
+                .background(colorResource(id = R.color.gray4)),
         ) {
-            Text("Sos Activity")
+            TopHeaderView(
+                title = stringResource(id = R.string.sos),
+                leadingIcon = Icons.Filled.ChevronLeft,
+                onClickLeading = {
+                    finish()
+                }
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 29.dp)
+                        .padding(top = 20.dp)
+                        .padding(bottom = 40.dp)
+                ) {
+                    sosItems().forEach { item ->
+                        CustomImageButton(
+                            image = item.image,
+                            height = item.height,
+                            onClick = {
+                                //viewModel.onSosButtonClicked(item.id)
+                            }
+                        )
+                    }
+
+                }
+            }
+
+
         }
     }
 }

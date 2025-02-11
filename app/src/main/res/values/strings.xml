@@ -186,4 +186,9 @@
 
     <string name="error_missing_phone_number">Debes ingresar un número de celular.</string>
 
+    <string name="warning">Advertencia</string>
+    <string name="article_35_message">De conformidad con lo establecido en el artículo 35 del Código de Policía, utilizar de forma inadecuada la línea de atención de emergencia será sancionado con multa.</string>
+    <string name="confirm">Confirmar</string>
+
+
 </resources>

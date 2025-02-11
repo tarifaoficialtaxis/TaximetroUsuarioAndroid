@@ -10,11 +10,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +49,13 @@ fun CustomPopupDialog(
         DialogType.ERROR -> colorResource(id = R.color.red2)
         DialogType.WARNING -> colorResource(id = R.color.yellow2)
         DialogType.INFO -> Color.Blue
+    }
+
+    val imageIcon: ImageVector = when (dialogType) {
+        DialogType.SUCCESS -> Icons.Default.PriorityHigh
+        DialogType.ERROR -> Icons.Default.Close
+        DialogType.WARNING -> Icons.Default.PriorityHigh
+        DialogType.INFO -> Icons.Default.PriorityHigh
     }
 
     Box(
@@ -84,8 +93,8 @@ fun CustomPopupDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Error Icon",
+                        imageVector = imageIcon,
+                        contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(55.dp)
                     )

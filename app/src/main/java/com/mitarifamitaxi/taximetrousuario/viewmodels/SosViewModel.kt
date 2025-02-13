@@ -36,7 +36,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
     var showContactDialog by mutableStateOf(false)
 
-    val contactObj = mutableStateOf(Contact())
+    private val contactObj = mutableStateOf(Contact())
     var itemSelected: ItemImageButton? = null
 
     init {

@@ -68,7 +68,7 @@
     <string name="my_profile">Mi Perfil</string>
 
     <string name="plate">Placa</string>
-    <string name="my_cedula">Mi cédula</string>
+    <string name="cedula">Cédula</string>
     <string name="other_reason">Ingrese motivo</string>
 
     <string name="reason_complaint">Motivo de la denuncia</string>

@@ -10,6 +10,7 @@
     <string name="accept_continue">Aceptar y continuar</string>
     <string name="welcome">¡Bienvenido!</string>
 
+    <string name="error">¡Error!</string>
     <string name="user_name">Usuario</string>
     <string name="password">Contraseña</string>
     <string name="remember_me">Recuerdame</string>
@@ -70,6 +71,8 @@
     <string name="plate">Placa</string>
     <string name="cedula">Cédula</string>
     <string name="other_reason">Ingrese motivo</string>
+    <string name="other_reason_required">Debe ingrsar la razón o el motivo</string>
+    <string name="email_subject">Derecho de petición</string>
 
     <string name="reason_complaint">Motivo de la denuncia</string>
 

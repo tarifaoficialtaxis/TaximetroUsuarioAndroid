@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -10,7 +11,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.activities.CompleteProfileActivity
+import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.fetchRoute
 import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlaceDetails
@@ -212,7 +216,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
     }
 
-    fun validateStartTrip() {
+    fun validateStartTrip(onIntentReady: (Intent) -> Unit) {
         if (startAddress.isEmpty() || startLocation.latitude == null || startLocation.longitude == null
             || endAddress.isEmpty() || endLocation.latitude == null || endLocation.longitude == null
         ) {
@@ -224,12 +228,13 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             return
         }
 
-        showCustomDialog(
-            DialogType.SUCCESS,
-            appContext.getString(R.string.success),
-            "Now you can start the trip"
-        )
+        val intent = Intent(appContext, TaximeterActivity::class.java)
+        intent.putExtra("start_address", startAddress)
+        intent.putExtra("start_location", Gson().toJson(startLocation))
+        intent.putExtra("end_address", endAddress)
+        intent.putExtra("end_location", Gson().toJson(endLocation))
 
+        onIntentReady(intent)
     }
 
     private fun showCustomDialog(

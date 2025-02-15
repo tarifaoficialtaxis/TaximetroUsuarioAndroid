@@ -399,7 +399,11 @@ class RoutePlannerActivity : BaseActivity() {
             ) {
                 CustomButton(
                     text = stringResource(id = R.string.start_trip).uppercase(),
-                    onClick = { viewModel.validateStartTrip() },
+                    onClick = {
+                        viewModel.validateStartTrip(onIntentReady = {
+                            startActivity(it)
+                        })
+                    },
                     color = colorResource(id = R.color.main),
                     leadingIcon = Icons.Default.PlayArrow
                 )

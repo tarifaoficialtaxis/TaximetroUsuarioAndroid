@@ -137,6 +137,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
         getPlacePredictions(
             input = input,
+            latitude = appViewModel.userData?.location?.latitude ?: 0.0,
+            longitude = appViewModel.userData?.location?.longitude ?: 0.0,
             callbackSuccess = { predictions ->
                 _places.value = predictions
             },

@@ -118,11 +118,14 @@ fun getAddressFromCoordinates(
 
 fun getPlacePredictions(
     input: String,
+    latitude: Double,
+    longitude: Double,
+    radius: Int = 50000,
     callbackSuccess: (ArrayList<PlacePrediction>) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
     val url =
-        "${googleapisUrl}place/autocomplete/json?input=$input&key=${Constants.GOOGLE_API_KEY}"
+        "${googleapisUrl}place/autocomplete/json?input=$input&location=$latitude,$longitude&radius=$radius&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()

@@ -21,6 +21,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var startAddress by mutableStateOf("")
     var endAddress by mutableStateOf("")
 
+    var isSelectingStart by mutableStateOf(true)
     var isSheetExpanded by mutableStateOf(true)
 
 
@@ -36,6 +37,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 longitude = appViewModel.userData?.location?.longitude!!,
                 callbackSuccess = { address ->
                     startAddress = getShortAddress(address)
+                    isSelectingStart = false
                 },
                 callbackError = { error ->
 

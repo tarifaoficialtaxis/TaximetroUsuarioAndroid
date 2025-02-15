@@ -1,7 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.content.Intent
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
@@ -35,11 +35,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,10 +55,14 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPlacePrediction
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.helpers.getComplementAddress
+import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
+import com.mitarifamitaxi.taximetrousuario.helpers.getStreetAddress
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModelFactory
 
@@ -199,6 +205,10 @@ class RoutePlannerActivity : BaseActivity() {
     @Composable
     fun SheetExpandedView() {
 
+        val places by viewModel.places
+
+        val focusManager = LocalFocusManager.current
+
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -240,7 +250,10 @@ class RoutePlannerActivity : BaseActivity() {
             ) {
                 CustomTextField(
                     value = viewModel.startAddress,
-                    onValueChange = { viewModel.startAddress = it },
+                    onValueChange = {
+                        viewModel.startAddress = it
+                        viewModel.loadPlacePredictions(it)
+                    },
                     leadingIcon = Icons.Filled.MyLocation,
                     trailingIcon = if (viewModel.startAddress.isNotEmpty()) Icons.Filled.Cancel else null,
                     onClickTrailingIcon = { viewModel.startAddress = "" },
@@ -258,7 +271,10 @@ class RoutePlannerActivity : BaseActivity() {
 
                 CustomTextField(
                     value = viewModel.endAddress,
-                    onValueChange = { viewModel.endAddress = it },
+                    onValueChange = {
+                        viewModel.endAddress = it
+                        viewModel.loadPlacePredictions(it)
+                    },
                     leadingIcon = Icons.Filled.LocationOn,
                     trailingIcon = if (viewModel.endAddress.isNotEmpty()) Icons.Filled.Cancel else null,
                     onClickTrailingIcon = { viewModel.endAddress = "" },
@@ -306,6 +322,28 @@ class RoutePlannerActivity : BaseActivity() {
 
                 }
             }
+
+
+            if (places.isNotEmpty()) {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    places.forEach { place ->
+                        CustomPlacePrediction(
+                            address = getStreetAddress(place.description),
+                            region = getComplementAddress(place.description),
+                            onPlaceClicked = {
+                                focusManager.clearFocus()
+                                viewModel.setPlacePrediction(place)
+                            }
+                        )
+                    }
+                }
+            }
+
 
             Spacer(modifier = Modifier.weight(1f))
 

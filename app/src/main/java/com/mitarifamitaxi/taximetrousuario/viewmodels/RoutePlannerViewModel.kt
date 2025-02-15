@@ -2,6 +2,7 @@ package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,8 +11,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
+import com.mitarifamitaxi.taximetrousuario.helpers.getPlaceDetails
+import com.mitarifamitaxi.taximetrousuario.helpers.getPlacePredictions
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
+import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 
 class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewModel) :
@@ -41,6 +45,9 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var showDialog by mutableStateOf(false)
     var dialogTitle by mutableStateOf("")
     var dialogMessage by mutableStateOf("")
+
+    private val _places = mutableStateOf<List<PlacePrediction>>(emptyList())
+    val places: State<List<PlacePrediction>> = _places
 
     init {
 
@@ -120,6 +127,55 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
         } else if (startAddress.isEmpty() && endAddress.isNotEmpty()) {
             isSelectingStart = true
         }
+    }
+
+    fun loadPlacePredictions(input: String) {
+        if (input.isEmpty() || input.length < 2) {
+            _places.value = emptyList()
+            return
+        }
+
+        getPlacePredictions(
+            input = input,
+            callbackSuccess = { predictions ->
+                _places.value = predictions
+            },
+            callbackError = {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_getting_places)
+                )
+            }
+        )
+    }
+
+    fun setPlacePrediction(placePrediction: PlacePrediction) {
+
+        _places.value = emptyList()
+        placePrediction.placeId?.let {
+            getPlaceDetails(
+                placeId = it,
+                callbackSuccess = { location ->
+                    if (isSelectingStart) {
+                        startAddress = getShortAddress(placePrediction.description)
+                        startLocation = location
+                    } else {
+                        endAddress = getShortAddress(placePrediction.description)
+                        endLocation = location
+                    }
+                },
+                callbackError = {
+                    showCustomDialog(
+                        DialogType.ERROR,
+                        appContext.getString(R.string.something_went_wrong),
+                        appContext.getString(R.string.error_getting_address)
+                    )
+                }
+            )
+        }
+
+
     }
 
     fun validateStartTrip() {

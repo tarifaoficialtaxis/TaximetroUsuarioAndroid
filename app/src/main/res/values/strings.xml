@@ -216,6 +216,8 @@
 
     <string name="error_getting_address">Ha occurrido un error al intentar obtener la dirección.</string>
 
+    <string name="error_getting_places">Ha ocurrido un error al intentar obtener las direcciones sugeridas.</string>
+
 
 
 </resources>

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -38,7 +39,9 @@ fun CustomTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     leadingIcon: ImageVector,
     isError: Boolean = false,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    focusedIndicatorColor: Color = colorResource(id = R.color.main),
+    unfocusedIndicatorColor: Color = colorResource(id = R.color.gray2),
 ) {
     val isPasswordVisible = remember { mutableStateOf(isSecure) }
 
@@ -90,8 +93,8 @@ fun CustomTextField(
 
                 focusedTextColor = colorResource(id = R.color.gray1),
 
-                focusedIndicatorColor = colorResource(id = R.color.main),
-                unfocusedIndicatorColor = colorResource(id = R.color.gray2)
+                focusedIndicatorColor = focusedIndicatorColor,
+                unfocusedIndicatorColor = unfocusedIndicatorColor
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,

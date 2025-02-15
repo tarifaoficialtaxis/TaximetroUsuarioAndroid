@@ -96,7 +96,7 @@ class HomeActivity : BaseActivity() {
     override fun Content() {
         MainView(
             onTaximeterClick = {
-                startActivity(Intent(this, TaximeterActivity::class.java))
+                startActivity(Intent(this, RoutePlannerActivity::class.java))
             },
             onSosClick = {
                 startActivity(Intent(this, SosActivity::class.java))

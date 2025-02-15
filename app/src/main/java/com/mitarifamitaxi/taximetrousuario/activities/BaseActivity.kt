@@ -53,7 +53,7 @@ open class BaseActivity : ComponentActivity() {
 
                             "TAXIMETER" -> {
                                 if (this !is TaximeterActivity) {
-                                    startActivity(Intent(this, TaximeterActivity::class.java))
+                                    startActivity(Intent(this, RoutePlannerActivity::class.java))
                                 }
                             }
 

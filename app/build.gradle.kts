@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.play.services.location)
 
+    implementation(libs.maps.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

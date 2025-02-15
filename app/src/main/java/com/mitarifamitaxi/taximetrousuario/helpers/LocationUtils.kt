@@ -5,6 +5,8 @@ import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 
+const val googleapisUrl = "https://maps.googleapis.com/maps/api/geocode/json"
+
 fun getCityFromCoordinates(
     latitude: Double,
     longitude: Double,
@@ -12,7 +14,7 @@ fun getCityFromCoordinates(
     callbackError: (Exception) -> Unit
 ) {
     val url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
+        "$googleapisUrl?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()
@@ -69,4 +71,61 @@ fun getCityFromCoordinates(
         }
     })
 }
+
+fun getAddressFromCoordinates(
+    latitude: Double,
+    longitude: Double,
+    callbackSuccess: (address: String) -> Unit,
+    callbackError: (Exception) -> Unit
+) {
+    val url =
+        "$googleapisUrl?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
+
+    val client = OkHttpClient()
+    val request = Request.Builder().url(url).build()
+
+    client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            callbackError(e)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            response.use {
+                if (!it.isSuccessful) {
+                    callbackError(IOException("Unexpected response $response"))
+                    return
+                }
+
+                val jsonResponse = JSONObject(it.body?.string() ?: "")
+                val results = jsonResponse.optJSONArray("results")
+
+                if (results != null && results.length() > 0) {
+                    val address =
+                        results.getJSONObject(0).getString("formatted_address")
+
+                    callbackSuccess(address)
+
+                } else {
+                    callbackError(IOException("No results found"))
+                }
+            }
+        }
+    })
+}
+
+
+fun getShortAddress(inputString: String?): String {
+    if (inputString.isNullOrEmpty()) return ""
+    val parts = inputString.split(",")
+    val addressStreet = parts[0]
+    val addressComplement = parts.getOrNull(1)
+    return addressStreet + if (addressComplement != null) ", $addressComplement" else ""
+}
+
+fun getStreetAddress(inputString: String?): String {
+    if (inputString.isNullOrEmpty()) return ""
+    return inputString.split(",")[0]
+}
+
+
 

@@ -213,4 +213,9 @@
     <string name="set_up_family_number">Por favor, configura el número de familia en tu perfil para continuar.</string>
 
     <string name="add_number">Agregar número</string>
+
+    <string name="error_getting_address">Ha occurrido un error al intentar obtener la dirección.</string>
+
+
+
 </resources>

@@ -1,5 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -30,6 +33,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +52,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -62,6 +68,15 @@ class RoutePlannerActivity : BaseActivity() {
     @Composable
     override fun Content() {
         MainView()
+
+        if (viewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = viewModel.dialogType,
+                title = viewModel.dialogTitle,
+                message = viewModel.dialogMessage,
+                onDismiss = { viewModel.showDialog = false }
+            )
+        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
@@ -76,6 +91,19 @@ class RoutePlannerActivity : BaseActivity() {
                     appViewModel.userData?.location?.longitude ?: -74.08175
                 ), 15f
             )
+        }
+
+        LaunchedEffect(cameraPositionState) {
+            snapshotFlow { cameraPositionState.isMoving }
+                .collect { isMoving ->
+                    if (!viewModel.isSheetExpanded && !isMoving) {
+                        val cameraTarget = cameraPositionState.position.target
+                        viewModel.loadAddressBasedOnCoordinates(
+                            cameraTarget.latitude,
+                            cameraTarget.longitude
+                        )
+                    }
+                }
         }
 
         BottomSheetScaffold(
@@ -100,14 +128,26 @@ class RoutePlannerActivity : BaseActivity() {
                     }
                 )
 
-                GoogleMap(
-                    cameraPositionState = cameraPositionState,
-                    uiSettings = MapUiSettings(
-                        zoomControlsEnabled = false
-                    ),
-                    modifier = Modifier.fillMaxSize(),
-                    onMapLoaded = { }
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    GoogleMap(
+                        cameraPositionState = cameraPositionState,
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = false
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                    )
+
+                    if (!viewModel.isSheetExpanded) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = "Center Marker",
+                            tint = colorResource(id = R.color.main),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -256,7 +296,7 @@ class RoutePlannerActivity : BaseActivity() {
             ) {
                 CustomButton(
                     text = stringResource(id = R.string.start_trip).uppercase(),
-                    onClick = { },
+                    onClick = { viewModel.validateStartTrip() },
                     color = colorResource(id = R.color.main),
                     leadingIcon = Icons.Default.PlayArrow
                 )
@@ -309,7 +349,7 @@ class RoutePlannerActivity : BaseActivity() {
         ) {
             CustomButton(
                 text = stringResource(id = if (viewModel.isSelectingStart) R.string.set_start else R.string.set_end).uppercase(),
-                onClick = { },
+                onClick = { viewModel.setPontOnMapComplete() },
                 color = colorResource(id = R.color.main),
                 leadingIcon = Icons.Default.Check
             )

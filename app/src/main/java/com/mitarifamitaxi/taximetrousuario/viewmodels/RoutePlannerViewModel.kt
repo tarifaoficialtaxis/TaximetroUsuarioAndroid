@@ -27,9 +27,11 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var endAddress by mutableStateOf("")
     var endLocation by mutableStateOf(UserLocation())
 
+    var tempAddressOnMap by mutableStateOf("")
+    private var tempLocationOnMap by mutableStateOf(UserLocation())
+
     var isSelectingStart by mutableStateOf(true)
     var isSheetExpanded by mutableStateOf(true)
-
 
     var mainColumnHeight by mutableStateOf(0.dp)
     var sheetPeekHeight by mutableStateOf(0.dp)
@@ -84,13 +86,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             latitude = latitude,
             longitude = longitude,
             callbackSuccess = { address ->
-                if (isSelectingStart) {
-                    startAddress = getShortAddress(address)
-                    startLocation = UserLocation(latitude = latitude, longitude = longitude)
-                } else {
-                    endAddress = getShortAddress(address)
-                    endLocation = UserLocation(latitude = latitude, longitude = longitude)
-                }
+                tempAddressOnMap = getShortAddress(address)
+                tempLocationOnMap = UserLocation(latitude = latitude, longitude = longitude)
             },
             callbackError = {
                 showCustomDialog(
@@ -104,6 +101,25 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
     fun setPontOnMapComplete() {
         setDefaultHeights()
+
+        if (isSelectingStart) {
+            startAddress = getShortAddress(tempAddressOnMap)
+            startLocation = tempLocationOnMap
+        } else {
+            endAddress = getShortAddress(tempAddressOnMap)
+            endLocation = tempLocationOnMap
+        }
+    }
+
+    fun validateAddressStates() {
+
+        if (startAddress.isEmpty() && endAddress.isEmpty()) {
+            isSelectingStart = true
+        } else if (startAddress.isNotEmpty() && endAddress.isEmpty()) {
+            isSelectingStart = false
+        } else if (startAddress.isEmpty() && endAddress.isNotEmpty()) {
+            isSelectingStart = true
+        }
     }
 
     fun validateStartTrip() {
@@ -118,7 +134,11 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             return
         }
 
-
+        showCustomDialog(
+            DialogType.SUCCESS,
+            appContext.getString(R.string.success),
+            "Now you can start the trip"
+        )
 
     }
 

@@ -38,6 +38,8 @@ fun CustomTextField(
     isSecure: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,
+    onClickTrailingIcon: () -> Unit = {},
     isError: Boolean = false,
     errorMessage: String? = null,
     focusedIndicatorColor: Color = colorResource(id = R.color.main),
@@ -80,6 +82,17 @@ fun CustomTextField(
                             isPasswordVisible.value = !isPasswordVisible.value
                         }
                     )
+                } else {
+                    trailingIcon?.let {
+                        Icon(
+                            imageVector = it,
+                            contentDescription = null,
+                            tint = colorResource(id = R.color.main),
+                            modifier = Modifier.clickable {
+                                onClickTrailingIcon()
+                            }
+                        )
+                    }
                 }
             },
             colors = TextFieldDefaults.colors(

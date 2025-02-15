@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.LocationOn
@@ -105,6 +106,21 @@ class RoutePlannerActivity : BaseActivity() {
                     }
                 }
         }
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { viewModel.startAddress }
+                .collect {
+                    viewModel.validateAddressStates()
+                }
+        }
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { viewModel.endAddress }
+                .collect {
+                    viewModel.validateAddressStates()
+                }
+        }
+
 
         BottomSheetScaffold(
             sheetSwipeEnabled = false,
@@ -226,6 +242,8 @@ class RoutePlannerActivity : BaseActivity() {
                     value = viewModel.startAddress,
                     onValueChange = { viewModel.startAddress = it },
                     leadingIcon = Icons.Filled.MyLocation,
+                    trailingIcon = if (viewModel.startAddress.isNotEmpty()) Icons.Filled.Cancel else null,
+                    onClickTrailingIcon = { viewModel.startAddress = "" },
                     placeholder = stringResource(id = R.string.start_point),
                     focusedIndicatorColor = colorResource(id = R.color.transparent),
                     unfocusedIndicatorColor = colorResource(id = R.color.transparent),
@@ -242,6 +260,8 @@ class RoutePlannerActivity : BaseActivity() {
                     value = viewModel.endAddress,
                     onValueChange = { viewModel.endAddress = it },
                     leadingIcon = Icons.Filled.LocationOn,
+                    trailingIcon = if (viewModel.endAddress.isNotEmpty()) Icons.Filled.Cancel else null,
+                    onClickTrailingIcon = { viewModel.endAddress = "" },
                     placeholder = stringResource(id = R.string.end_point),
                     focusedIndicatorColor = colorResource(id = R.color.transparent),
                     unfocusedIndicatorColor = colorResource(id = R.color.transparent),
@@ -330,11 +350,8 @@ class RoutePlannerActivity : BaseActivity() {
                 .padding(vertical = 5.dp),
         ) {
             CustomTextField(
-                value = if (viewModel.isSelectingStart) viewModel.startAddress else viewModel.endAddress,
-                onValueChange = {
-                    if (viewModel.isSelectingStart) viewModel.startAddress =
-                        it else viewModel.endAddress = it
-                },
+                value = viewModel.tempAddressOnMap,
+                onValueChange = { viewModel.tempAddressOnMap = it },
                 leadingIcon = Icons.Filled.MyLocation,
                 placeholder = stringResource(id = if (viewModel.isSelectingStart) R.string.start_point else R.string.end_point),
                 focusedIndicatorColor = colorResource(id = R.color.transparent),

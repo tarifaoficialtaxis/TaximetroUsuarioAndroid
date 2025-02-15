@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -43,25 +44,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPlacePrediction
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.getComplementAddress
-import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.getStreetAddress
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModelFactory
@@ -113,18 +118,25 @@ class RoutePlannerActivity : BaseActivity() {
                 }
         }
 
-        LaunchedEffect(Unit) {
-            snapshotFlow { viewModel.startAddress }
-                .collect {
-                    viewModel.validateAddressStates()
-                }
+
+        LaunchedEffect(viewModel.startAddress, viewModel.endAddress) {
+            viewModel.validateAddressStates()
         }
 
-        LaunchedEffect(Unit) {
-            snapshotFlow { viewModel.endAddress }
-                .collect {
-                    viewModel.validateAddressStates()
-                }
+        LaunchedEffect(viewModel.startLocation, viewModel.endLocation) {
+            viewModel.getRoutePreview()
+        }
+
+        LaunchedEffect(viewModel.routePoints) {
+            if (viewModel.routePoints.isNotEmpty()) {
+                val boundsBuilder = LatLngBounds.builder()
+                viewModel.routePoints.forEach { boundsBuilder.include(it) }
+                val bounds = boundsBuilder.build()
+                val padding = 120
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                )
+            }
         }
 
 
@@ -157,16 +169,49 @@ class RoutePlannerActivity : BaseActivity() {
                             zoomControlsEnabled = false
                         ),
                         modifier = Modifier.fillMaxSize(),
-                    )
+                    ) {
+                        if (viewModel.routePoints.isNotEmpty()) {
+                            Polyline(
+                                points = viewModel.routePoints,
+                                color = colorResource(id = R.color.main),
+                                width = 10f
+                            )
+                        }
+
+                        if (viewModel.startAddress.isNotEmpty()) {
+                            CustomSizedMarker(
+                                position = LatLng(
+                                    viewModel.startLocation.latitude ?: 0.0,
+                                    viewModel.startLocation.longitude ?: 0.0
+                                ),
+                                drawableRes = R.drawable.flag_start,
+                                width = 120,
+                                height = 120
+                            )
+
+                        }
+                        if (viewModel.endAddress.isNotEmpty()) {
+
+                            CustomSizedMarker(
+                                position = LatLng(
+                                    viewModel.endLocation.latitude ?: 0.0,
+                                    viewModel.endLocation.longitude ?: 0.0
+                                ),
+                                drawableRes = R.drawable.flag_end,
+                                width = 100,
+                                height = 120
+                            )
+                        }
+                    }
 
                     if (!viewModel.isSheetExpanded) {
-                        Icon(
-                            imageVector = Icons.Default.PushPin,
-                            contentDescription = "Center Marker",
-                            tint = colorResource(id = R.color.main),
+
+                        Image(
+                            painter = painterResource(id = R.drawable.set_point),
+                            contentDescription = "Location Marker",
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .size(40.dp)
+                                .size(45.dp)
                         )
                     }
                 }

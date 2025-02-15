@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.helpers
 
+import com.google.android.gms.maps.model.LatLng
 import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import com.mitarifamitaxi.taximetrousuario.resources.countries
@@ -125,7 +126,7 @@ fun getPlacePredictions(
     callbackError: (Exception) -> Unit
 ) {
     val url =
-        "${googleapisUrl}place/autocomplete/json?input=$input&location=$latitude,$longitude&radius=$radius&key=${Constants.GOOGLE_API_KEY}"
+        "${googleapisUrl}place/autocomplete/json?input=$input&location=$latitude,$longitude&radius=$radius&language=es&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()
@@ -207,6 +208,53 @@ fun getPlaceDetails(
     })
 }
 
+fun fetchRoute(
+    originLatitude: Double,
+    originLongitude: Double,
+    destinationLatitude: Double,
+    destinationLongitude: Double,
+    callbackSuccess: (List<LatLng>) -> Unit,
+    callbackError: (Exception) -> Unit
+) {
+
+    val origin = "${originLatitude},${originLongitude}"
+    val destination = "${destinationLatitude},${destinationLongitude}"
+
+
+    val url =
+        "${googleapisUrl}directions/json?origin=$origin&destination=$destination&key=${Constants.GOOGLE_API_KEY}"
+
+    val client = OkHttpClient()
+    val request = Request.Builder().url(url).build()
+
+    client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            callbackError(e)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            response.use {
+                if (!it.isSuccessful) {
+                    callbackError(IOException("Unexpected response $response"))
+                    return
+                }
+
+                val jsonResponse = JSONObject(it.body?.string() ?: "")
+
+                val routes = jsonResponse.optJSONArray("routes")
+                if (routes != null && routes.length() > 0) {
+                    val overviewPolyline = routes.getJSONObject(0).getJSONObject("overview_polyline")
+                    val points = overviewPolyline.getString("points")
+                    val decodedPoints = decodePolyline(points)
+                    callbackSuccess(decodedPoints)
+                } else {
+                    callbackError(IOException("No routes found"))
+                }
+            }
+        }
+    })
+}
+
 
 fun getShortAddress(inputString: String?): String {
     if (inputString.isNullOrEmpty()) return ""
@@ -226,6 +274,41 @@ fun getComplementAddress(inputString: String?): String {
     val commaIndex = inputString.indexOf(',')
     return inputString.substring(commaIndex + 1).trim()
 }
+
+fun decodePolyline(encoded: String): List<LatLng> {
+    val poly = ArrayList<LatLng>()
+    var index = 0
+    val len = encoded.length
+    var lat = 0
+    var lng = 0
+
+    while (index < len) {
+        var b: Int
+        var shift = 0
+        var result = 0
+        do {
+            b = encoded[index++].code - 63
+            result = result or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+        val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+        lat += dlat
+
+        shift = 0
+        result = 0
+        do {
+            b = encoded[index++].code - 63
+            result = result or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+        val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+        lng += dlng
+
+        poly.add(LatLng(lat / 1E5, lng / 1E5))
+    }
+    return poly
+}
+
 
 
 

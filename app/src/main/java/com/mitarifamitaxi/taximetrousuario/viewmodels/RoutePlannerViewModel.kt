@@ -9,7 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.maps.model.LatLng
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.fetchRoute
 import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlaceDetails
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlacePredictions
@@ -48,6 +50,9 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
     private val _places = mutableStateOf<List<PlacePrediction>>(emptyList())
     val places: State<List<PlacePrediction>> = _places
+
+
+    var routePoints by mutableStateOf<List<LatLng>>(emptyList())
 
     init {
 
@@ -127,6 +132,33 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
         } else if (startAddress.isEmpty() && endAddress.isNotEmpty()) {
             isSelectingStart = true
         }
+
+    }
+
+    fun getRoutePreview() {
+
+        if (startLocation.latitude == null || startLocation.longitude == null
+            || endLocation.latitude == null || endLocation.longitude == null
+        ) {
+            return
+        }
+
+        fetchRoute(
+            originLongitude = startLocation.longitude!!,
+            originLatitude = startLocation.latitude!!,
+            destinationLongitude = endLocation.longitude!!,
+            destinationLatitude = endLocation.latitude!!,
+            callbackSuccess = { points ->
+                routePoints = points
+            },
+            callbackError = {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_getting_route)
+                )
+            }
+        )
     }
 
     fun loadPlacePredictions(input: String) {

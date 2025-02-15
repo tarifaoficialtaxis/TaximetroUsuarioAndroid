@@ -218,6 +218,8 @@
 
     <string name="error_getting_places">Ha ocurrido un error al intentar obtener las direcciones sugeridas.</string>
 
+    <string name="error_getting_route">Ha ocurrido un error al intentar obtener la ruta.</string>
+
 
 
 </resources>

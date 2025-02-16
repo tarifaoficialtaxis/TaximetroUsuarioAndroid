@@ -66,7 +66,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 latitude = appViewModel.userData?.location?.latitude!!,
                 longitude = appViewModel.userData?.location?.longitude!!,
                 callbackSuccess = { address ->
-                    startAddress = getShortAddress(address)
+                    startAddress = address
                     isSelectingStart = false
                 },
                 callbackError = {
@@ -102,7 +102,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             latitude = latitude,
             longitude = longitude,
             callbackSuccess = { address ->
-                tempAddressOnMap = getShortAddress(address)
+                tempAddressOnMap = address
                 tempLocationOnMap = UserLocation(latitude = latitude, longitude = longitude)
             },
             callbackError = {
@@ -119,10 +119,10 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
         setDefaultHeights()
 
         if (isSelectingStart) {
-            startAddress = getShortAddress(tempAddressOnMap)
+            startAddress = tempAddressOnMap
             startLocation = tempLocationOnMap
         } else {
-            endAddress = getShortAddress(tempAddressOnMap)
+            endAddress = tempAddressOnMap
             endLocation = tempLocationOnMap
         }
     }
@@ -195,13 +195,17 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             getPlaceDetails(
                 placeId = it,
                 callbackSuccess = { location ->
-                    if (isSelectingStart) {
-                        startAddress = getShortAddress(placePrediction.description)
-                        startLocation = location
-                    } else {
-                        endAddress = getShortAddress(placePrediction.description)
-                        endLocation = location
+
+                    placePrediction.description?.let { description ->
+                        if (isSelectingStart) {
+                            startAddress = description
+                            startLocation = location
+                        } else {
+                            endAddress = description
+                            endLocation = location
+                        }
                     }
+
                 },
                 callbackError = {
                     showCustomDialog(

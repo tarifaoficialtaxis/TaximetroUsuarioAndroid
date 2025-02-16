@@ -67,6 +67,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.getComplementAddress
+import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.getStreetAddress
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModelFactory
@@ -294,7 +295,7 @@ class RoutePlannerActivity : BaseActivity() {
                     .padding(vertical = 5.dp),
             ) {
                 CustomTextField(
-                    value = viewModel.startAddress,
+                    value = getShortAddress(viewModel.startAddress),
                     onValueChange = {
                         viewModel.startAddress = it
                         viewModel.loadPlacePredictions(it)
@@ -315,7 +316,7 @@ class RoutePlannerActivity : BaseActivity() {
                 )
 
                 CustomTextField(
-                    value = viewModel.endAddress,
+                    value = getShortAddress(viewModel.endAddress),
                     onValueChange = {
                         viewModel.endAddress = it
                         viewModel.loadPlacePredictions(it)

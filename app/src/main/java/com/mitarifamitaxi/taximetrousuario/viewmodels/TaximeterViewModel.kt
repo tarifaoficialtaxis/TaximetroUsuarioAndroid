@@ -30,15 +30,20 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var dialogMessage by mutableStateOf("")
 
 
-
     // Taximeter values
     var total by mutableStateOf(0)
+    var distanceMade by mutableStateOf(0)
+    var units by mutableStateOf(0)
+
+    var timeElapsed by mutableStateOf(0)
+
+    var isAirportSurcharge by mutableStateOf(false)
+    var isHolidaySurcharge by mutableStateOf(false)
+    var isDoorToDoorSurcharge by mutableStateOf(false)
 
     init {
         //setDefaultHeights()
     }
-
-
 
 
 }

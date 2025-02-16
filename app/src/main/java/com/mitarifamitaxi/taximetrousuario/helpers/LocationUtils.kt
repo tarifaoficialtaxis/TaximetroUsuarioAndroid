@@ -7,6 +7,7 @@ import com.mitarifamitaxi.taximetrousuario.resources.countries
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
+import java.net.URLEncoder
 
 const val googleapisUrl = "https://maps.googleapis.com/maps/api/"
 
@@ -125,8 +126,11 @@ fun getPlacePredictions(
     callbackSuccess: (ArrayList<PlacePrediction>) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
+
+    val encodedInput = URLEncoder.encode(input, "UTF-8")
+
     val url =
-        "${googleapisUrl}place/autocomplete/json?input=$input&location=$latitude,$longitude&radius=$radius&language=es&key=${Constants.GOOGLE_API_KEY}"
+        "${googleapisUrl}place/autocomplete/json?input=$encodedInput&location=$latitude,$longitude&radius=$radius&language=es&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()

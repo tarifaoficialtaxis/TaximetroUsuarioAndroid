@@ -1,43 +1,33 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
@@ -54,11 +44,14 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
+import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
+import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModelFactory
@@ -225,13 +218,115 @@ class TaximeterActivity : BaseActivity() {
                     .padding(bottom = 15.dp)
             )
 
+            TaximeterInfoRow(
+                title = stringResource(id = R.string.distance_made),
+                value = "${viewModel.distanceMade.formatNumberWithDots()} KM"
+            )
 
-            Spacer(modifier = Modifier.weight(1f))
+            TaximeterInfoRow(
+                title = stringResource(id = R.string.units),
+                value = viewModel.units.toString()
+            )
+
+            TaximeterInfoRow(
+                title = stringResource(id = R.string.time_trip),
+                value = viewModel.timeElapsed.toString()
+            )
+
+            Column {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = colorResource(id = R.color.main),
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Text(
+                        text = getShortAddress(viewModel.endAddress),
+                        fontFamily = MontserratFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = colorResource(id = R.color.gray1),
+                    )
+
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(colorResource(id = R.color.gray2))
+                )
+
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .padding(top = 10.dp)
+            ) {
+                CustomCheckBox(
+                    text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
+                    onValueChange = { viewModel.isAirportSurcharge = it }
+                )
+
+                CustomCheckBox(
+                    text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
+                    onValueChange = { viewModel.isHolidaySurcharge = it }
+                )
+
+                CustomCheckBox(
+                    text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
+                    onValueChange = { viewModel.isDoorToDoorSurcharge = it }
+                )
+            }
+
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 15.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    CustomButton(
+                        text = stringResource(id = R.string.sos).uppercase(),
+                        onClick = {
+                            startActivity(Intent(this@TaximeterActivity, SosActivity::class.java))
+                        },
+                        color = colorResource(id = R.color.red1),
+                        leadingIcon = Icons.Rounded.WarningAmber
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    CustomButton(
+                        text = stringResource(id = R.string.pqrs).uppercase(),
+                        onClick = {
+                            startActivity(Intent(this@TaximeterActivity, PqrsActivity::class.java))
+                        },
+                        color = colorResource(id = R.color.blue2),
+                        leadingIcon = Icons.AutoMirrored.Outlined.Chat
+                    )
+                }
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 15.dp)
             ) {
                 CustomButton(
                     text = stringResource(id = R.string.start_trip).uppercase(),

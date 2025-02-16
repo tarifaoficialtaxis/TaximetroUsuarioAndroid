@@ -199,8 +199,22 @@ class TaximeterActivity : BaseActivity() {
             FloatingActionButtonRoutes(
                 expanded = viewModel.isFabExpanded,
                 onMainFabClick = { viewModel.isFabExpanded = !viewModel.isFabExpanded },
-                onAction1Click = { /* Handle first action */ },
-                onAction2Click = { /* Handle second action */ },
+                onAction1Click = {
+                    viewModel.openWazeApp(
+                        viewModel.endLocation.latitude ?: 0.0,
+                        viewModel.endLocation.longitude ?: 0.0,
+                        onIntentReady = { startActivity(it) }
+                    )
+                },
+                onAction2Click = {
+                    viewModel.openGoogleMapsApp(
+                        viewModel.startLocation.latitude ?: 0.0,
+                        viewModel.startLocation.longitude ?: 0.0,
+                        viewModel.endLocation.latitude ?: 0.0,
+                        viewModel.endLocation.longitude ?: 0.0,
+                        onIntentReady = { startActivity(it) }
+                    )
+                },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(y = sheetTopOffset - sheetTopOffsetAdjust)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
@@ -340,17 +342,85 @@ class TaximeterActivity : BaseActivity() {
 
     @Composable
     fun SheetFoldedView() {
-        Text(
-            text = stringResource(id = R.string.drag_to_set_start_point),
-            color = colorResource(id = R.color.gray1),
-            fontSize = 15.sp,
-            fontFamily = MontserratFamily,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Center,
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                10.dp,
+                Alignment.CenterHorizontally
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 15.dp)
-        )
+                .padding(vertical = 15.dp)
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+
+                Text(
+                    text = "$ ${viewModel.total.formatNumberWithDots()} COP",
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    color = colorResource(id = R.color.main),
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+
+                )
+
+                Text(
+                    text = stringResource(id = R.string.price_to_pay),
+                    color = colorResource(id = R.color.gray1),
+                    fontSize = 12.sp,
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(45.dp)
+                    .background(colorResource(id = R.color.gray2))
+            )
+
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+
+                Text(
+                    text = "${viewModel.distanceMade.formatNumberWithDots()} KM",
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    color = colorResource(id = R.color.main),
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = stringResource(id = R.string.distance_made),
+                    color = colorResource(id = R.color.gray1),
+                    fontSize = 12.sp,
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+            }
+
+
+        }
 
         Box(
             modifier = Modifier

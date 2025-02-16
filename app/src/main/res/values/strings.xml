@@ -220,6 +220,8 @@
 
     <string name="error_getting_route">Ha ocurrido un error al intentar obtener la ruta.</string>
 
-
+    <string name="permission_required">Permiso requerido</string>
+    <string name="location_permission_required">Para continuar, necesitamos tu permiso para acceder a tu ubicación. Por favor, otorga los permisos necesarios en la configuración de tu dispositivo.</string>
+    <string name="background_location_permission_required">Para que la aplicación funcione correctamente, necesitamos tu permiso para acceder a tu ubicación en segundo plano. Por favor, otorga los permisos necesarios.</string>
 
 </resources>

@@ -8,6 +8,10 @@ import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URLEncoder
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 const val googleapisUrl = "https://maps.googleapis.com/maps/api/"
 
@@ -313,6 +317,37 @@ fun decodePolyline(encoded: String): List<LatLng> {
     return poly
 }
 
+fun calculateDistance(startCoordinates: LatLng, endCoordinates: LatLng): Double {
+    val toRad = { value: Double -> (value * Math.PI) / 180 }
+    val r = 6371e3
+
+    val lat1 = toRad(startCoordinates.latitude)
+    val lat2 = toRad(endCoordinates.latitude)
+    val deltaLat = toRad(endCoordinates.latitude - startCoordinates.latitude)
+    val deltaLon = toRad(endCoordinates.longitude - startCoordinates.longitude)
+
+    val a = sin(deltaLat / 2) * sin(deltaLat / 2) +
+            cos(lat1) * cos(lat2) *
+            sin(deltaLon / 2) * sin(deltaLon / 2)
+
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return r * c
+}
+
+fun calculateBearing(startPosition: LatLng, endPosition: LatLng): Float {
+    val lat1 = Math.toRadians(startPosition.latitude)
+    val lat2 = Math.toRadians(endPosition.latitude)
+    val lon1 = Math.toRadians(startPosition.longitude)
+    val lon2 = Math.toRadians(endPosition.longitude)
+
+    val dLon = lon2 - lon1
+    val y = sin(dLon) * cos(lat2)
+    val x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
+
+    val bearing = Math.toDegrees(atan2(y, x))
+    return ((bearing + 360) % 360).toFloat()
+}
 
 
 

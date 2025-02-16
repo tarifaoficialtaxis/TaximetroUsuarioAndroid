@@ -76,8 +76,8 @@ class HomeActivity : BaseActivity() {
                 viewModel.getCurrentLocation()
             } else {
                 viewModel.showErrorMessage(
-                    "Permission Denied",
-                    "Location permission is required for this feature."
+                    getString(R.string.permission_required),
+                    getString(R.string.location_permission_required)
                 )
             }
         }
@@ -381,16 +381,6 @@ class HomeActivity : BaseActivity() {
 
 
             }
-            /*Button(onClick = {
-                viewModel.logout(
-                    onLogoutComplete = {
-                        startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
-                        finish()
-                    }
-                )
-            }) {
-                Text("Logout")
-            }*/
         }
     }
 }

@@ -2,6 +2,7 @@ package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -40,11 +42,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
@@ -55,8 +59,10 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.FloatingActionButtonRou
 import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.helpers.calculateBearing
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModelFactory
@@ -67,8 +73,21 @@ class TaximeterActivity : BaseActivity() {
         TaximeterViewModelFactory(this, appViewModel)
     }
 
+    val backgroundLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            viewModel.showCustomDialog(
+                DialogType.ERROR,
+                getString(R.string.permission_required),
+                getString(R.string.background_location_permission_required)
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel.requestBackgroundLocationPermission(this)
 
         val startAddress = intent.getStringExtra("start_address")
         startAddress?.let {
@@ -139,6 +158,44 @@ class TaximeterActivity : BaseActivity() {
             )
         }
 
+        LaunchedEffect(viewModel.currentPosition, viewModel.routeCoordinates) {
+            val targetLatLng = LatLng(
+                viewModel.currentPosition.latitude ?: 0.0,
+                viewModel.currentPosition.longitude ?: 0.0
+            )
+
+            var camPos = CameraPosition.builder(cameraPositionState.position)
+                .target(
+                    LatLng(
+                        appViewModel.userData?.location?.latitude ?: 4.60971,
+                        appViewModel.userData?.location?.longitude ?: -74.08175
+                    )
+                )
+                .zoom(15f)
+                .bearing(0f)
+                .build()
+
+            if (viewModel.routeCoordinates.size > 1) {
+                val previousPosition =
+                    viewModel.routeCoordinates[viewModel.routeCoordinates.size - 2]
+                val newRotation = calculateBearing(
+                    previousPosition, LatLng(
+                        viewModel.currentPosition.latitude ?: 0.0,
+                        viewModel.currentPosition.longitude ?: 0.0
+                    )
+                )
+
+                camPos = CameraPosition.builder(cameraPositionState.position)
+                    .target(targetLatLng)
+                    .zoom(15f)
+                    .bearing(newRotation)
+                    .build()
+            }
+
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newCameraPosition(camPos)
+            )
+        }
 
         Box(modifier = Modifier.fillMaxSize()) {
 
@@ -184,6 +241,14 @@ class TaximeterActivity : BaseActivity() {
                             modifier = Modifier.fillMaxSize(),
                         ) {
 
+                            if (viewModel.routeCoordinates.isNotEmpty()) {
+                                Polyline(
+                                    points = viewModel.routeCoordinates,
+                                    color = colorResource(id = R.color.main),
+                                    width = 10f
+                                )
+                            }
+
 
                             if (viewModel.startAddress.isNotEmpty()) {
                                 CustomSizedMarker(
@@ -197,6 +262,16 @@ class TaximeterActivity : BaseActivity() {
                                 )
 
                             }
+
+                            CustomSizedMarker(
+                                position = LatLng(
+                                    viewModel.currentPosition.latitude ?: 0.0,
+                                    viewModel.currentPosition.longitude ?: 0.0
+                                ),
+                                drawableRes = R.drawable.taxi_marker,
+                                width = 49,
+                                height = 114
+                            )
 
                         }
                     }
@@ -241,7 +316,7 @@ class TaximeterActivity : BaseActivity() {
         ) {
 
             Text(
-                text = "$ ${viewModel.total.formatNumberWithDots()} COP",
+                text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
                 color = colorResource(id = R.color.main),
                 fontSize = 36.sp,
                 fontFamily = MontserratFamily,
@@ -426,7 +501,7 @@ class TaximeterActivity : BaseActivity() {
             ) {
 
                 Text(
-                    text = "$ ${viewModel.total.formatNumberWithDots()} COP",
+                    text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,

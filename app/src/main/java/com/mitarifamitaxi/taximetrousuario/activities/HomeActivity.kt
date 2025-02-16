@@ -97,6 +97,7 @@ class HomeActivity : BaseActivity() {
         MainView(
             onTaximeterClick = {
                 startActivity(Intent(this, RoutePlannerActivity::class.java))
+                //startActivity(Intent(this, TaximeterActivity::class.java))
             },
             onSosClick = {
                 startActivity(Intent(this, SosActivity::class.java))

@@ -29,6 +29,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var dialogTitle by mutableStateOf("")
     var dialogMessage by mutableStateOf("")
 
+    var isFabExpanded by mutableStateOf(false)
 
     // Taximeter values
     var total by mutableStateOf(0)

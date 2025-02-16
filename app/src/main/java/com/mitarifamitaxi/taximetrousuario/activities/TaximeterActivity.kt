@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,6 +50,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
+import com.mitarifamitaxi.taximetrousuario.components.ui.FloatingActionButtonRoutes
 import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -116,6 +118,11 @@ class TaximeterActivity : BaseActivity() {
         val mapPeekHeight = screenHeight * 0.36f
         val mapFullHeight = screenHeight * 0.78f
 
+        val sheetTopOffset =
+            if (sheetState.currentValue == SheetValue.Expanded) mapPeekHeight else mapFullHeight
+        val sheetTopOffsetAdjust =
+            if (viewModel.isFabExpanded) 188.dp else 80.dp
+
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(
                 LatLng(
@@ -126,65 +133,80 @@ class TaximeterActivity : BaseActivity() {
         }
 
 
-        BottomSheetScaffold(
-            scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
-            sheetContent = {
-                Column(
-                    modifier = Modifier
-                        .height(if (sheetState.currentValue == SheetValue.Expanded) fullHeight else peekHeight)
-                        .padding(horizontal = 20.dp),
-                ) {
-                    if (sheetState.currentValue == SheetValue.Expanded) {
-                        SheetExpandedView()
-                    } else {
-                        SheetFoldedView()
-                    }
+        Box(modifier = Modifier.fillMaxSize()) {
 
-                }
-
-            },
-            sheetContainerColor = colorResource(id = R.color.white),
-            sheetPeekHeight = peekHeight,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (sheetState.currentValue == SheetValue.Expanded) mapPeekHeight else mapFullHeight)
-            ) {
-                TopHeaderView(
-                    title = stringResource(id = R.string.taximeter),
-                    leadingIcon = Icons.Filled.ChevronLeft,
-                    onClickLeading = {
-                        finish()
-                    }
-                )
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    GoogleMap(
-                        cameraPositionState = cameraPositionState,
-                        uiSettings = MapUiSettings(
-                            zoomControlsEnabled = false
-                        ),
-                        modifier = Modifier.fillMaxSize(),
+            BottomSheetScaffold(
+                scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
+                sheetContent = {
+                    Column(
+                        modifier = Modifier
+                            .height(if (sheetState.currentValue == SheetValue.Expanded) fullHeight else peekHeight)
+                            .padding(horizontal = 20.dp),
                     ) {
-
-
-                        if (viewModel.startAddress.isNotEmpty()) {
-                            CustomSizedMarker(
-                                position = LatLng(
-                                    viewModel.startLocation.latitude ?: 0.0,
-                                    viewModel.startLocation.longitude ?: 0.0
-                                ),
-                                drawableRes = R.drawable.flag_start,
-                                width = 120,
-                                height = 120
-                            )
-
+                        if (sheetState.currentValue == SheetValue.Expanded) {
+                            SheetExpandedView()
+                        } else {
+                            SheetFoldedView()
                         }
 
                     }
+
+                },
+                sheetContainerColor = colorResource(id = R.color.white),
+                sheetPeekHeight = peekHeight,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (sheetState.currentValue == SheetValue.Expanded) mapPeekHeight else mapFullHeight)
+                ) {
+                    TopHeaderView(
+                        title = stringResource(id = R.string.taximeter),
+                        leadingIcon = Icons.Filled.ChevronLeft,
+                        onClickLeading = {
+                            finish()
+                        }
+                    )
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        GoogleMap(
+                            cameraPositionState = cameraPositionState,
+                            uiSettings = MapUiSettings(
+                                zoomControlsEnabled = false
+                            ),
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+
+
+                            if (viewModel.startAddress.isNotEmpty()) {
+                                CustomSizedMarker(
+                                    position = LatLng(
+                                        viewModel.startLocation.latitude ?: 0.0,
+                                        viewModel.startLocation.longitude ?: 0.0
+                                    ),
+                                    drawableRes = R.drawable.flag_start,
+                                    width = 120,
+                                    height = 120
+                                )
+
+                            }
+
+                        }
+                    }
                 }
             }
+
+            FloatingActionButtonRoutes(
+                expanded = viewModel.isFabExpanded,
+                onMainFabClick = { viewModel.isFabExpanded = !viewModel.isFabExpanded },
+                onAction1Click = { /* Handle first action */ },
+                onAction2Click = { /* Handle second action */ },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(y = sheetTopOffset - sheetTopOffsetAdjust)
+                    .padding(end = 16.dp)
+            )
+
         }
     }
 

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.WarningAmber
@@ -97,7 +98,13 @@ class TaximeterActivity : BaseActivity() {
                 dialogType = viewModel.dialogType,
                 title = viewModel.dialogTitle,
                 message = viewModel.dialogMessage,
-                onDismiss = { viewModel.showDialog = false }
+                showCloseButton = viewModel.dialogShowCloseButton,
+                primaryActionButton = viewModel.dialogPrimaryAction,
+                onDismiss = { viewModel.showDialog = false },
+                onPrimaryActionClicked = {
+                    viewModel.showDialog = false
+
+                }
             )
         }
     }
@@ -253,7 +260,7 @@ class TaximeterActivity : BaseActivity() {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 15.dp)
+                    .padding(bottom = 10.dp)
             )
 
             TaximeterInfoRow(
@@ -263,12 +270,12 @@ class TaximeterActivity : BaseActivity() {
 
             TaximeterInfoRow(
                 title = stringResource(id = R.string.units),
-                value = viewModel.units.toString()
+                value = viewModel.units.toInt().toString()
             )
 
             TaximeterInfoRow(
                 title = stringResource(id = R.string.time_trip),
-                value = viewModel.timeElapsed.toString()
+                value = viewModel.formattedTime
             )
 
             Column {
@@ -312,17 +319,41 @@ class TaximeterActivity : BaseActivity() {
             ) {
                 CustomCheckBox(
                     text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
-                    onValueChange = { viewModel.isAirportSurcharge = it }
+                    isEnabled = viewModel.isTaximeterStarted,
+                    onValueChange = {
+                        viewModel.isAirportSurcharge = it
+                        if (it) {
+                            viewModel.units += viewModel.ratesObj.value.airportRateUnits ?: 0.0
+                        } else {
+                            viewModel.units -= viewModel.ratesObj.value.airportRateUnits ?: 0.0
+                        }
+                    }
                 )
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
-                    onValueChange = { viewModel.isHolidaySurcharge = it }
+                    isEnabled = viewModel.isTaximeterStarted,
+                    onValueChange = {
+                        viewModel.isHolidaySurcharge = it
+                        if (it) {
+                            viewModel.units += viewModel.ratesObj.value.holidayRateUnits ?: 0.0
+                        } else {
+                            viewModel.units -= viewModel.ratesObj.value.holidayRateUnits ?: 0.0
+                        }
+                    }
                 )
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
-                    onValueChange = { viewModel.isDoorToDoorSurcharge = it }
+                    isEnabled = viewModel.isTaximeterStarted,
+                    onValueChange = {
+                        viewModel.isDoorToDoorSurcharge = it
+                        if (it) {
+                            viewModel.units += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                        } else {
+                            viewModel.units -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                        }
+                    }
                 )
             }
 
@@ -367,10 +398,10 @@ class TaximeterActivity : BaseActivity() {
                     .fillMaxWidth()
             ) {
                 CustomButton(
-                    text = stringResource(id = R.string.start_trip).uppercase(),
-                    onClick = {},
-                    color = colorResource(id = R.color.main),
-                    leadingIcon = Icons.Default.PlayArrow
+                    text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
+                    onClick = { if (viewModel.isTaximeterStarted) viewModel.stopTaximeter() else viewModel.startTaximeter() },
+                    color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
+                    leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
                 )
             }
         }

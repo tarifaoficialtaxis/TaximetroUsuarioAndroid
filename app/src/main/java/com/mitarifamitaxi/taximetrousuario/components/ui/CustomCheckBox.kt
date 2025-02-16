@@ -25,6 +25,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 @Composable
 fun CustomCheckBox(
     text: String,
+    isEnabled: Boolean = true,
     onValueChange: (Boolean) -> Unit,
 ) {
     var checked by remember { mutableStateOf(false) }
@@ -37,6 +38,7 @@ fun CustomCheckBox(
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
             Checkbox(
                 checked = checked,
+                enabled = isEnabled,
                 onCheckedChange = {
                     checked = it
                     onValueChange(it)

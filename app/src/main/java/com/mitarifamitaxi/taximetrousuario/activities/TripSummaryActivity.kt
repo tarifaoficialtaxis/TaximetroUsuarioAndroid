@@ -90,6 +90,11 @@ class TripSummaryActivity : BaseActivity() {
             },
             onShareAction = {
                 viewModel.showShareDialog = true
+            },
+            onFinishAction = {
+                viewModel.saveTripData() { intent ->
+                    startActivity(intent)
+                }
             }
         )
 
@@ -136,7 +141,8 @@ class TripSummaryActivity : BaseActivity() {
     private fun MainView(
         onDeleteAction: () -> Unit,
         onSosAction: () -> Unit,
-        onShareAction: () -> Unit
+        onShareAction: () -> Unit,
+        onFinishAction: () -> Unit
     ) {
 
         Column(
@@ -337,7 +343,7 @@ class TripSummaryActivity : BaseActivity() {
                         if (!viewModel.isDetails) {
                             CustomButton(
                                 text = stringResource(id = R.string.finish).uppercase(),
-                                onClick = onDeleteAction,
+                                onClick = onFinishAction,
                                 color = colorResource(id = R.color.gray1),
                                 leadingIcon = Icons.Default.Close
                             )

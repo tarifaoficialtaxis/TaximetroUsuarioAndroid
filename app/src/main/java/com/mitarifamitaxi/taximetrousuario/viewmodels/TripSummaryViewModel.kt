@@ -2,6 +2,7 @@ package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -11,7 +12,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storageMetadata
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.shareFormatDate
@@ -19,7 +23,9 @@ import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.ByteArrayOutputStream
 import java.net.URLEncoder
+
 
 class TripSummaryViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
@@ -64,6 +70,82 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                     appContext.getString(R.string.error_on_delete_trip),
                 )
 
+            }
+        }
+    }
+
+    private suspend fun uploadImage(bitmap: Bitmap): String? {
+        return try {
+            // Create a unique reference path
+            val fileName = "images/${System.currentTimeMillis()}.png"
+            val storageRef = FirebaseStorage.getInstance().reference.child(fileName)
+
+            // Set metadata, including content type
+            val metadata = storageMetadata {
+                contentType = "image/png"
+            }
+
+            // Convert bitmap to byte array
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+
+            // Upload byte array directly
+            storageRef.putBytes(byteArray, metadata).await()
+
+            // Get download URL
+            storageRef.downloadUrl.await().toString()
+        } catch (error: Exception) {
+            Log.e("TripSummaryViewModel", "Error uploading image: ${error.message}")
+            null
+        }
+    }
+
+
+    fun saveTripData(onIntentReady: (Intent) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // Save data in Firestore
+
+                appViewModel.isLoading = true
+
+                val imageUrl = tripData.routeImageLocal?.let { uploadImage(it) }
+
+                val tripDataReq = hashMapOf(
+                    "userId" to appViewModel.userData?.id,
+                    "startCoords" to tripData.startCoords,
+                    "endCoords" to tripData.endCoords,
+                    "startHour" to tripData.startHour,
+                    "endHour" to tripData.endHour,
+                    "distance" to tripData.distance,
+                    "units" to tripData.units,
+                    "total" to tripData.total,
+                    "isAirportSurcharge" to tripData.airportSurchargeEnabled,
+                    "airportSurcharge" to tripData.airportSurcharge,
+                    "isHolidaySurcharge" to tripData.holidaySurchargeEnabled,
+                    "holidaySurcharge" to tripData.holidaySurcharge,
+                    "isDoorToDoorSurcharge" to tripData.doorToDoorSurchargeEnabled,
+                    "doorToDoorSurcharge" to tripData.doorToDoorSurcharge,
+                    "startAddress" to tripData.startAddress,
+                    "endAddress" to tripData.endAddress,
+                    "routeImage" to imageUrl
+                )
+
+                FirebaseFirestore.getInstance().collection("trips").add(tripDataReq).await()
+                appViewModel.isLoading = false
+
+                val intent = Intent(appContext, HomeActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                onIntentReady(intent)
+
+            } catch (error: Exception) {
+                appViewModel.isLoading = false
+                Log.e("TripSummaryViewModel", "Error saving trip data: ${error.message}")
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_on_save_trip)
+                )
             }
         }
     }

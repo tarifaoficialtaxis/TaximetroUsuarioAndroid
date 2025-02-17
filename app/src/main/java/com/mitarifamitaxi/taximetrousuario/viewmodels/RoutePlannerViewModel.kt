@@ -1,28 +1,39 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.location.Location
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
-import com.mitarifamitaxi.taximetrousuario.activities.CompleteProfileActivity
+import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.RoutePlannerActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.fetchRoute
 import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlaceDetails
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlacePredictions
-import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import java.util.concurrent.Executor
 
 class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -30,6 +41,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     private val appContext = context.applicationContext
     private val localConfiguration: Configuration = appContext.resources.configuration
 
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    private val executor: Executor = ContextCompat.getMainExecutor(context)
 
     var startAddress by mutableStateOf("")
     var startLocation by mutableStateOf(UserLocation())
@@ -59,28 +72,78 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var routePoints by mutableStateOf<List<LatLng>>(emptyList())
 
     init {
+        setDefaultHeights()
+    }
 
-        if (appViewModel.userData?.location?.latitude != null && appViewModel.userData?.location?.longitude != null) {
-            startLocation = appViewModel.userData?.location!!
-            getAddressFromCoordinates(
-                latitude = appViewModel.userData?.location?.latitude!!,
-                longitude = appViewModel.userData?.location?.longitude!!,
-                callbackSuccess = { address ->
-                    startAddress = address
-                    isSelectingStart = false
-                },
-                callbackError = {
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.error_getting_address)
-                    )
-                }
+    fun requestLocationPermission(activity: RoutePlannerActivity) {
+        if (ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            activity.locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        } else {
+            getCurrentLocation()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation() {
+
+        val cancellationTokenSource = CancellationTokenSource()
+
+        val task: Task<Location> = fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        )
+
+        task.addOnSuccessListener(executor) { location ->
+            if (location != null) {
+
+                getAddressFromCoordinates(
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    callbackSuccess = { address ->
+                        startAddress = address
+                        isSelectingStart = false
+                        startLocation = UserLocation(
+                            latitude = location.latitude,
+                            longitude = location.longitude
+                        )
+                    },
+                    callbackError = {
+                        showCustomDialog(
+                            DialogType.ERROR,
+                            appContext.getString(R.string.something_went_wrong),
+                            appContext.getString(R.string.error_getting_address)
+                        )
+                    }
+                )
+
+            } else {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_fetching_location)
+                )
+            }
+        }.addOnFailureListener {
+            showCustomDialog(
+                DialogType.ERROR,
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_fetching_location)
             )
         }
-
-        setDefaultHeights()
-
     }
 
     private fun setDefaultHeights() {
@@ -241,7 +304,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
         onIntentReady(intent)
     }
 
-    private fun showCustomDialog(
+    fun showCustomDialog(
         type: DialogType,
         title: String,
         message: String,

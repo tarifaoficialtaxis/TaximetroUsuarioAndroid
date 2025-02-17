@@ -28,6 +28,7 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
@@ -62,10 +63,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     private var locationCallback: LocationCallback? = null
+    private val executor: Executor = ContextCompat.getMainExecutor(context)
 
     // Taximeter values
     var total by mutableStateOf(0.0)
-    var distanceMade by mutableStateOf(0)
+    var distanceMade by mutableStateOf(0.0)
 
     private val _units = mutableStateOf(0.0)
 
@@ -92,12 +94,48 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var routeCoordinates by mutableStateOf<List<LatLng>>(emptyList())
     var currentPosition by mutableStateOf(startLocation)
 
+    var previousLocation: Location? = null
+
     init {
         getCityRates(appViewModel.userData?.city)
     }
 
     fun requestBackgroundLocationPermission(activity: TaximeterActivity) {
         activity.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation() {
+
+        val cancellationTokenSource = CancellationTokenSource()
+
+        val task: Task<Location> = fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        )
+
+        task.addOnSuccessListener(executor) { location ->
+            if (location != null) {
+
+                currentPosition = UserLocation(
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+
+            } else {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_fetching_location)
+                )
+            }
+        }.addOnFailureListener {
+            showCustomDialog(
+                DialogType.ERROR,
+                appContext.getString(R.string.something_went_wrong),
+                appContext.getString(R.string.error_fetching_location)
+            )
+        }
     }
 
     private fun getCityRates(userCity: String?) {
@@ -160,6 +198,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     fun stopTaximeter() {
         isTaximeterStarted = false
+        locationCallback?.let {
+            fusedLocationClient.removeLocationUpdates(it)
+            locationCallback = null
+        }
     }
 
     private fun startTimer() {
@@ -261,6 +303,18 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 locationResult.lastLocation?.let { location ->
+
+
+                    val speedMetersPerSecond = location.speed
+                    // Convert to km/h if desired
+                    val speedKmPerHour = speedMetersPerSecond * 3.6
+                    Log.d("LocationCallback", "Speed: $speedMetersPerSecond m/s ($speedKmPerHour km/h)")
+
+                    val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
+                    distanceMade += distanceCovered.toDouble()
+                    Log.d("LocationCallback", "Distance covered: $distanceCovered meters")
+
+                    previousLocation = location
 
                     currentPosition = UserLocation(
                         latitude = location.latitude,

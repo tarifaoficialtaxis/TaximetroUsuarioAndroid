@@ -1,5 +1,8 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.Manifest
+import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -69,6 +72,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.getComplementAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.getStreetAddress
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.RoutePlannerViewModelFactory
 
@@ -76,6 +80,28 @@ class RoutePlannerActivity : BaseActivity() {
 
     private val viewModel: RoutePlannerViewModel by viewModels {
         RoutePlannerViewModelFactory(this, appViewModel)
+    }
+
+    val locationPermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+            val coarseLocationGranted =
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+            if (fineLocationGranted || coarseLocationGranted) {
+                viewModel.getCurrentLocation()
+            } else {
+                viewModel.showCustomDialog(
+                    DialogType.ERROR,
+                    getString(R.string.permission_required),
+                    getString(R.string.location_permission_required)
+                )
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.requestLocationPermission(this)
     }
 
     @Composable

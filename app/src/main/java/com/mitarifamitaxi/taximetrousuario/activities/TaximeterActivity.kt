@@ -60,6 +60,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.calculateBearing
+import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
@@ -76,7 +77,9 @@ class TaximeterActivity : BaseActivity() {
     val backgroundLocationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (!granted) {
+        if (granted) {
+            viewModel.getCurrentLocation()
+        } else {
             viewModel.showCustomDialog(
                 DialogType.ERROR,
                 getString(R.string.permission_required),
@@ -164,17 +167,6 @@ class TaximeterActivity : BaseActivity() {
                 viewModel.currentPosition.longitude ?: 0.0
             )
 
-            var camPos = CameraPosition.builder(cameraPositionState.position)
-                .target(
-                    LatLng(
-                        appViewModel.userData?.location?.latitude ?: 4.60971,
-                        appViewModel.userData?.location?.longitude ?: -74.08175
-                    )
-                )
-                .zoom(15f)
-                .bearing(0f)
-                .build()
-
             if (viewModel.routeCoordinates.size > 1) {
                 val previousPosition =
                     viewModel.routeCoordinates[viewModel.routeCoordinates.size - 2]
@@ -185,16 +177,18 @@ class TaximeterActivity : BaseActivity() {
                     )
                 )
 
-                camPos = CameraPosition.builder(cameraPositionState.position)
+                val camPos = CameraPosition.builder(cameraPositionState.position)
                     .target(targetLatLng)
                     .zoom(15f)
                     .bearing(newRotation)
                     .build()
+
+                cameraPositionState.animate(
+                    update = CameraUpdateFactory.newCameraPosition(camPos)
+                )
             }
 
-            cameraPositionState.animate(
-                update = CameraUpdateFactory.newCameraPosition(camPos)
-            )
+
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -340,7 +334,7 @@ class TaximeterActivity : BaseActivity() {
 
             TaximeterInfoRow(
                 title = stringResource(id = R.string.distance_made),
-                value = "${viewModel.distanceMade.formatNumberWithDots()} KM"
+                value = "${(viewModel.distanceMade / 1000).formatDigits(1)} KM",
             )
 
             TaximeterInfoRow(
@@ -538,7 +532,7 @@ class TaximeterActivity : BaseActivity() {
             ) {
 
                 Text(
-                    text = "${viewModel.distanceMade.formatNumberWithDots()} KM",
+                    text = "${(viewModel.distanceMade / 1000).formatDigits(1)} KM",
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
@@ -570,10 +564,10 @@ class TaximeterActivity : BaseActivity() {
                 .padding(bottom = 15.dp)
         ) {
             CustomButton(
-                text = stringResource(id = R.string.start_trip).uppercase(),
-                onClick = {},
-                color = colorResource(id = R.color.main),
-                leadingIcon = Icons.Default.PlayArrow
+                text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
+                onClick = { if (viewModel.isTaximeterStarted) viewModel.stopTaximeter() else viewModel.startTaximeter() },
+                color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
+                leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
             )
         }
 

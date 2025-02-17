@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.models
 
+import android.graphics.Bitmap
 import com.google.firebase.firestore.PropertyName
 
 data class Trip(
@@ -12,8 +13,8 @@ data class Trip(
     val startHour: String? = null,
     val endHour: String? = null,
     val units: Int? = null,
-    val total: Int? = null,
-    val distance: Int? = null,
+    val total: Double? = null,
+    val distance: Double? = null,
 
     @get:PropertyName("isHolidaySurcharge")
     @field:PropertyName("isHolidaySurcharge")
@@ -30,5 +31,7 @@ data class Trip(
     val airportSurchargeEnabled: Boolean? = null,
     val airportSurcharge: Int? = null,
 
-    val routeImage: String? = null
+    val routeImage: String? = null,
+
+    val routeImageLocal: Bitmap? = null
 )

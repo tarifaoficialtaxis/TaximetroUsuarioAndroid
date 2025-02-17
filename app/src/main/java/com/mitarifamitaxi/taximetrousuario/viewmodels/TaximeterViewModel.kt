@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.os.Looper
 import androidx.core.app.ActivityCompat
@@ -26,18 +27,20 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
+import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
-import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
-import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
+import com.mitarifamitaxi.taximetrousuario.activities.TripSummaryActivity
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
+import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
 
@@ -95,6 +98,13 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var currentPosition by mutableStateOf(startLocation)
 
     var previousLocation: Location? = null
+
+    var fitCameraPosition by mutableStateOf(false)
+    var isMapLoaded by mutableStateOf(false)
+    var takeMapScreenshot by mutableStateOf(false)
+
+    private var startTime by mutableStateOf("")
+    private var endTime by mutableStateOf("")
 
     init {
         getCityRates(appViewModel.userData?.city)
@@ -189,19 +199,23 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     }
 
+    private fun onUnitsChanged(newValue: Double) {
+        total = newValue * (ratesObj.value.unitPrice ?: 0.0)
+    }
+
     fun startTaximeter() {
         isTaximeterStarted = true
         units = ratesObj.value.startRateUnits ?: 0.0
+        startTime = Instant.now().toString()
         startTimer()
         startWatchLocation()
     }
 
     fun stopTaximeter() {
         isTaximeterStarted = false
-        locationCallback?.let {
-            fusedLocationClient.removeLocationUpdates(it)
-            locationCallback = null
-        }
+        stopWatchLocation()
+        endTime = Instant.now().toString()
+        fitCameraPosition = true
     }
 
     private fun startTimer() {
@@ -237,8 +251,124 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         }
     }
 
-    private fun onUnitsChanged(newValue: Double) {
-        total = newValue * (ratesObj.value.unitPrice ?: 0.0)
+    private fun stopWatchLocation() {
+        locationCallback?.let {
+            fusedLocationClient.removeLocationUpdates(it)
+            locationCallback = null
+        }
+    }
+
+    private fun startWatchLocation() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
+            .setMinUpdateIntervalMillis(2000L)
+            .build()
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                locationResult.lastLocation?.let { location ->
+
+                    currentPosition = UserLocation(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+
+                    routeCoordinates = routeCoordinates + LatLng(
+                        currentPosition.latitude ?: 0.0,
+                        currentPosition.longitude ?: 0.0
+                    )
+
+                    val speedMetersPerSecond = location.speed
+                    val speedKmPerHour = speedMetersPerSecond * 3.6
+                    if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
+                        isMooving = true
+
+                        val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
+                        distanceMade += distanceCovered.toDouble()
+
+                        val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
+                        units += additionalUnits
+
+                    } else {
+                        isMooving = false
+                    }
+
+                    previousLocation = location
+
+                }
+            }
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback!!,
+            Looper.getMainLooper()
+        )
+    }
+
+    fun mapScreenshotReady(bitmap: Bitmap, onIntentReady: (Intent) -> Unit) {
+
+        units = getFinalUnits().toDouble()
+
+        val tripObj = Trip(
+            startAddress = startAddress,
+            startCoords = startLocation,
+            endAddress = endAddress,
+            endCoords = endLocation,
+            startHour = startTime,
+            endHour = endTime,
+            units = units.toInt(),
+            total = total,
+            distance = distanceMade,
+            airportSurchargeEnabled = isAirportSurcharge,
+            airportSurcharge = if (isAirportSurcharge) ratesObj.value.airportRateUnits?.toInt() else null,
+            holidaySurchargeEnabled = isHolidaySurcharge,
+            holidaySurcharge = if (isHolidaySurcharge) ratesObj.value.holidayRateUnits?.toInt() else null,
+            doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
+            doorToDoorSurcharge = if (isDoorToDoorSurcharge) ratesObj.value.doorToDoorRateUnits?.toInt() else null,
+            routeImageLocal = bitmap
+        )
+
+        val tripJson = Gson().toJson(tripObj)
+        val intent = Intent(appContext, TripSummaryActivity::class.java)
+        intent.putExtra("trip_data", tripJson)
+        onIntentReady(intent)
+
+    }
+
+    private fun getFinalUnits(): Int {
+        var totalRechargesUnits = 0.0
+        if (isAirportSurcharge) {
+            totalRechargesUnits += ratesObj.value.airportRateUnits ?: 0.0
+        }
+        if (isHolidaySurcharge) {
+            totalRechargesUnits += ratesObj.value.holidayRateUnits ?: 0.0
+        }
+        if (isDoorToDoorSurcharge) {
+            totalRechargesUnits += ratesObj.value.doorToDoorRateUnits ?: 0.0
+        }
+
+        val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
+
+        return if (units - totalRechargesUnits < minimumRateUnits) {
+            if (!isAirportSurcharge && !isHolidaySurcharge && !isDoorToDoorSurcharge) {
+                minimumRateUnits.toInt()
+            } else {
+                (minimumRateUnits + totalRechargesUnits).toInt()
+            }
+        } else {
+            units.toInt()
+        }
     }
 
 
@@ -292,60 +422,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             onIntentReady(webIntent)
         }
     }
-
-
-    private fun startWatchLocation() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
-            .setMinUpdateIntervalMillis(2000L)
-            .build()
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                super.onLocationResult(locationResult)
-                locationResult.lastLocation?.let { location ->
-
-
-                    val speedMetersPerSecond = location.speed
-                    // Convert to km/h if desired
-                    val speedKmPerHour = speedMetersPerSecond * 3.6
-                    Log.d("LocationCallback", "Speed: $speedMetersPerSecond m/s ($speedKmPerHour km/h)")
-
-                    val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
-                    distanceMade += distanceCovered.toDouble()
-                    Log.d("LocationCallback", "Distance covered: $distanceCovered meters")
-
-                    previousLocation = location
-
-                    currentPosition = UserLocation(
-                        latitude = location.latitude,
-                        longitude = location.longitude
-                    )
-
-                    routeCoordinates = routeCoordinates + LatLng(
-                        currentPosition.latitude ?: 0.0,
-                        currentPosition.longitude ?: 0.0
-                    )
-                }
-            }
-        }
-
-        if (ActivityCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback!!,
-            Looper.getMainLooper()
-        )
-    }
-
 
 }
 

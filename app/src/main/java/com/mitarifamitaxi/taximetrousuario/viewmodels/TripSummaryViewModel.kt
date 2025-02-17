@@ -25,6 +25,8 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
 
     private val appContext = context.applicationContext
 
+    var isDetails by mutableStateOf(false)
+
     var dialogType by mutableStateOf(DialogType.SUCCESS)
     var showDialog by mutableStateOf(false)
     var dialogTitle by mutableStateOf("")
@@ -115,7 +117,11 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append("*Recargo puerta a puerta:* ${tripData.doorToDoorSurcharge?.formatNumberWithDots()} COP\n")
             }
 
-            append("*${appContext.getString(R.string.fare)}* ${tripData.total?.formatNumberWithDots()} COP")
+            append(
+                "*${appContext.getString(R.string.fare)}* ${
+                    tripData.total?.toInt()?.formatNumberWithDots()
+                } COP"
+            )
         }
 
         val messageToSend = URLEncoder.encode(message, "UTF-8").replace("%0A", "%0D%0A")

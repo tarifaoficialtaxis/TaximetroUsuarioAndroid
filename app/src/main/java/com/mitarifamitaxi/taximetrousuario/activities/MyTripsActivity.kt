@@ -40,6 +40,7 @@ class MyTripsActivity : BaseActivity() {
             onTripClicked = { trip ->
                 val tripJson = Gson().toJson(trip)
                 val intent = Intent(this, TripSummaryActivity::class.java)
+                intent.putExtra("is_details", true)
                 intent.putExtra("trip_data", tripJson)
                 startActivity(intent)
             }

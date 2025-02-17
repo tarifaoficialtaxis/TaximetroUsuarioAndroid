@@ -45,9 +45,13 @@ import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import kotlinx.coroutines.delay
 import com.google.gson.Gson
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
@@ -131,7 +135,10 @@ class TaximeterActivity : BaseActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+    @OptIn(
+        ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+        MapsComposeExperimentalApi::class
+    )
     @Composable
     fun MainView() {
 
@@ -191,6 +198,20 @@ class TaximeterActivity : BaseActivity() {
 
         }
 
+        LaunchedEffect(viewModel.fitCameraPosition) {
+            if (viewModel.fitCameraPosition) {
+                val boundsBuilder = LatLngBounds.builder()
+                viewModel.routeCoordinates.forEach { boundsBuilder.include(it) }
+                val bounds = boundsBuilder.build()
+                val padding = 120
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                )
+                delay(1000L)
+                viewModel.takeMapScreenshot = true
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
 
             BottomSheetScaffold(
@@ -233,6 +254,7 @@ class TaximeterActivity : BaseActivity() {
                                 zoomControlsEnabled = false
                             ),
                             modifier = Modifier.fillMaxSize(),
+                            onMapLoaded = { viewModel.isMapLoaded = true }
                         ) {
 
                             if (viewModel.routeCoordinates.isNotEmpty()) {
@@ -266,6 +288,18 @@ class TaximeterActivity : BaseActivity() {
                                 width = 49,
                                 height = 114
                             )
+
+                            if (viewModel.isMapLoaded && viewModel.takeMapScreenshot) {
+                                MapEffect { map ->
+                                    map.snapshot { snapshot ->
+                                        if (snapshot != null) {
+                                            viewModel.mapScreenshotReady(snapshot) { intent ->
+                                                startActivity(intent)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
                         }
                     }
@@ -425,7 +459,6 @@ class TaximeterActivity : BaseActivity() {
                     }
                 )
             }
-
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

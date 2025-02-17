@@ -23,7 +23,6 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
-import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
 import com.mitarifamitaxi.taximetrousuario.activities.RoutePlannerActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.fetchRoute
@@ -100,6 +99,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     @SuppressLint("MissingPermission")
     fun getCurrentLocation() {
 
+        appViewModel.isLoading = true
+
         val cancellationTokenSource = CancellationTokenSource()
 
         val task: Task<Location> = fusedLocationClient.getCurrentLocation(
@@ -114,6 +115,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                     latitude = location.latitude,
                     longitude = location.longitude,
                     callbackSuccess = { address ->
+                        appViewModel.isLoading = false
                         startAddress = address
                         isSelectingStart = false
                         startLocation = UserLocation(
@@ -131,6 +133,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 )
 
             } else {
+                appViewModel.isLoading = false
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -138,6 +141,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 )
             }
         }.addOnFailureListener {
+            appViewModel.isLoading = false
             showCustomDialog(
                 DialogType.ERROR,
                 appContext.getString(R.string.something_went_wrong),

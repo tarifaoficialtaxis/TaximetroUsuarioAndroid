@@ -121,7 +121,7 @@ fun TripItem(trip: Trip, onTripClicked: () -> Unit) {
                     }
 
                     Text(
-                        text = "$ ${trip.total?.formatNumberWithDots()} COP",
+                        text = "$ ${trip.total?.toInt()?.formatNumberWithDots()} COP",
                         fontFamily = MontserratFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,

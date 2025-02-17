@@ -3,6 +3,7 @@ package com.mitarifamitaxi.taximetrousuario.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.rounded.Share
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -44,6 +47,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextFieldDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripInfoRow
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.hourFormatDate
@@ -62,6 +66,8 @@ class TripSummaryActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val isDetails = intent.getBooleanExtra("is_details", false)
+        viewModel.isDetails = isDetails
         val tripJson = intent.getStringExtra("trip_data")
         tripJson?.let {
             viewModel.tripData = Gson().fromJson(it, Trip::class.java)
@@ -144,7 +150,7 @@ class TripSummaryActivity : BaseActivity() {
                 onClickLeading = {
                     finish()
                 },
-                trailingIcon = Icons.Filled.Delete,
+                trailingIcon = if (viewModel.isDetails) Icons.Filled.Delete else null,
                 onClickTrailing = onDeleteAction
             )
 
@@ -153,14 +159,27 @@ class TripSummaryActivity : BaseActivity() {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                AsyncImage(
-                    model = viewModel.tripData.routeImage,
-                    contentDescription = "Trip route map image",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .height(250.dp)
-                        .fillMaxWidth()
-                )
+                if (viewModel.isDetails) {
+                    AsyncImage(
+                        model = viewModel.tripData.routeImage,
+                        contentDescription = "Trip route map image",
+                        contentScale = ContentScale.FillBounds,
+                        modifier = Modifier
+                            .height(250.dp)
+                            .fillMaxWidth()
+                    )
+                } else {
+                    viewModel.tripData.routeImageLocal?.let {
+                        Image(
+                            bitmap = it.asImageBitmap(),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .height(250.dp)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
 
                 Column(
                     modifier = Modifier
@@ -177,7 +196,7 @@ class TripSummaryActivity : BaseActivity() {
                     )
 
                     Text(
-                        text = "$ ${viewModel.tripData.total?.formatNumberWithDots()} COP",
+                        text = "$ ${viewModel.tripData.total?.toInt()?.formatNumberWithDots()} COP",
                         fontFamily = MontserratFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
@@ -259,7 +278,7 @@ class TripSummaryActivity : BaseActivity() {
 
                     TripInfoRow(
                         title = stringResource(id = R.string.distance_made),
-                        value = "${viewModel.tripData.distance?.formatNumberWithDots()} KM"
+                        value = "${((viewModel.tripData.distance ?: 0.0) / 1000).formatDigits(1)} KM"
                     )
 
                     TripInfoRow(
@@ -314,6 +333,15 @@ class TripSummaryActivity : BaseActivity() {
                             onClick = onShareAction,
                             leadingIcon = Icons.Rounded.Share
                         )
+
+                        if (!viewModel.isDetails) {
+                            CustomButton(
+                                text = stringResource(id = R.string.finish).uppercase(),
+                                onClick = onDeleteAction,
+                                color = colorResource(id = R.color.gray1),
+                                leadingIcon = Icons.Default.Close
+                            )
+                        }
                     }
 
 

@@ -132,6 +132,19 @@ class RoutePlannerActivity : BaseActivity() {
             )
         }
 
+        LaunchedEffect(viewModel.startLocation) {
+            if (viewModel.startLocation.latitude != null && viewModel.startLocation.longitude != null) {
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            viewModel.startLocation.latitude!!,
+                            viewModel.startLocation.longitude!!
+                        ), 15f
+                    )
+                )
+            }
+        }
+
         LaunchedEffect(cameraPositionState) {
             snapshotFlow { cameraPositionState.isMoving }
                 .collect { isMoving ->

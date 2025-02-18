@@ -2,6 +2,7 @@ package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
@@ -96,6 +97,9 @@ class TaximeterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         viewModel.requestBackgroundLocationPermission(this)
 
         val startAddress = intent.getStringExtra("start_address")
@@ -115,6 +119,16 @@ class TaximeterActivity : BaseActivity() {
         endLocation?.let {
             viewModel.endLocation = Gson().fromJson(it, UserLocation::class.java)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     @Composable

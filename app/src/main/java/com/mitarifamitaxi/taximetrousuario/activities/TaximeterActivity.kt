@@ -131,6 +131,12 @@ class TaximeterActivity : BaseActivity() {
                 onDismiss = { viewModel.showDialog = false },
                 onPrimaryActionClicked = {
                     viewModel.showDialog = false
+                    if (viewModel.dialogType == DialogType.WARNING && viewModel.dialogPrimaryAction == getString(
+                            R.string.finish_trip
+                        )
+                    ) {
+                        viewModel.stopTaximeter()
+                    }
 
                 }
             )
@@ -507,7 +513,7 @@ class TaximeterActivity : BaseActivity() {
             ) {
                 CustomButton(
                     text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
-                    onClick = { if (viewModel.isTaximeterStarted) viewModel.stopTaximeter() else viewModel.startTaximeter() },
+                    onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.startTaximeter() },
                     color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
                     leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
                 )
@@ -604,7 +610,7 @@ class TaximeterActivity : BaseActivity() {
         ) {
             CustomButton(
                 text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
-                onClick = { if (viewModel.isTaximeterStarted) viewModel.stopTaximeter() else viewModel.startTaximeter() },
+                onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.startTaximeter() },
                 color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
                 leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
             )

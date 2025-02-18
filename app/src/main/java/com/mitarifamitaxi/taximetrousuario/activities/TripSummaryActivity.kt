@@ -154,7 +154,11 @@ class TripSummaryActivity : BaseActivity() {
                 title = stringResource(id = R.string.trip_summary),
                 leadingIcon = Icons.Filled.ChevronLeft,
                 onClickLeading = {
-                    finish()
+                    if (viewModel.isDetails) {
+                        finish()
+                    } else {
+                        onFinishAction()
+                    }
                 },
                 trailingIcon = if (viewModel.isDetails) Icons.Filled.Delete else null,
                 onClickTrailing = onDeleteAction
@@ -305,21 +309,28 @@ class TripSummaryActivity : BaseActivity() {
                     if (viewModel.tripData.airportSurchargeEnabled == true) {
                         TripInfoRow(
                             title = stringResource(id = R.string.airport_surcharge),
-                            value = "$ ${viewModel.tripData.airportSurcharge?.formatNumberWithDots()} COP"
+                            value = "+$${
+                                viewModel.tripData.airportSurcharge?.toInt()?.formatNumberWithDots()
+                            } COP"
                         )
                     }
 
                     if (viewModel.tripData.holidaySurchargeEnabled == true) {
                         TripInfoRow(
                             title = stringResource(id = R.string.holiday_surcharge),
-                            value = "$ ${viewModel.tripData.holidaySurcharge?.formatNumberWithDots()} COP"
+                            value = "+$${
+                                viewModel.tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
+                            } COP"
                         )
                     }
 
                     if (viewModel.tripData.doorToDoorSurchargeEnabled == true) {
                         TripInfoRow(
-                            title = stringResource(id = R.string.airport_surcharge),
-                            value = "$ ${viewModel.tripData.doorToDoorSurcharge?.formatNumberWithDots()} COP"
+                            title = stringResource(id = R.string.door_to_door_surcharge),
+                            value = "+$${
+                                viewModel.tripData.doorToDoorSurcharge?.toInt()
+                                    ?.formatNumberWithDots()
+                            } COP"
                         )
                     }
 

@@ -186,15 +186,27 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             append("*Unidades:* ${tripData.units}\n")
 
             if (tripData.airportSurchargeEnabled == true) {
-                append("*Recargo aeropuerto:* ${tripData.airportSurcharge?.formatNumberWithDots()} COP\n")
+                append(
+                    "*Recargo aeropuerto:* ${
+                        tripData.airportSurcharge?.toInt()?.formatNumberWithDots()
+                    } COP\n"
+                )
             }
 
             if (tripData.holidaySurchargeEnabled == true) {
-                append("*Recargo nocturno dominical o festivo:* ${tripData.holidaySurcharge?.formatNumberWithDots()} COP\n")
+                append(
+                    "*Recargo nocturno dominical o festivo:* ${
+                        tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
+                    } COP\n"
+                )
             }
 
             if (tripData.doorToDoorSurchargeEnabled == true) {
-                append("*Recargo puerta a puerta:* ${tripData.doorToDoorSurcharge?.formatNumberWithDots()} COP\n")
+                append(
+                    "*Recargo puerta a puerta:* ${
+                        tripData.doorToDoorSurcharge?.toInt()?.formatNumberWithDots()
+                    } COP\n"
+                )
             }
 
             append(

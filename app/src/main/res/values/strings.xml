@@ -227,4 +227,11 @@
     <string name="error_on_save_trip">Ha ocurrido un error al intentar guardar el viaje.</string>
     <string name="no_results_found">No se encontraron resultados</string>
 
+    <string name="finish_your_trip">Finaliza tu viaje</string>
+    <string name="you_are_about_to_finish">Estás a punto de terminar tu viaje. Si lo finalizas ahora, el recorrido realizado hasta este punto se perderá.</string>
+
+
+    <string name="template">template</string>
+
+
 </resources>

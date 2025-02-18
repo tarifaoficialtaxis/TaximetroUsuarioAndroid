@@ -19,17 +19,17 @@ data class Trip(
     @get:PropertyName("isHolidaySurcharge")
     @field:PropertyName("isHolidaySurcharge")
     val holidaySurchargeEnabled: Boolean? = null,
-    val holidaySurcharge: Int? = null,
+    val holidaySurcharge: Double? = null,
 
     @get:PropertyName("isDoorToDoorSurcharge")
     @field:PropertyName("isDoorToDoorSurcharge")
     val doorToDoorSurchargeEnabled: Boolean? = null,
-    val doorToDoorSurcharge: Int? = null,
+    val doorToDoorSurcharge: Double? = null,
 
     @get:PropertyName("isAirportSurcharge")
     @field:PropertyName("isAirportSurcharge")
     val airportSurchargeEnabled: Boolean? = null,
-    val airportSurcharge: Int? = null,
+    val airportSurcharge: Double? = null,
 
     val routeImage: String? = null,
 

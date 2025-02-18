@@ -213,6 +213,15 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         startWatchLocation()
     }
 
+    fun showFinishConfirmation() {
+        showCustomDialog(
+            DialogType.WARNING,
+            appContext.getString(R.string.finish_your_trip),
+            appContext.getString(R.string.you_are_about_to_finish),
+            appContext.getString(R.string.finish_trip)
+        )
+    }
+
     fun stopTaximeter() {
         isTaximeterStarted = false
         stopWatchLocation()
@@ -336,7 +345,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val compressedBitmap =
             BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
 
-        units = getFinalUnits().toDouble()
+        val finalUnits = getFinalUnits()
 
         val tripObj = Trip(
             startAddress = startAddress,
@@ -345,15 +354,18 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             endCoords = endLocation,
             startHour = startTime,
             endHour = endTime,
-            units = units.toInt(),
-            total = total,
+            units = finalUnits,
+            total = finalUnits * (ratesObj.value.unitPrice ?: 0.0),
             distance = distanceMade,
             airportSurchargeEnabled = isAirportSurcharge,
-            airportSurcharge = if (isAirportSurcharge) ratesObj.value.airportRateUnits?.toInt() else null,
+            airportSurcharge = if (isAirportSurcharge) (ratesObj.value.airportRateUnits
+                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
             holidaySurchargeEnabled = isHolidaySurcharge,
-            holidaySurcharge = if (isHolidaySurcharge) ratesObj.value.holidayRateUnits?.toInt() else null,
+            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidayRateUnits
+                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
-            doorToDoorSurcharge = if (isDoorToDoorSurcharge) ratesObj.value.doorToDoorRateUnits?.toInt() else null,
+            doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorRateUnits
+                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
             routeImageLocal = compressedBitmap
         )
 
@@ -365,25 +377,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     private fun getFinalUnits(): Int {
-        var totalRechargesUnits = 0.0
-        if (isAirportSurcharge) {
-            totalRechargesUnits += ratesObj.value.airportRateUnits ?: 0.0
-        }
-        if (isHolidaySurcharge) {
-            totalRechargesUnits += ratesObj.value.holidayRateUnits ?: 0.0
-        }
-        if (isDoorToDoorSurcharge) {
-            totalRechargesUnits += ratesObj.value.doorToDoorRateUnits ?: 0.0
-        }
-
         val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
-
-        return if (units - totalRechargesUnits < minimumRateUnits) {
-            if (!isAirportSurcharge && !isHolidaySurcharge && !isDoorToDoorSurcharge) {
-                minimumRateUnits.toInt()
-            } else {
-                (minimumRateUnits + totalRechargesUnits).toInt()
-            }
+        return if (units < minimumRateUnits) {
+            minimumRateUnits.toInt()
         } else {
             units.toInt()
         }

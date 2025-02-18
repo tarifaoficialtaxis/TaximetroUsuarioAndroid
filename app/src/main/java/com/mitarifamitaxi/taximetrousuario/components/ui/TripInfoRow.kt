@@ -37,7 +37,7 @@ fun TripInfoRow(
                 fontWeight = FontWeight.Normal,
                 fontSize = 12.sp,
                 color = colorResource(id = R.color.black),
-                modifier = Modifier.weight(0.7f)
+                modifier = Modifier.weight(0.6f)
             )
 
             Text(
@@ -46,7 +46,7 @@ fun TripInfoRow(
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 color = colorResource(id = R.color.gray1),
-                modifier = Modifier.weight(0.3f),
+                modifier = Modifier.weight(0.4f),
                 textAlign = TextAlign.End
             )
 

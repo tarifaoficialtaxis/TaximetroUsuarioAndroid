@@ -225,8 +225,8 @@ class RoutePlannerActivity : BaseActivity() {
                                     viewModel.startLocation.longitude ?: 0.0
                                 ),
                                 drawableRes = R.drawable.flag_start,
-                                width = 120,
-                                height = 120
+                                width = 60,
+                                height = 60
                             )
 
                         }
@@ -238,8 +238,8 @@ class RoutePlannerActivity : BaseActivity() {
                                     viewModel.endLocation.longitude ?: 0.0
                                 ),
                                 drawableRes = R.drawable.flag_end,
-                                width = 100,
-                                height = 120
+                                width = 50,
+                                height = 60
                             )
                         }
                     }

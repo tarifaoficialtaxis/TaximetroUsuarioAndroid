@@ -159,8 +159,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
     fun setPointOnMap() {
         isSheetExpanded = false
-        mainColumnHeight = (localConfiguration.screenHeightDp * 0.75).dp
-        sheetPeekHeight = (localConfiguration.screenHeightDp * 0.3).dp
+        mainColumnHeight = (localConfiguration.screenHeightDp * 0.65).dp
+        sheetPeekHeight = (localConfiguration.screenHeightDp * 0.35).dp
     }
 
 

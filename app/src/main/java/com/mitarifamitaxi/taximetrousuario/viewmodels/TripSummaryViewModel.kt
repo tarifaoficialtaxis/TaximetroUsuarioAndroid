@@ -26,7 +26,6 @@ import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.net.URLEncoder
 
-
 class TripSummaryViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
@@ -106,7 +105,6 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
         viewModelScope.launch {
             try {
                 // Save data in Firestore
-
                 appViewModel.isLoading = true
 
                 val imageUrl = tripData.routeImageLocal?.let { uploadImage(it) }
@@ -182,7 +180,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             append("*Fecha de llegada:* ${tripData.endHour?.let { shareFormatDate(it) }}\n")
             append(
                 "*Distancia recorrida:* ${
-                    tripData.distance?.let { (it / 1000).toDouble().formatDigits(1) }
+                    tripData.distance?.let { (it / 1000).formatDigits(1) }
                 } KM\n"
             )
             append("*Unidades:* ${tripData.units}\n")

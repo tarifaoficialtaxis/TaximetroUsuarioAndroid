@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -199,7 +201,7 @@ class TaximeterActivity : BaseActivity() {
         }
 
         LaunchedEffect(viewModel.fitCameraPosition) {
-            if (viewModel.fitCameraPosition) {
+            if (viewModel.fitCameraPosition && viewModel.routeCoordinates.size > 1) {
                 val boundsBuilder = LatLngBounds.builder()
                 viewModel.routeCoordinates.forEach { boundsBuilder.include(it) }
                 val bounds = boundsBuilder.build()
@@ -208,6 +210,8 @@ class TaximeterActivity : BaseActivity() {
                     CameraUpdateFactory.newLatLngBounds(bounds, padding)
                 )
                 delay(1000L)
+                viewModel.takeMapScreenshot = true
+            } else if (viewModel.fitCameraPosition) {
                 viewModel.takeMapScreenshot = true
             }
         }
@@ -273,8 +277,8 @@ class TaximeterActivity : BaseActivity() {
                                         viewModel.startLocation.longitude ?: 0.0
                                     ),
                                     drawableRes = R.drawable.flag_start,
-                                    width = 120,
-                                    height = 120
+                                    width = 60,
+                                    height = 60
                                 )
 
                             }
@@ -285,8 +289,8 @@ class TaximeterActivity : BaseActivity() {
                                     viewModel.currentPosition.longitude ?: 0.0
                                 ),
                                 drawableRes = R.drawable.taxi_marker,
-                                width = 49,
-                                height = 114
+                                width = 27,
+                                height = 57
                             )
 
                             if (viewModel.isMapLoaded && viewModel.takeMapScreenshot) {
@@ -341,6 +345,7 @@ class TaximeterActivity : BaseActivity() {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
         ) {
 
             Text(
@@ -498,6 +503,7 @@ class TaximeterActivity : BaseActivity() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(bottom = 15.dp)
             ) {
                 CustomButton(
                     text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),

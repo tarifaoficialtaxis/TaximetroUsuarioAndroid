@@ -15,6 +15,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.os.Looper
 import androidx.core.app.ActivityCompat
@@ -40,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
@@ -237,7 +239,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     }
                 }
 
+                //Log.d("TaximeterViewModel", "isMooving in timer: $isMooving")
                 if (!isMooving && isTaximeterStarted) {
+
                     dragTimeElapsed++
                     val sumDrag = (dragTimeElapsed * (ratesObj.value.unitsPerHour ?: 0.0)) / 3600
                     if (sumDrag >= 1) {
@@ -273,13 +277,16 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         longitude = location.longitude
                     )
 
-                    routeCoordinates = routeCoordinates + LatLng(
-                        currentPosition.latitude ?: 0.0,
-                        currentPosition.longitude ?: 0.0
-                    )
+                    if (previousLocation == null || (previousLocation?.latitude != location.latitude && previousLocation?.longitude != location.longitude)) {
+                        routeCoordinates = routeCoordinates + LatLng(
+                            currentPosition.latitude ?: 0.0,
+                            currentPosition.longitude ?: 0.0
+                        )
+                    }
 
                     val speedMetersPerSecond = location.speed
                     val speedKmPerHour = speedMetersPerSecond * 3.6
+                    //Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
                     if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
                         isMooving = true
 
@@ -318,6 +325,17 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     fun mapScreenshotReady(bitmap: Bitmap, onIntentReady: (Intent) -> Unit) {
 
+        val newWidth = bitmap.width / 1.3
+        val newHeight = bitmap.height / 1.3
+        val scaledBitmap =
+            Bitmap.createScaledBitmap(bitmap, newWidth.toInt(), newHeight.toInt(), true)
+
+        val outputStream = ByteArrayOutputStream()
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        val compressedBytes = outputStream.toByteArray()
+        val compressedBitmap =
+            BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
+
         units = getFinalUnits().toDouble()
 
         val tripObj = Trip(
@@ -336,7 +354,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             holidaySurcharge = if (isHolidaySurcharge) ratesObj.value.holidayRateUnits?.toInt() else null,
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
             doorToDoorSurcharge = if (isDoorToDoorSurcharge) ratesObj.value.doorToDoorRateUnits?.toInt() else null,
-            routeImageLocal = bitmap
+            routeImageLocal = compressedBitmap
         )
 
         val tripJson = Gson().toJson(tripObj)

@@ -427,6 +427,18 @@ class RoutePlannerActivity : BaseActivity() {
                         )
                     }
                 }
+            } else {
+                Text(
+                    text = stringResource(id = R.string.no_results_found),
+                    color = colorResource(id = R.color.gray1),
+                    fontSize = 15.sp,
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                )
             }
 
 

@@ -2,7 +2,6 @@ package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -72,7 +71,6 @@ class TripSummaryActivity : BaseActivity() {
         val tripJson = intent.getStringExtra("trip_data")
         tripJson?.let {
             viewModel.tripData = Gson().fromJson(it, Trip::class.java)
-            Log.d("TripSummaryActivity", "Trip data bitmap: ${((viewModel.tripData.routeImageLocal?.byteCount) ?: 0) / 1024f} KB")
         }
     }
 

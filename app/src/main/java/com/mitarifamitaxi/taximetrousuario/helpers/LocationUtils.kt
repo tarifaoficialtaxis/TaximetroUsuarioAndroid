@@ -126,15 +126,21 @@ fun getPlacePredictions(
     input: String,
     latitude: Double,
     longitude: Double,
-    radius: Int = 50000,
+    radius: Int = 15000,
     callbackSuccess: (ArrayList<PlacePrediction>) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
-
     val encodedInput = URLEncoder.encode(input, "UTF-8")
 
     val url =
-        "${googleapisUrl}place/autocomplete/json?input=$encodedInput&location=$latitude,$longitude&radius=$radius&language=es&key=${Constants.GOOGLE_API_KEY}"
+        "${googleapisUrl}place/autocomplete/json?" +
+                "input=$encodedInput" +
+                "&location=$latitude,$longitude" +
+                "&radius=$radius" +
+                "&language=es" +
+                "&strictbounds" +
+                "&components=country:co" +
+                "&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()
@@ -167,13 +173,13 @@ fun getPlacePredictions(
                     }
                     callbackSuccess(predictionsList)
                 } else {
-                    callbackError(IOException("No results found"))
+                    callbackSuccess(ArrayList())
                 }
             }
         }
     })
-
 }
+
 
 fun getPlaceDetails(
     placeId: String,
@@ -251,7 +257,8 @@ fun fetchRoute(
 
                 val routes = jsonResponse.optJSONArray("routes")
                 if (routes != null && routes.length() > 0) {
-                    val overviewPolyline = routes.getJSONObject(0).getJSONObject("overview_polyline")
+                    val overviewPolyline =
+                        routes.getJSONObject(0).getJSONObject("overview_polyline")
                     val points = overviewPolyline.getString("points")
                     val decodedPoints = decodePolyline(points)
                     callbackSuccess(decodedPoints)

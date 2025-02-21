@@ -45,6 +45,11 @@ import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
+import java.util.Date
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -108,8 +113,13 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     private var startTime by mutableStateOf("")
     private var endTime by mutableStateOf("")
 
+
     init {
         getCityRates(appViewModel.userData?.city)
+
+        isHolidaySurcharge = checkHolidayDate()
+
+        Log.d("TaximeterViewModel", checkHolidayDate().toString())
     }
 
     fun requestBackgroundLocationPermission(activity: TaximeterActivity) {
@@ -437,7 +447,121 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         }
     }
 
+    private fun getColombianHolidays(year: Int): List<LocalDate> {
+        // Fixed-date holidays
+        val fixedHolidays = listOf(
+            LocalDate.of(year, 1, 1),   // Año Nuevo
+            LocalDate.of(year, 5, 1),   // Día del Trabajo
+            LocalDate.of(year, 7, 20),  // Día de la Independencia
+            LocalDate.of(year, 8, 7),   // Batalla de Boyacá
+            LocalDate.of(year, 12, 8),  // Inmaculada Concepción
+            LocalDate.of(year, 12, 25)  // Navidad
+        )
+
+        // Movable holidays (Ley Emiliani)
+        val movableHolidays = listOf(
+            getNextMonday(LocalDate.of(year, 1, 6)),   // Reyes Magos
+            getNextMonday(LocalDate.of(year, 3, 19)),  // San José
+            getNextMonday(LocalDate.of(year, 6, 29)),  // San Pedro y San Pablo
+            getNextMonday(LocalDate.of(year, 8, 15)),  // Asunción de la Virgen
+            getNextMonday(LocalDate.of(year, 10, 12)), // Día de la Raza
+            getNextMonday(LocalDate.of(year, 11, 1)),  // Todos los Santos
+            getNextMonday(LocalDate.of(year, 11, 11))  // Independencia de Cartagena
+        )
+
+        // Easter-based holidays
+        val easterSunday = getEasterSunday(year)
+        val easterRelatedHolidays = listOf(
+            easterSunday.minusDays(3),                  // Jueves Santo
+            easterSunday.minusDays(2),                  // Viernes Santo
+            getNextMonday(easterSunday.plusDays(43)),   // Ascensión del Señor
+            getNextMonday(easterSunday.plusDays(64)),   // Corpus Christi
+            getNextMonday(easterSunday.plusDays(71))    // Sagrado Corazón
+        )
+
+        return fixedHolidays + movableHolidays + easterRelatedHolidays
+    }
+
+    // Check if a date is a Colombian holiday (for current and next year)
+    private fun isColombianHoliday(date: LocalDate): Boolean {
+
+        /*
+        * if date is sunday return true
+        * */
+        val isSunday = date.dayOfWeek == DayOfWeek.SUNDAY
+
+        if (isSunday) {
+            return true
+        }
+
+        val currentYearHolidays = getColombianHolidays(date.year)
+        val nextYearHolidays =
+            getColombianHolidays(date.year + 1) // In case we're checking near end of year
+        return date in currentYearHolidays || date in nextYearHolidays
+    }
+
+    // Move holidays to next Monday if not already on Monday
+    fun getNextMonday(date: LocalDate): LocalDate {
+        return if (date.dayOfWeek == DayOfWeek.MONDAY) date
+        else date.plusDays((DayOfWeek.MONDAY.value - date.dayOfWeek.value + 7) % 7L)
+    }
+
+    // Compute Easter Sunday
+    private fun getEasterSunday(year: Int): LocalDate {
+        val a = year % 19
+        val b = year / 100
+        val c = year % 100
+        val d = b / 4
+        val e = b % 4
+        val f = (b + 8) / 25
+        val g = (b - f + 1) / 3
+        val h = (19 * a + b - d - g + 15) % 30
+        val i = c / 4
+        val k = c % 4
+        val l = (32 + 2 * e + 2 * i - h - k) % 7
+        val m = (a + 11 * h + 22 * l) / 451
+        val month = (h + l - 7 * m + 114) / 31
+        val day = ((h + l - 7 * m + 114) % 31) + 1
+        return LocalDate.of(year, month, day)
+    }
+
+    private fun checkHolidayDate(): Boolean {
+
+        val now = Date()
+
+        /*val now: Date = Date.from(
+            LocalDate.of(2025, 5, 1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        )*/
+
+        val todayDateTime = LocalDateTime.now()
+        val today: LocalDate = now.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+
+        // 8 PM today
+        val ninePM = todayDateTime.withHour(20).withMinute(0).withSecond(0).withNano(0)
+
+        // 5 AM tomorrow
+        val tomorrow = todayDateTime.plusDays(1).withHour(5).withMinute(0).withSecond(0).withNano(0)
+
+
+        // Convierte LocalDateTime a Date
+        val ninePMDate = Date.from(ninePM.atZone(ZoneId.systemDefault()).toInstant())
+        val fiveAMDate = Date.from(tomorrow.atZone(ZoneId.systemDefault()).toInstant())
+
+        val isLateHours = now.after(ninePMDate) && now.before(fiveAMDate)
+
+        if (isLateHours) {
+            return true
+        } else {
+            return isColombianHoliday(today)
+        }
+
+    }
 }
+
 
 class TaximeterViewModelFactory(
     private val context: Context,

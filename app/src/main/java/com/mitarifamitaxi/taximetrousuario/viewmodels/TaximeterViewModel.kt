@@ -501,7 +501,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     // Move holidays to next Monday if not already on Monday
-    fun getNextMonday(date: LocalDate): LocalDate {
+    private fun getNextMonday(date: LocalDate): LocalDate {
         return if (date.dayOfWeek == DayOfWeek.MONDAY) date
         else date.plusDays((DayOfWeek.MONDAY.value - date.dayOfWeek.value + 7) % 7L)
     }

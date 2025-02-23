@@ -26,9 +26,14 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
+import com.mitarifamitaxi.taximetrousuario.models.CityArea
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import java.util.concurrent.Executor
 
@@ -101,6 +106,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                     longitude = location.longitude,
                     callbackSuccess = { city, countryCodeWhatsapp ->
                         isGettingLocation = false
+                        validateCity(city ?: "")
                         updateUserData(
                             location = UserLocation(
                                 latitude = location.latitude,
@@ -153,6 +159,12 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
     }
 
+    private fun validateCity(city: String) {
+        if (city == "Pasto") {
+            getCityAreas(city)
+        }
+    }
+
     private fun saveUserState(user: LocalUser) {
         val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
@@ -198,6 +210,36 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         dialogTitle = title
         dialogMessage = message
     }
+
+    private fun getCityAreas(city: String) {
+
+        val database = FirebaseDatabase.getInstance()
+        val citiesRef = database.getReference("cities")
+
+        val query = citiesRef.orderByChild("city").equalTo(city)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+
+                    try {
+                        val cityArea = snapshot.children.firstOrNull()?.getValue(CityArea::class.java)
+                        Log.d("Firebase", "Found city: $cityArea")
+                    } catch (e: Exception) {
+                        Log.e("Firebase", "Error parsing city data: ${e.message}")
+                    }
+
+                } else {
+                    Log.d("Firebase", "No city found with the given name")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Query cancelled or failed: ${error.message}")
+            }
+        })
+    }
+
 
 }
 

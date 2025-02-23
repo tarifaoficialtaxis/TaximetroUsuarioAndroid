@@ -76,6 +76,7 @@ dependencies {
 
     implementation(libs.maps.compose)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.database.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -224,7 +224,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
                     try {
                         val cityArea = snapshot.children.firstOrNull()?.getValue(CityArea::class.java)
-                        Log.d("Firebase", "Found city: $cityArea")
+                        Log.d("Firebase", "Found city area: $cityArea")
                     } catch (e: Exception) {
                         Log.e("Firebase", "Error parsing city data: ${e.message}")
                     }

@@ -127,7 +127,7 @@ class TaximeterByRegionActivity : BaseActivity() {
         val userJson = sharedPref.getString("CITY_AREA_OBJECT", null)
         viewModel.cityAreas = Gson().fromJson(userJson, CityArea::class.java)
 
-        viewModel.getEstimatedPrice()
+        viewModel.getCityRates(appViewModel.userData?.city ?: "")
     }
 
     override fun onResume() {
@@ -444,55 +444,63 @@ class TaximeterByRegionActivity : BaseActivity() {
 
             }
 
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-            )
+
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
                     .padding(top = 10.dp)
             ) {
-                /*CustomCheckBox(
-                    text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isAirportSurcharge = it
-                        if (it) {
-                            viewModel.units += viewModel.ratesObj.value.airportRateUnits ?: 0.0
-                        } else {
-                            viewModel.units -= viewModel.ratesObj.value.airportRateUnits ?: 0.0
-                        }
-                    }
-                )
-
-                CustomCheckBox(
-                    text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isHolidaySurcharge = it
-                        if (it) {
-                            viewModel.units += viewModel.ratesObj.value.holidayRateUnits ?: 0.0
-                        } else {
-                            viewModel.units -= viewModel.ratesObj.value.holidayRateUnits ?: 0.0
-                        }
-                    }
-                )
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
-                    isEnabled = viewModel.isTaximeterStarted,
                     onValueChange = {
                         viewModel.isDoorToDoorSurcharge = it
                         if (it) {
-                            viewModel.units += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                            viewModel.total += viewModel.ratesObj.value.doorToDoorSurcharge?.toDouble()
+                                ?: 0.0
                         } else {
-                            viewModel.units -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                            viewModel.total -= viewModel.ratesObj.value.doorToDoorSurcharge?.toDouble()
+                                ?: 0.0
                         }
                     }
-                )*/
+                )
+
+                CustomCheckBox(
+                    text = stringResource(id = R.string.holiday_surcharge_only).replace(":", ""),
+                    isEnabled = false,
+                    onValueChange = {
+                        viewModel.isHolidaySurcharge = it
+                        if (it) {
+                            viewModel.total += viewModel.ratesObj.value.holidaySurcharge?.toDouble()
+                                ?: 0.0
+                        } else {
+                            viewModel.total -= viewModel.ratesObj.value.holidaySurcharge?.toDouble()
+                                ?: 0.0
+                        }
+                    }
+                )
+
+                CustomCheckBox(
+                    text = stringResource(id = R.string.night_surcharge_only).replace(":", ""),
+                    isEnabled = false,
+                    onValueChange = {
+                        viewModel.isNightSurcharge = it
+                        if (it) {
+                            viewModel.total += viewModel.ratesObj.value.nightSurcharge?.toDouble()
+                                ?: 0.0
+                        } else {
+                            viewModel.total -= viewModel.ratesObj.value.nightSurcharge?.toDouble()
+                                ?: 0.0
+                        }
+                    }
+                )
+
             }
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -507,7 +515,12 @@ class TaximeterByRegionActivity : BaseActivity() {
                     CustomButton(
                         text = stringResource(id = R.string.sos).uppercase(),
                         onClick = {
-                            startActivity(Intent(this@TaximeterByRegionActivity, SosActivity::class.java))
+                            startActivity(
+                                Intent(
+                                    this@TaximeterByRegionActivity,
+                                    SosActivity::class.java
+                                )
+                            )
                         },
                         color = colorResource(id = R.color.red1),
                         leadingIcon = Icons.Rounded.WarningAmber
@@ -521,7 +534,12 @@ class TaximeterByRegionActivity : BaseActivity() {
                     CustomButton(
                         text = stringResource(id = R.string.pqrs).uppercase(),
                         onClick = {
-                            startActivity(Intent(this@TaximeterByRegionActivity, PqrsActivity::class.java))
+                            startActivity(
+                                Intent(
+                                    this@TaximeterByRegionActivity,
+                                    PqrsActivity::class.java
+                                )
+                            )
                         },
                         color = colorResource(id = R.color.blue2),
                         leadingIcon = Icons.AutoMirrored.Outlined.Chat

@@ -45,7 +45,10 @@ fun CustomCheckBox(
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = colorResource(id = R.color.main),
-                    uncheckedColor = colorResource(id = R.color.gray2)
+                    uncheckedColor = colorResource(id = R.color.gray6),
+
+                    disabledCheckedColor = colorResource(id = R.color.yellow1),
+                    disabledUncheckedColor = colorResource(id = R.color.gray2)
                 )
             )
         }

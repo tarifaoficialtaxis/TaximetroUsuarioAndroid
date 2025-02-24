@@ -7,5 +7,9 @@ data class RegionalRates(
     val superRace: Int? = null,
     val doorToDoorSurcharge: Int? = null,
     val holidaySurcharge: Int? = null,
-    val nightSurcharge: Int? = null
+    val nightSurcharge: Int? = null,
+    val nightHourSurcharge: Int? = null,
+    val nighMinuteSurcharge: Int? = null,
+    val morningHourSurcharge: Int? = null,
+    val morningMinuteSurcharge: Int? = null,
 )

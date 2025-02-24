@@ -33,13 +33,11 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterByRegionActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TripSummaryActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.findRegionForCoordinates
+import com.mitarifamitaxi.taximetrousuario.helpers.isColombianHoliday
+import com.mitarifamitaxi.taximetrousuario.helpers.isNightTime
 import com.mitarifamitaxi.taximetrousuario.models.CityArea
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
-import com.mitarifamitaxi.taximetrousuario.models.Feature
-import com.mitarifamitaxi.taximetrousuario.models.LocalUser
-import com.mitarifamitaxi.taximetrousuario.models.Properties
 import com.mitarifamitaxi.taximetrousuario.models.PropertiesType
-import com.mitarifamitaxi.taximetrousuario.models.Rates
 import com.mitarifamitaxi.taximetrousuario.models.RegionalRates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
@@ -50,6 +48,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.time.Instant
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executor
 
@@ -84,9 +83,9 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
     var timeElapsed by mutableStateOf(0)
     var formattedTime by mutableStateOf("0")
 
-    //var isAirportSurcharge by mutableStateOf(false)
-    var isHolidaySurcharge by mutableStateOf(false)
     var isDoorToDoorSurcharge by mutableStateOf(false)
+    var isHolidaySurcharge by mutableStateOf(false)
+    var isNightSurcharge by mutableStateOf(false)
 
     val ratesObj = mutableStateOf(RegionalRates())
 
@@ -106,11 +105,7 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
 
     var cityAreas: CityArea? by mutableStateOf(null)
 
-    init {
-        getCityRates(appViewModel.userData?.city)
-    }
-
-    private fun getCityRates(userCity: String?) {
+    fun getCityRates(userCity: String?) {
 
         viewModelScope.launch {
             if (userCity != null) {
@@ -128,6 +123,7 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
                         try {
                             ratesObj.value =
                                 cityRatesDoc.toObject(RegionalRates::class.java) ?: RegionalRates()
+                            getEstimatedPrice()
                         } catch (e: Exception) {
                             showCustomDialog(
                                 DialogType.ERROR,
@@ -247,6 +243,25 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
             total = fareStart.toDouble()
         }
 
+        validateSurcharges()
+
+    }
+
+    private fun validateSurcharges() {
+
+        if (isNightTime(
+                ratesObj.value.nightHourSurcharge ?: 21,
+                ratesObj.value.nighMinuteSurcharge ?: 0,
+                ratesObj.value.morningHourSurcharge ?: 5,
+                ratesObj.value.morningMinuteSurcharge ?: 30
+            )
+        ) {
+            isNightSurcharge = true
+        }
+
+        if (isColombianHoliday()) {
+            isHolidaySurcharge = true
+        }
     }
 
     fun startTaximeter() {

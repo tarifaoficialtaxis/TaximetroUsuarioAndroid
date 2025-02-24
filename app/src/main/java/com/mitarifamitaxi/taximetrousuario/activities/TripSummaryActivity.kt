@@ -291,10 +291,12 @@ class TripSummaryActivity : BaseActivity() {
                         value = "${((viewModel.tripData.distance ?: 0.0) / 1000).formatDigits(1)} KM"
                     )
 
-                    TripInfoRow(
-                        title = stringResource(id = R.string.units),
-                        value = viewModel.tripData.units.toString()
-                    )
+                    if (viewModel.tripData.units != null) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.units),
+                            value = viewModel.tripData.units.toString()
+                        )
+                    }
 
                     if (viewModel.tripData.airportSurchargeEnabled == false &&
                         viewModel.tripData.holidaySurchargeEnabled == false &&

@@ -40,6 +40,7 @@ import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import com.mitarifamitaxi.taximetrousuario.models.Properties
 import com.mitarifamitaxi.taximetrousuario.models.PropertiesType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
+import com.mitarifamitaxi.taximetrousuario.models.RegionalRates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import kotlinx.coroutines.Dispatchers
@@ -87,7 +88,7 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
     var isHolidaySurcharge by mutableStateOf(false)
     var isDoorToDoorSurcharge by mutableStateOf(false)
 
-    val ratesObj = mutableStateOf(Rates())
+    val ratesObj = mutableStateOf(RegionalRates())
 
     var isTaximeterStarted by mutableStateOf(false)
 
@@ -104,6 +105,61 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
     private var endTime by mutableStateOf("")
 
     var cityAreas: CityArea? by mutableStateOf(null)
+
+    init {
+        getCityRates(appViewModel.userData?.city)
+    }
+
+    private fun getCityRates(userCity: String?) {
+
+        viewModelScope.launch {
+            if (userCity != null) {
+                try {
+                    val firestore = FirebaseFirestore.getInstance()
+                    val ratesQuerySnapshot = withContext(Dispatchers.IO) {
+                        firestore.collection("rates")
+                            .whereEqualTo("city", userCity)
+                            .get()
+                            .await()
+                    }
+
+                    if (!ratesQuerySnapshot.isEmpty) {
+                        val cityRatesDoc = ratesQuerySnapshot.documents[0]
+                        try {
+                            ratesObj.value =
+                                cityRatesDoc.toObject(RegionalRates::class.java) ?: RegionalRates()
+                        } catch (e: Exception) {
+                            showCustomDialog(
+                                DialogType.ERROR,
+                                appContext.getString(R.string.something_went_wrong),
+                                appContext.getString(R.string.general_error)
+                            )
+                        }
+                    } else {
+                        showCustomDialog(
+                            DialogType.ERROR,
+                            appContext.getString(R.string.something_went_wrong),
+                            appContext.getString(R.string.general_error)
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("TaximeterViewModel", "Error fetching contacts: ${e.message}")
+                    showCustomDialog(
+                        DialogType.ERROR,
+                        appContext.getString(R.string.something_went_wrong),
+                        appContext.getString(R.string.general_error)
+                    )
+                }
+            } else {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_no_city_set)
+                )
+            }
+        }
+
+    }
 
     fun requestBackgroundLocationPermission(activity: TaximeterByRegionActivity) {
         activity.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -173,16 +229,16 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
 
         if (startArea?.type == PropertiesType.innerArea && endArea?.type == PropertiesType.innerArea) {
             // De barrio no periférco a barrio no periférico
-            total = 6600.0
+            total = ratesObj.value.basicRace?.toDouble() ?: 0.0
         } else if (startArea?.type == PropertiesType.innerArea && endArea == null) {
             // De barrio no periférco a barrio periférico
-            total = 7600.0
+            total = ratesObj.value.specialRace?.toDouble() ?: 0.0
         } else if (startArea == null && endArea?.type == PropertiesType.innerArea) {
             // De barrio periférico a barrio no periférico
-            total = 7600.0
+            total = ratesObj.value.specialRace?.toDouble() ?: 0.0
         } else if (startArea == null && endArea?.type == null) {
             // De barrio periférico a barrio periférico
-            total = 8500.0
+            total = ratesObj.value.superRace?.toDouble() ?: 0.0
         } else if (startArea?.type == PropertiesType.innerArea && endArea?.type == PropertiesType.subdistrict) {
             // De barrio no periférco a corregimiento
             total = fareEnd.toDouble()
@@ -312,14 +368,12 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
             endCoords = endLocation,
             startHour = startTime,
             endHour = endTime,
-            //total = finalUnits * (ratesObj.value.unitPrice ?: 0.0),
+            total = total,
             distance = distanceMade,
             holidaySurchargeEnabled = isHolidaySurcharge,
-            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidayRateUnits
-                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
+            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidaySurcharge?.toDouble()) else null,
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
-            doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorRateUnits
-                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
+            doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorSurcharge?.toDouble()) else null,
             routeImageLocal = compressedBitmap
         )
 

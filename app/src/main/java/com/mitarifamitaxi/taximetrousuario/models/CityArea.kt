@@ -30,7 +30,6 @@ data class Properties (
 )
 
 enum class PropertiesType {
-    airport,
     innerArea,
     subdistrict
 }

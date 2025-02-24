@@ -30,9 +30,15 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
-import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
+import com.mitarifamitaxi.taximetrousuario.activities.TaximeterByRegionActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TripSummaryActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.findRegionForCoordinates
+import com.mitarifamitaxi.taximetrousuario.models.CityArea
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
+import com.mitarifamitaxi.taximetrousuario.models.Feature
+import com.mitarifamitaxi.taximetrousuario.models.LocalUser
+import com.mitarifamitaxi.taximetrousuario.models.Properties
+import com.mitarifamitaxi.taximetrousuario.models.PropertiesType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
@@ -46,7 +52,7 @@ import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
 
-class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
+class TaximeterByRegionViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
 
     private val appContext = context.applicationContext
@@ -74,27 +80,16 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var total by mutableStateOf(0.0)
     var distanceMade by mutableStateOf(0.0)
 
-    private val _units = mutableStateOf(0.0)
-
-    var units: Double
-        get() = _units.value
-        set(value) {
-            _units.value = value
-            onUnitsChanged(value)
-        }
-
     var timeElapsed by mutableStateOf(0)
-    var dragTimeElapsed by mutableStateOf(0)
     var formattedTime by mutableStateOf("0")
 
-    var isAirportSurcharge by mutableStateOf(false)
+    //var isAirportSurcharge by mutableStateOf(false)
     var isHolidaySurcharge by mutableStateOf(false)
     var isDoorToDoorSurcharge by mutableStateOf(false)
 
     val ratesObj = mutableStateOf(Rates())
 
     var isTaximeterStarted by mutableStateOf(false)
-    var isMooving by mutableStateOf(false)
 
     var routeCoordinates by mutableStateOf<List<LatLng>>(emptyList())
     var currentPosition by mutableStateOf(startLocation)
@@ -108,11 +103,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     private var startTime by mutableStateOf("")
     private var endTime by mutableStateOf("")
 
-    init {
-        getCityRates(appViewModel.userData?.city)
-    }
+    var cityAreas: CityArea? by mutableStateOf(null)
 
-    fun requestBackgroundLocationPermission(activity: TaximeterActivity) {
+    fun requestBackgroundLocationPermission(activity: TaximeterByRegionActivity) {
         activity.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     }
 
@@ -150,64 +143,58 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         }
     }
 
-    private fun getCityRates(userCity: String?) {
+    fun getEstimatedPrice() {
 
-        viewModelScope.launch {
-            if (userCity != null) {
-                try {
-                    val firestore = FirebaseFirestore.getInstance()
-                    val ratesQuerySnapshot = withContext(Dispatchers.IO) {
-                        firestore.collection("rates")
-                            .whereEqualTo("city", userCity)
-                            .get()
-                            .await()
-                    }
+        Log.d("TaximeterByRegionVM", "Start coordinates: ${Gson().toJson(startLocation)}")
+        val startArea = findRegionForCoordinates(
+            startLocation.latitude ?: 0.0,
+            startLocation.longitude ?: 0.0,
+            cityAreas?.features ?: emptyList()
+        )
+        Log.d("TaximeterByRegionVM", "Start area: $startArea")
 
-                    if (!ratesQuerySnapshot.isEmpty) {
-                        val cityRatesDoc = ratesQuerySnapshot.documents[0]
-                        try {
-                            ratesObj.value =
-                                cityRatesDoc.toObject(Rates::class.java) ?: Rates()
-                        } catch (e: Exception) {
-                            showCustomDialog(
-                                DialogType.ERROR,
-                                appContext.getString(R.string.something_went_wrong),
-                                appContext.getString(R.string.general_error)
-                            )
-                        }
-                    } else {
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.general_error)
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.e("TaximeterViewModel", "Error fetching contacts: ${e.message}")
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
-                    )
-                }
-            } else {
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_no_city_set)
-                )
-            }
+        Log.d("TaximeterByRegionVM", "End coordinates: ${Gson().toJson(endLocation)}")
+        val endArea = findRegionForCoordinates(
+            endLocation.latitude ?: 0.0,
+            endLocation.longitude ?: 0.0,
+            cityAreas?.features ?: emptyList()
+        )
+        Log.d("TaximeterByRegionVM", "End area: $endArea")
+
+        var fareStart = ""
+        if (startArea?.type == PropertiesType.subdistrict) {
+            fareStart = startArea.fare.toString()
+        }
+
+        var fareEnd = ""
+        if (endArea?.type == PropertiesType.subdistrict) {
+            fareEnd = endArea.fare.toString()
+        }
+
+        if (startArea?.type == PropertiesType.innerArea && endArea?.type == PropertiesType.innerArea) {
+            // De barrio no periférco a barrio no periférico
+            total = 6600.0
+        } else if (startArea?.type == PropertiesType.innerArea && endArea == null) {
+            // De barrio no periférco a barrio periférico
+            total = 7600.0
+        } else if (startArea == null && endArea?.type == PropertiesType.innerArea) {
+            // De barrio periférico a barrio no periférico
+            total = 7600.0
+        } else if (startArea == null && endArea?.type == null) {
+            // De barrio periférico a barrio periférico
+            total = 8500.0
+        } else if (startArea?.type == PropertiesType.innerArea && endArea?.type == PropertiesType.subdistrict) {
+            // De barrio no periférco a corregimiento
+            total = fareEnd.toDouble()
+        } else if (startArea?.type == PropertiesType.subdistrict && endArea?.type == PropertiesType.innerArea) {
+            // De corregimiento a barrio no periférico
+            total = fareStart.toDouble()
         }
 
     }
 
-    private fun onUnitsChanged(newValue: Double) {
-        total = newValue * (ratesObj.value.unitPrice ?: 0.0)
-    }
-
     fun startTaximeter() {
         isTaximeterStarted = true
-        units = ratesObj.value.startRateUnits ?: 0.0
         startTime = Instant.now().toString()
         startTimer()
         startWatchLocation()
@@ -248,17 +235,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     }
                 }
 
-                //Log.d("TaximeterViewModel", "isMooving in timer: $isMooving")
-                if (!isMooving && isTaximeterStarted) {
-
-                    dragTimeElapsed++
-                    val sumDrag = (dragTimeElapsed * (ratesObj.value.unitsPerHour ?: 0.0)) / 3600
-                    if (sumDrag >= 1) {
-                        units += 1
-                        dragTimeElapsed = 0
-                    }
-                }
-
                 delay(1000)
             }
         }
@@ -291,22 +267,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             currentPosition.latitude ?: 0.0,
                             currentPosition.longitude ?: 0.0
                         )
-                    }
-
-                    val speedMetersPerSecond = location.speed
-                    val speedKmPerHour = speedMetersPerSecond * 3.6
-                    //Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
-                    if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
-                        isMooving = true
-
-                        val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
-                        distanceMade += distanceCovered.toDouble()
-
-                        val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
-                        units += additionalUnits
-
-                    } else {
-                        isMooving = false
                     }
 
                     previousLocation = location
@@ -345,8 +305,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val compressedBitmap =
             BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
 
-        val finalUnits = getFinalUnits()
-
         val tripObj = Trip(
             startAddress = startAddress,
             startCoords = startLocation,
@@ -354,12 +312,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             endCoords = endLocation,
             startHour = startTime,
             endHour = endTime,
-            units = finalUnits,
-            total = finalUnits * (ratesObj.value.unitPrice ?: 0.0),
+            //total = finalUnits * (ratesObj.value.unitPrice ?: 0.0),
             distance = distanceMade,
-            airportSurchargeEnabled = isAirportSurcharge,
-            airportSurcharge = if (isAirportSurcharge) (ratesObj.value.airportRateUnits
-                ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
             holidaySurchargeEnabled = isHolidaySurcharge,
             holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidayRateUnits
                 ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
@@ -374,15 +328,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         intent.putExtra("trip_data", tripJson)
         onIntentReady(intent)
 
-    }
-
-    private fun getFinalUnits(): Int {
-        val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
-        return if (units < minimumRateUnits) {
-            minimumRateUnits.toInt()
-        } else {
-            units.toInt()
-        }
     }
 
 
@@ -439,15 +384,15 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
 }
 
-class TaximeterViewModelFactory(
+class TaximeterByRegionViewModelFactory(
     private val context: Context,
     private val appViewModel: AppViewModel
 ) :
     ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TaximeterViewModel::class.java)) {
-            return TaximeterViewModel(context, appViewModel) as T
+        if (modelClass.isAssignableFrom(TaximeterByRegionViewModel::class.java)) {
+            return TaximeterByRegionViewModel(context, appViewModel) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

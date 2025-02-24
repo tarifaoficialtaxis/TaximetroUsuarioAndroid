@@ -1,7 +1,9 @@
 package com.mitarifamitaxi.taximetrousuario.helpers
 
 import com.google.android.gms.maps.model.LatLng
+import com.mitarifamitaxi.taximetrousuario.models.Feature
 import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
+import com.mitarifamitaxi.taximetrousuario.models.Properties
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import com.mitarifamitaxi.taximetrousuario.resources.countries
 import okhttp3.*
@@ -126,7 +128,7 @@ fun getPlacePredictions(
     input: String,
     latitude: Double,
     longitude: Double,
-    radius: Int = 15000,
+    radius: Int = 30000,
     callbackSuccess: (ArrayList<PlacePrediction>) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
@@ -355,6 +357,43 @@ fun calculateBearing(startPosition: LatLng, endPosition: LatLng): Float {
     val bearing = Math.toDegrees(atan2(y, x))
     return ((bearing + 360) % 360).toFloat()
 }
+
+
+private fun isPointInPolygon(lon: Double, lat: Double, polygon: List<List<Double>>): Boolean {
+    var inside = false
+    var j = polygon.size - 1
+    for (i in polygon.indices) {
+        val xi = polygon[i][0]
+        val yi = polygon[i][1]
+        val xj = polygon[j][0]
+        val yj = polygon[j][1]
+        val intersect = ((yi > lat) != (yj > lat)) &&
+                (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)
+        if (intersect) {
+            inside = !inside
+        }
+        j = i
+    }
+    return inside
+}
+
+fun findRegionForCoordinates(
+    lat: Double,
+    lon: Double,
+    features: List<Feature>
+): Properties? {
+
+    features.forEach { feature ->
+        val geometry = feature.geometry ?: return@forEach
+        val outerRing = geometry.coordinates?.firstOrNull() ?: return@forEach
+        if (isPointInPolygon(lon, lat, outerRing)) {
+            return feature.properties
+        }
+    }
+
+    return null
+}
+
 
 
 

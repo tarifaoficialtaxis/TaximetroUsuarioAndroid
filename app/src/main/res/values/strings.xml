@@ -233,5 +233,7 @@
 
     <string name="template">template</string>
 
+    <string name="error_fetching_regions">Ha ocurrido un error al intentar obtener las regiones.</string>
+
 
 </resources>

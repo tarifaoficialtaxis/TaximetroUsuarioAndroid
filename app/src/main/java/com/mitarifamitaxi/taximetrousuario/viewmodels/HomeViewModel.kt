@@ -223,23 +223,43 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                 if (snapshot.exists()) {
 
                     try {
-                        val cityArea = snapshot.children.firstOrNull()?.getValue(CityArea::class.java)
-                        Log.d("Firebase", "Found city area: $cityArea")
+                        val cityArea =
+                            snapshot.children.firstOrNull()?.getValue(CityArea::class.java)
+                        saveCityArea(cityArea ?: return)
                     } catch (e: Exception) {
-                        Log.e("Firebase", "Error parsing city data: ${e.message}")
+                        Log.e("HomeViewModel", "Error parsing city data: ${e.message}")
+                        showErrorMessage(
+                            appContext.getString(R.string.something_went_wrong),
+                            appContext.getString(R.string.error_fetching_regions)
+                        )
                     }
 
                 } else {
-                    Log.d("Firebase", "No city found with the given name")
+                    Log.d("HomeViewModel", "No city found with the given name")
+                    showErrorMessage(
+                        appContext.getString(R.string.something_went_wrong),
+                        appContext.getString(R.string.error_fetching_regions)
+                    )
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("Firebase", "Query cancelled or failed: ${error.message}")
+                Log.e("HomeViewModel", "Query cancelled or failed: ${error.message}")
+                showErrorMessage(
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_fetching_regions)
+                )
             }
         })
     }
 
+    private fun saveCityArea(area: CityArea) {
+        val sharedPref = appContext.getSharedPreferences("CityAreaData", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("CITY_AREA_OBJECT", Gson().toJson(area))
+            apply()
+        }
+    }
 
 }
 

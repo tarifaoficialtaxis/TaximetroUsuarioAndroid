@@ -376,12 +376,12 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     }
 
-    private fun getFinalUnits(): Int {
+    private fun getFinalUnits(): Double {
         val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
         return if (units < minimumRateUnits) {
-            minimumRateUnits.toInt()
+            minimumRateUnits
         } else {
-            units.toInt()
+            units
         }
     }
 

@@ -31,6 +31,7 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
     }
 
     private fun getTripsByUserId() {
+        appViewModel.isLoading = true
         val db = FirebaseFirestore.getInstance()
         val tripsRef = db.collection("trips")
             .whereEqualTo("userId", appViewModel.userData?.id)
@@ -38,12 +39,12 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
 
         tripsRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                appViewModel.isLoading = false
                 showErrorMessage("Error listening to trips", error.message ?: "Unknown error")
                 return@addSnapshotListener
             }
-
             try {
-
+                appViewModel.isLoading = false
                 if (snapshot != null && !snapshot.isEmpty) {
                     val trips = snapshot.documents.mapNotNull { doc ->
                         doc.toObject(Trip::class.java)?.copy(id = doc.id)
@@ -53,13 +54,14 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
                     _trips.value = emptyList()
                 }
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "Unexpected error: ${e.message}")
+                appViewModel.isLoading = false
+                Log.e("MyTripsViewModel", "Unexpected error: ${e.message}")
             }
 
         }
     }
 
-    fun showErrorMessage(title: String, message: String) {
+    private fun showErrorMessage(title: String, message: String) {
         showDialog = true
         dialogType = DialogType.ERROR
         dialogTitle = title

@@ -1,10 +1,16 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,6 +78,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import com.mitarifamitaxi.taximetrousuario.services.LocationUpdatesService
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModelFactory
 
@@ -86,12 +93,27 @@ class TaximeterActivity : BaseActivity() {
     ) { granted ->
         if (granted) {
             viewModel.getCurrentLocation()
+            startService(Intent(this, LocationUpdatesService::class.java))
         } else {
             viewModel.showCustomDialog(
                 DialogType.ERROR,
                 getString(R.string.permission_required),
                 getString(R.string.background_location_permission_required)
             )
+        }
+    }
+
+    private val locationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                val location = it.getParcelableExtra<android.location.Location>(
+                    LocationUpdatesService.EXTRA_LOCATION
+                )
+                location?.let { loc ->
+                    // Forward the location to the ViewModel for processing
+                    viewModel.onLocationUpdate(loc)
+                }
+            }
         }
     }
 
@@ -119,6 +141,20 @@ class TaximeterActivity : BaseActivity() {
         endLocation?.let {
             viewModel.endLocation = Gson().fromJson(it, UserLocation::class.java)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onStart() {
+        super.onStart()
+        registerReceiver(
+            locationReceiver,
+            IntentFilter(LocationUpdatesService.ACTION_LOCATION_BROADCAST),
+            Context.RECEIVER_NOT_EXPORTED
+        )
+    }
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(locationReceiver)
     }
 
     override fun onResume() {
@@ -150,6 +186,7 @@ class TaximeterActivity : BaseActivity() {
                         )
                     ) {
                         viewModel.stopTaximeter()
+                        stopService(Intent(this, LocationUpdatesService::class.java))
                     }
 
                 }

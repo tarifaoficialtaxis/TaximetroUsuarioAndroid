@@ -38,6 +38,7 @@ import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import com.mitarifamitaxi.taximetrousuario.services.LocationUpdatesService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -353,6 +354,32 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             locationCallback!!,
             Looper.getMainLooper()
         )
+    }
+
+    fun onLocationUpdate(location: Location) {
+        currentPosition = UserLocation(
+            latitude = location.latitude,
+            longitude = location.longitude
+        )
+
+        if (previousLocation == null ||
+            (previousLocation?.latitude != location.latitude || previousLocation?.longitude != location.longitude)
+        ) {
+            routeCoordinates = routeCoordinates + LatLng(location.latitude, location.longitude)
+        }
+
+        val speedMetersPerSecond = location.speed
+        val speedKmPerHour = speedMetersPerSecond * 3.6
+        if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
+            isMooving = true
+            val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
+            distanceMade += distanceCovered.toDouble()
+            val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
+            units += additionalUnits
+        } else {
+            isMooving = false
+        }
+        previousLocation = location
     }
 
     fun mapScreenshotReady(bitmap: Bitmap, onIntentReady: (Intent) -> Unit) {

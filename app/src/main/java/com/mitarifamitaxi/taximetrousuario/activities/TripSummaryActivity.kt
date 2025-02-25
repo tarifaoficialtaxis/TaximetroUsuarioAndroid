@@ -299,6 +299,8 @@ class TripSummaryActivity : BaseActivity() {
                     }
 
                     if (viewModel.tripData.airportSurchargeEnabled == false &&
+                        viewModel.tripData.nightSurchargeEnabled == false &&
+                        viewModel.tripData.holidayOrNightSurchargeEnabled == false &&
                         viewModel.tripData.holidaySurchargeEnabled == false &&
                         viewModel.tripData.doorToDoorSurchargeEnabled == false
                     ) {
@@ -317,20 +319,40 @@ class TripSummaryActivity : BaseActivity() {
                         )
                     }
 
+                    if (viewModel.tripData.doorToDoorSurchargeEnabled == true) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.door_to_door_surcharge),
+                            value = "+$${
+                                viewModel.tripData.doorToDoorSurcharge?.toInt()
+                                    ?.formatNumberWithDots()
+                            } COP"
+                        )
+                    }
+
+                    if (viewModel.tripData.nightSurchargeEnabled == true) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.night_surcharge_only),
+                            value = "+$${
+                                viewModel.tripData.nightSurcharge?.toInt()
+                                    ?.formatNumberWithDots()
+                            } COP"
+                        )
+                    }
+
                     if (viewModel.tripData.holidaySurchargeEnabled == true) {
                         TripInfoRow(
-                            title = stringResource(id = R.string.holiday_surcharge),
+                            title = stringResource(id = R.string.holiday_surcharge_only),
                             value = "+$${
                                 viewModel.tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
                             } COP"
                         )
                     }
 
-                    if (viewModel.tripData.doorToDoorSurchargeEnabled == true) {
+                    if (viewModel.tripData.holidayOrNightSurchargeEnabled == true) {
                         TripInfoRow(
-                            title = stringResource(id = R.string.door_to_door_surcharge),
+                            title = stringResource(id = R.string.holiday_surcharge),
                             value = "+$${
-                                viewModel.tripData.doorToDoorSurcharge?.toInt()
+                                viewModel.tripData.holidayOrNightSurcharge?.toInt()
                                     ?.formatNumberWithDots()
                             } COP"
                         )

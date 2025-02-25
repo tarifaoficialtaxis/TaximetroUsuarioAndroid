@@ -447,6 +447,7 @@ class TaximeterActivity : BaseActivity() {
             ) {
                 CustomCheckBox(
                     text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
+                    checked = viewModel.isAirportSurcharge,
                     isEnabled = viewModel.isTaximeterStarted,
                     onValueChange = {
                         viewModel.isAirportSurcharge = it
@@ -460,6 +461,7 @@ class TaximeterActivity : BaseActivity() {
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
+                    checked = viewModel.isHolidaySurcharge,
                     isEnabled = viewModel.isTaximeterStarted,
                     onValueChange = {
                         viewModel.isHolidaySurcharge = it
@@ -473,6 +475,7 @@ class TaximeterActivity : BaseActivity() {
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
+                    checked = viewModel.isDoorToDoorSurcharge,
                     isEnabled = viewModel.isTaximeterStarted,
                     onValueChange = {
                         viewModel.isDoorToDoorSurcharge = it

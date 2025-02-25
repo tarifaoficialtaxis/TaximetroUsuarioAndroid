@@ -343,6 +343,9 @@ class RoutePlannerActivity : BaseActivity() {
                     trailingIcon = if (viewModel.startAddress.isNotEmpty()) Icons.Filled.Cancel else null,
                     onClickTrailingIcon = { viewModel.startAddress = "" },
                     placeholder = stringResource(id = R.string.start_point),
+                    onFocusChanged = { isFocused ->
+                        viewModel.isStartAddressFocused = isFocused
+                    },
                     focusedIndicatorColor = colorResource(id = R.color.transparent),
                     unfocusedIndicatorColor = colorResource(id = R.color.transparent),
                 )
@@ -364,6 +367,9 @@ class RoutePlannerActivity : BaseActivity() {
                     trailingIcon = if (viewModel.endAddress.isNotEmpty()) Icons.Filled.Cancel else null,
                     onClickTrailingIcon = { viewModel.endAddress = "" },
                     placeholder = stringResource(id = R.string.end_point),
+                    onFocusChanged = { isFocused ->
+                        viewModel.isEndAddressFocused = isFocused
+                    },
                     focusedIndicatorColor = colorResource(id = R.color.transparent),
                     unfocusedIndicatorColor = colorResource(id = R.color.transparent),
                 )
@@ -427,7 +433,7 @@ class RoutePlannerActivity : BaseActivity() {
                         )
                     }
                 }
-            } else {
+            } else if ((viewModel.isStartAddressFocused && viewModel.startAddress.length > 3) || (viewModel.isEndAddressFocused && viewModel.endAddress.length > 3)) {
                 Text(
                     text = stringResource(id = R.string.no_results_found),
                     color = colorResource(id = R.color.gray1),

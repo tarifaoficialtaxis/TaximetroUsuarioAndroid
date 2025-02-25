@@ -216,6 +216,7 @@ class LoginActivity : BaseActivity() {
 
                                 CustomCheckBox(
                                     text = stringResource(id = R.string.remember_me),
+                                    checked = viewModel.rememberMe,
                                     onValueChange = { viewModel.rememberMe = it }
                                 )
 

@@ -360,8 +360,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             airportSurchargeEnabled = isAirportSurcharge,
             airportSurcharge = if (isAirportSurcharge) (ratesObj.value.airportRateUnits
                 ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
-            holidaySurchargeEnabled = isHolidaySurcharge,
-            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidayRateUnits
+            holidayOrNightSurchargeEnabled = isHolidaySurcharge,
+            holidayOrNightSurcharge = if (isHolidaySurcharge) (ratesObj.value.holidayRateUnits
                 ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
             doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorRateUnits

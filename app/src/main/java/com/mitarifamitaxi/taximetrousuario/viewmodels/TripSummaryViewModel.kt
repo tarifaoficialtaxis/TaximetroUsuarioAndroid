@@ -18,6 +18,7 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
+import com.mitarifamitaxi.taximetrousuario.helpers.putIfNotNull
 import com.mitarifamitaxi.taximetrousuario.helpers.shareFormatDate
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
@@ -109,25 +110,32 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
 
                 val imageUrl = tripData.routeImageLocal?.let { uploadImage(it) }
 
-                val tripDataReq = hashMapOf(
-                    "userId" to appViewModel.userData?.id,
-                    "startCoords" to tripData.startCoords,
-                    "endCoords" to tripData.endCoords,
-                    "startHour" to tripData.startHour,
-                    "endHour" to tripData.endHour,
-                    "distance" to tripData.distance,
-                    "units" to tripData.units,
-                    "total" to tripData.total,
-                    "isAirportSurcharge" to tripData.airportSurchargeEnabled,
-                    "airportSurcharge" to tripData.airportSurcharge,
-                    "isHolidaySurcharge" to tripData.holidaySurchargeEnabled,
-                    "holidaySurcharge" to tripData.holidaySurcharge,
-                    "isDoorToDoorSurcharge" to tripData.doorToDoorSurchargeEnabled,
-                    "doorToDoorSurcharge" to tripData.doorToDoorSurcharge,
-                    "startAddress" to tripData.startAddress,
-                    "endAddress" to tripData.endAddress,
-                    "routeImage" to imageUrl
-                )
+                val tripDataReq = mutableMapOf<String, Any?>().apply {
+                    putIfNotNull("userId", appViewModel.userData?.id)
+                    putIfNotNull("startCoords", tripData.startCoords)
+                    putIfNotNull("endCoords", tripData.endCoords)
+                    putIfNotNull("startHour", tripData.startHour)
+                    putIfNotNull("endHour", tripData.endHour)
+                    putIfNotNull("distance", tripData.distance)
+                    putIfNotNull("units", tripData.units)
+                    putIfNotNull("total", tripData.total)
+                    putIfNotNull("isAirportSurcharge", tripData.airportSurchargeEnabled)
+                    putIfNotNull("airportSurcharge", tripData.airportSurcharge)
+                    putIfNotNull("isHolidaySurcharge", tripData.holidaySurchargeEnabled)
+                    putIfNotNull("holidaySurcharge", tripData.holidaySurcharge)
+                    putIfNotNull("isDoorToDoorSurcharge", tripData.doorToDoorSurchargeEnabled)
+                    putIfNotNull("doorToDoorSurcharge", tripData.doorToDoorSurcharge)
+                    putIfNotNull("isNightSurcharge", tripData.nightSurchargeEnabled)
+                    putIfNotNull("nightSurcharge", tripData.nightSurcharge)
+                    putIfNotNull(
+                        "isHolidayOrNightSurcharge",
+                        tripData.holidayOrNightSurchargeEnabled
+                    )
+                    putIfNotNull("holidayOrNightSurcharge", tripData.holidayOrNightSurcharge)
+                    putIfNotNull("startAddress", tripData.startAddress)
+                    putIfNotNull("endAddress", tripData.endAddress)
+                    putIfNotNull("routeImage", imageUrl)
+                }
 
                 FirebaseFirestore.getInstance().collection("trips").add(tripDataReq).await()
                 appViewModel.isLoading = false
@@ -193,7 +201,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 )
             }
 
-            if (tripData.holidaySurchargeEnabled == true) {
+            if (tripData.holidayOrNightSurchargeEnabled == true) {
                 append(
                     "*Recargo nocturno dominical o festivo:* ${
                         tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
@@ -205,6 +213,22 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo puerta a puerta:* ${
                         tripData.doorToDoorSurcharge?.toInt()?.formatNumberWithDots()
+                    } COP\n"
+                )
+            }
+
+            if (tripData.holidaySurchargeEnabled == true) {
+                append(
+                    "*Recargo dominical o festivo:* ${
+                        tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
+                    } COP\n"
+                )
+            }
+
+            if (tripData.nightSurchargeEnabled == true) {
+                append(
+                    "*Recargo nocturno:* ${
+                        tripData.nightSurcharge?.toInt()?.formatNumberWithDots()
                     } COP\n"
                 )
             }

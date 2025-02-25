@@ -59,6 +59,8 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var mainColumnHeight by mutableStateOf(0.dp)
     var sheetPeekHeight by mutableStateOf(0.dp)
 
+    var isStartAddressFocused by mutableStateOf(false)
+    var isEndAddressFocused by mutableStateOf(false)
 
     var dialogType by mutableStateOf(DialogType.SUCCESS)
     var showDialog by mutableStateOf(false)

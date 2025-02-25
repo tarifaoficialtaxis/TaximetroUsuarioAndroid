@@ -48,7 +48,6 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.time.Instant
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executor
 
@@ -257,10 +256,12 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
             )
         ) {
             isNightSurcharge = true
+            total += ratesObj.value.nightSurcharge?.toDouble() ?: 0.0
         }
 
         if (isColombianHoliday()) {
             isHolidaySurcharge = true
+            total += ratesObj.value.holidaySurcharge?.toDouble() ?: 0.0
         }
     }
 
@@ -385,10 +386,12 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
             endHour = endTime,
             total = total,
             distance = distanceMade,
-            holidaySurchargeEnabled = isHolidaySurcharge,
-            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidaySurcharge?.toDouble()) else null,
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
             doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorSurcharge?.toDouble()) else null,
+            holidaySurchargeEnabled = isHolidaySurcharge,
+            holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidaySurcharge?.toDouble()) else null,
+            nightSurchargeEnabled = isNightSurcharge,
+            nightSurcharge = if (isNightSurcharge) (ratesObj.value.nightSurcharge?.toDouble()) else null,
             routeImageLocal = compressedBitmap
         )
 

@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.rounded.DirectionsCar
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.PhoneIphone
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -127,36 +126,43 @@ class PqrsActivity : BaseActivity() {
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.high_fare),
+                        checked = viewModel.isHighFare,
                         onValueChange = { viewModel.isHighFare = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.user_mistreated),
+                        checked = viewModel.isUserMistreated,
                         onValueChange = { viewModel.isUserMistreated = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.service_abandonment),
+                        checked = viewModel.isServiceAbandonment,
                         onValueChange = { viewModel.isServiceAbandonment = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.unauthorized_charges),
+                        checked = viewModel.isUnauthorizedCharges,
                         onValueChange = { viewModel.isUnauthorizedCharges = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.no_fare_notice),
+                        checked = viewModel.isNoFareNotice,
                         onValueChange = { viewModel.isNoFareNotice = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.dangerous_driving),
+                        checked = viewModel.isDangerousDriving,
                         onValueChange = { viewModel.isDangerousDriving = it }
                     )
 
                     CustomCheckBox(
                         text = stringResource(id = R.string.other),
+                        checked = viewModel.isOther,
                         onValueChange = { viewModel.isOther = it }
                     )
 

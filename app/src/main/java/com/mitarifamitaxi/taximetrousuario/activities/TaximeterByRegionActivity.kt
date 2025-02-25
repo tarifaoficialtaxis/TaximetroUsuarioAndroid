@@ -444,8 +444,6 @@ class TaximeterByRegionActivity : BaseActivity() {
 
             }
 
-
-
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
@@ -454,6 +452,7 @@ class TaximeterByRegionActivity : BaseActivity() {
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
+                    checked = viewModel.isDoorToDoorSurcharge,
                     onValueChange = {
                         viewModel.isDoorToDoorSurcharge = it
                         if (it) {
@@ -468,32 +467,16 @@ class TaximeterByRegionActivity : BaseActivity() {
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.holiday_surcharge_only).replace(":", ""),
+                    checked = viewModel.isHolidaySurcharge,
                     isEnabled = false,
-                    onValueChange = {
-                        viewModel.isHolidaySurcharge = it
-                        if (it) {
-                            viewModel.total += viewModel.ratesObj.value.holidaySurcharge?.toDouble()
-                                ?: 0.0
-                        } else {
-                            viewModel.total -= viewModel.ratesObj.value.holidaySurcharge?.toDouble()
-                                ?: 0.0
-                        }
-                    }
+                    onValueChange = {}
                 )
 
                 CustomCheckBox(
                     text = stringResource(id = R.string.night_surcharge_only).replace(":", ""),
+                    checked = viewModel.isNightSurcharge,
                     isEnabled = false,
-                    onValueChange = {
-                        viewModel.isNightSurcharge = it
-                        if (it) {
-                            viewModel.total += viewModel.ratesObj.value.nightSurcharge?.toDouble()
-                                ?: 0.0
-                        } else {
-                            viewModel.total -= viewModel.ratesObj.value.nightSurcharge?.toDouble()
-                                ?: 0.0
-                        }
-                    }
+                    onValueChange = {}
                 )
 
             }

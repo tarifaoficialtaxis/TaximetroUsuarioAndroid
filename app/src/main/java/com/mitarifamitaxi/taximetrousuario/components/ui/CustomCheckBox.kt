@@ -8,10 +8,6 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,10 +21,10 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 @Composable
 fun CustomCheckBox(
     text: String,
+    checked: Boolean,
     isEnabled: Boolean = true,
     onValueChange: (Boolean) -> Unit,
 ) {
-    var checked by remember { mutableStateOf(false) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -39,10 +35,7 @@ fun CustomCheckBox(
             Checkbox(
                 checked = checked,
                 enabled = isEnabled,
-                onCheckedChange = {
-                    checked = it
-                    onValueChange(it)
-                },
+                onCheckedChange = onValueChange,
                 colors = CheckboxDefaults.colors(
                     checkedColor = colorResource(id = R.color.main),
                     uncheckedColor = colorResource(id = R.color.gray6),

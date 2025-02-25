@@ -16,6 +16,16 @@ data class Trip(
     val total: Double? = null,
     val distance: Double? = null,
 
+    @get:PropertyName("isHolidayOrNightSurcharge")
+    @field:PropertyName("isHolidayOrNightSurcharge")
+    val holidayOrNightSurchargeEnabled: Boolean? = null,
+    val holidayOrNightSurcharge: Double? = null,
+
+    @get:PropertyName("isNightSurcharge")
+    @field:PropertyName("isNightSurcharge")
+    val nightSurchargeEnabled: Boolean? = null,
+    val nightSurcharge: Double? = null,
+
     @get:PropertyName("isHolidaySurcharge")
     @field:PropertyName("isHolidaySurcharge")
     val holidaySurchargeEnabled: Boolean? = null,

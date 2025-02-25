@@ -194,7 +194,7 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
         }
     }
 
-    fun getEstimatedPrice() {
+    private fun getEstimatedPrice() {
 
         Log.d("TaximeterByRegionVM", "Start coordinates: ${Gson().toJson(startLocation)}")
         val startArea = findRegionForCoordinates(

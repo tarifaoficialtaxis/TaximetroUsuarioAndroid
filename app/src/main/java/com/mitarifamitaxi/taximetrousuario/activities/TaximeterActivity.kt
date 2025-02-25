@@ -445,6 +445,21 @@ class TaximeterActivity : BaseActivity() {
                 modifier = Modifier
                     .padding(top = 10.dp)
             ) {
+
+                CustomCheckBox(
+                    text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
+                    checked = viewModel.isDoorToDoorSurcharge,
+                    isEnabled = viewModel.isTaximeterStarted,
+                    onValueChange = {
+                        viewModel.isDoorToDoorSurcharge = it
+                        if (it) {
+                            viewModel.units += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                        } else {
+                            viewModel.units -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                        }
+                    }
+                )
+
                 CustomCheckBox(
                     text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
                     checked = viewModel.isAirportSurcharge,
@@ -462,30 +477,11 @@ class TaximeterActivity : BaseActivity() {
                 CustomCheckBox(
                     text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
                     checked = viewModel.isHolidaySurcharge,
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isHolidaySurcharge = it
-                        if (it) {
-                            viewModel.units += viewModel.ratesObj.value.holidayRateUnits ?: 0.0
-                        } else {
-                            viewModel.units -= viewModel.ratesObj.value.holidayRateUnits ?: 0.0
-                        }
-                    }
+                    isEnabled = false,
+                    onValueChange = {}
                 )
 
-                CustomCheckBox(
-                    text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
-                    checked = viewModel.isDoorToDoorSurcharge,
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isDoorToDoorSurcharge = it
-                        if (it) {
-                            viewModel.units += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
-                        } else {
-                            viewModel.units -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
-                        }
-                    }
-                )
+
             }
 
             Row(

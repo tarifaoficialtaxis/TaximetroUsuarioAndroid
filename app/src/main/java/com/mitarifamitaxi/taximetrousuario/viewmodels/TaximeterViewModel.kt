@@ -32,6 +32,8 @@ import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TripSummaryActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.isColombianHoliday
+import com.mitarifamitaxi.taximetrousuario.helpers.isNightTime
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
@@ -168,6 +170,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         try {
                             ratesObj.value =
                                 cityRatesDoc.toObject(Rates::class.java) ?: Rates()
+                            validateSurcharges()
                         } catch (e: Exception) {
                             showCustomDialog(
                                 DialogType.ERROR,
@@ -199,6 +202,26 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             }
         }
 
+    }
+
+    private fun validateSurcharges() {
+
+        if (isNightTime(
+                ratesObj.value.nightHourSurcharge ?: 21,
+                ratesObj.value.nighMinuteSurcharge ?: 0,
+                ratesObj.value.morningHourSurcharge ?: 5,
+                ratesObj.value.morningMinuteSurcharge ?: 30
+            )
+        ) {
+            isHolidaySurcharge = true
+            units += ratesObj.value.holidayRateUnits ?: 0.0
+            return
+        }
+
+        if (isColombianHoliday()) {
+            isHolidaySurcharge = true
+            units += ratesObj.value.holidayRateUnits ?: 0.0
+        }
     }
 
     private fun onUnitsChanged(newValue: Double) {

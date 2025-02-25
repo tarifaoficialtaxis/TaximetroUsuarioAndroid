@@ -10,5 +10,9 @@ data class Rates(
     val minimumRateUnits: Double? = null,
     val startRateUnits: Double? = null,
     val unitPrice: Double? = null,
-    val unitsPerHour: Double? = null
+    val unitsPerHour: Double? = null,
+    val nightHourSurcharge: Int? = null,
+    val nighMinuteSurcharge: Int? = null,
+    val morningHourSurcharge: Int? = null,
+    val morningMinuteSurcharge: Int? = null
 )

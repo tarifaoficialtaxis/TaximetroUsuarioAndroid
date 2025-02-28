@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -334,6 +337,18 @@ class TaximeterByRegionActivity : BaseActivity() {
                                 }
                             }
 
+                        }
+
+                        if (viewModel.ratesObj.value.companyImage != null) {
+                            AsyncImage(
+                                model = viewModel.ratesObj.value.companyImage,
+                                contentDescription = "Company Logo",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier
+                                    .height(100.dp)
+                                    .width(100.dp)
+                                    .padding(16.dp)
+                            )
                         }
                     }
                 }

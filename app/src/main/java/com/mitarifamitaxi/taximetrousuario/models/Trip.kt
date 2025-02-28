@@ -43,5 +43,7 @@ data class Trip(
 
     val routeImage: String? = null,
 
-    val routeImageLocal: Bitmap? = null
+    val routeImageLocal: Bitmap? = null,
+
+    val companyImage: String? = null,
 )

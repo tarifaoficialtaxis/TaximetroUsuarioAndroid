@@ -197,21 +197,40 @@ class TripSummaryActivity : BaseActivity() {
                         .padding(top = 29.dp)
                         .padding(horizontal = 29.dp)
                 ) {
-                    Text(
-                        text = tripSummaryFormatDate(viewModel.tripData.startHour ?: ""),
-                        fontFamily = MontserratFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp,
-                        color = colorResource(id = R.color.blue1),
-                    )
 
-                    Text(
-                        text = "$ ${viewModel.tripData.total?.toInt()?.formatNumberWithDots()} COP",
-                        fontFamily = MontserratFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                        color = colorResource(id = R.color.main),
-                    )
+                    Row {
+                        Column {
+                            Text(
+                                text = tripSummaryFormatDate(viewModel.tripData.startHour ?: ""),
+                                fontFamily = MontserratFamily,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp,
+                                color = colorResource(id = R.color.blue1),
+                            )
+
+                            Text(
+                                text = "$ ${viewModel.tripData.total?.toInt()?.formatNumberWithDots()} COP",
+                                fontFamily = MontserratFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                color = colorResource(id = R.color.main),
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        if (viewModel.tripData.companyImage != null) {
+                            AsyncImage(
+                                model = viewModel.tripData.companyImage,
+                                contentDescription = "Company logo",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(70.dp)
+                            )
+                        }
+                    }
+
+
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -294,7 +313,7 @@ class TripSummaryActivity : BaseActivity() {
                     if (viewModel.tripData.units != null) {
                         TripInfoRow(
                             title = stringResource(id = R.string.units),
-                            value = viewModel.tripData.units.toString()
+                            value = viewModel.tripData.units?.toInt().toString()
                         )
                     }
 

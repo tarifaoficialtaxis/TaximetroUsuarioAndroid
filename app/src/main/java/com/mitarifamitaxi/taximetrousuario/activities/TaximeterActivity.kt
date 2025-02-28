@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -105,6 +106,7 @@ class TaximeterActivity : BaseActivity() {
 
     private val locationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("TaximeterActivity", "onReceive")
             intent?.let {
                 val location = it.getParcelableExtra<android.location.Location>(
                     LocationUpdatesService.EXTRA_LOCATION

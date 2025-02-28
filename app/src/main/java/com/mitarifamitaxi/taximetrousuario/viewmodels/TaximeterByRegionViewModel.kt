@@ -392,7 +392,8 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
             holidaySurcharge = if (isHolidaySurcharge) (ratesObj.value.holidaySurcharge?.toDouble()) else null,
             nightSurchargeEnabled = isNightSurcharge,
             nightSurcharge = if (isNightSurcharge) (ratesObj.value.nightSurcharge?.toDouble()) else null,
-            routeImageLocal = compressedBitmap
+            routeImageLocal = compressedBitmap,
+            companyImage = ratesObj.value.companyImage
         )
 
         val tripJson = Gson().toJson(tripObj)

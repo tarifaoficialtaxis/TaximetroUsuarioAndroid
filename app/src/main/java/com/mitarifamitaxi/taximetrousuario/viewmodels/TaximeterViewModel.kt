@@ -329,6 +329,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
                         units += additionalUnits
 
+                        Log.d("TaximeterViewModel", "onLocationResult New units: $units")
+
+
                     } else {
                         isMooving = false
                     }
@@ -376,6 +379,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             distanceMade += distanceCovered.toDouble()
             val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
             units += additionalUnits
+            Log.d("TaximeterViewModel", "onLocationUpdate New units: $units")
         } else {
             isMooving = false
         }

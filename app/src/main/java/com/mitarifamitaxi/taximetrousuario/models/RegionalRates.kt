@@ -12,4 +12,5 @@ data class RegionalRates(
     val nighMinuteSurcharge: Int? = null,
     val morningHourSurcharge: Int? = null,
     val morningMinuteSurcharge: Int? = null,
+    val companyImage: String? = null,
 )

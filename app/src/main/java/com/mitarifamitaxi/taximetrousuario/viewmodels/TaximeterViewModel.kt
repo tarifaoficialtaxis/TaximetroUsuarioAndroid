@@ -28,6 +28,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
@@ -131,13 +132,13 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
         task.addOnSuccessListener(executor) { location ->
             if (location != null) {
-
                 currentPosition = UserLocation(
                     latitude = location.latitude,
                     longitude = location.longitude
                 )
 
             } else {
+                FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel location null"))
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -145,6 +146,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 )
             }
         }.addOnFailureListener {
+            FirebaseCrashlytics.getInstance().recordException(it)
             showCustomDialog(
                 DialogType.ERROR,
                 appContext.getString(R.string.something_went_wrong),
@@ -173,6 +175,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                                 cityRatesDoc.toObject(Rates::class.java) ?: Rates()
                             validateSurcharges()
                         } catch (e: Exception) {
+                            FirebaseCrashlytics.getInstance().recordException(e)
                             showCustomDialog(
                                 DialogType.ERROR,
                                 appContext.getString(R.string.something_went_wrong),
@@ -180,6 +183,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             )
                         }
                     } else {
+                        FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty"))
                         showCustomDialog(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
@@ -187,7 +191,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         )
                     }
                 } catch (e: Exception) {
-                    Log.e("TaximeterViewModel", "Error fetching contacts: ${e.message}")
+                    FirebaseCrashlytics.getInstance().recordException(e)
                     showCustomDialog(
                         DialogType.ERROR,
                         appContext.getString(R.string.something_went_wrong),
@@ -195,6 +199,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     )
                 }
             } else {
+                FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel userCity null"))
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -359,7 +364,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         )
     }
 
-    fun onLocationUpdate(location: Location) {
+    /*fun onLocationUpdate(location: Location) {
         currentPosition = UserLocation(
             latitude = location.latitude,
             longitude = location.longitude
@@ -384,7 +389,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             isMooving = false
         }
         previousLocation = location
-    }
+    }*/
 
     fun mapScreenshotReady(bitmap: Bitmap, onIntentReady: (Intent) -> Unit) {
 

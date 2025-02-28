@@ -103,21 +103,21 @@ class TaximeterActivity : BaseActivity() {
             )
         }
     }
-
-    private val locationReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d("TaximeterActivity", "onReceive")
-            intent?.let {
-                val location = it.getParcelableExtra<android.location.Location>(
-                    LocationUpdatesService.EXTRA_LOCATION
-                )
-                location?.let { loc ->
-                    // Forward the location to the ViewModel for processing
-                    viewModel.onLocationUpdate(loc)
-                }
-            }
-        }
-    }
+    /*
+         private val locationReceiver = object : BroadcastReceiver() {
+             override fun onReceive(context: Context?, intent: Intent?) {
+                 Log.d("TaximeterActivity", "onReceive")
+                 intent?.let {
+                     val location = it.getParcelableExtra<android.location.Location>(
+                         LocationUpdatesService.EXTRA_LOCATION
+                     )
+                     location?.let { loc ->
+                         // Forward the location to the ViewModel for processing
+                         viewModel.onLocationUpdate(loc)
+                     }
+                 }
+             }
+         }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,7 +145,7 @@ class TaximeterActivity : BaseActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    /*@RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStart() {
         super.onStart()
         registerReceiver(
@@ -157,7 +157,7 @@ class TaximeterActivity : BaseActivity() {
     override fun onStop() {
         super.onStop()
         unregisterReceiver(locationReceiver)
-    }
+    }*/
 
     override fun onResume() {
         super.onResume()

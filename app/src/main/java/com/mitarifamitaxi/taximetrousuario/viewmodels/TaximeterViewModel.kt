@@ -33,6 +33,7 @@ import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
 import com.mitarifamitaxi.taximetrousuario.activities.TripSummaryActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.isColombianHoliday
 import com.mitarifamitaxi.taximetrousuario.helpers.isNightTime
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
@@ -252,10 +253,26 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     fun stopTaximeter() {
-        isTaximeterStarted = false
-        stopWatchLocation()
-        endTime = Instant.now().toString()
-        fitCameraPosition = true
+        appViewModel.isLoading = true
+        getAddressFromCoordinates(
+            latitude = currentPosition.latitude ?: 0.0,
+            longitude = currentPosition.longitude ?: 0.0,
+            callbackSuccess = { address ->
+                appViewModel.isLoading = false
+                endAddress = address
+                isTaximeterStarted = false
+                stopWatchLocation()
+                endTime = Instant.now().toString()
+                fitCameraPosition = true
+            },
+            callbackError = {
+                showCustomDialog(
+                    DialogType.ERROR,
+                    appContext.getString(R.string.something_went_wrong),
+                    appContext.getString(R.string.error_getting_address)
+                )
+            }
+        )
     }
 
     private fun startTimer() {
@@ -364,33 +381,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         )
     }
 
-    /*fun onLocationUpdate(location: Location) {
-        currentPosition = UserLocation(
-            latitude = location.latitude,
-            longitude = location.longitude
-        )
-
-        if (previousLocation == null ||
-            (previousLocation?.latitude != location.latitude || previousLocation?.longitude != location.longitude)
-        ) {
-            routeCoordinates = routeCoordinates + LatLng(location.latitude, location.longitude)
-        }
-
-        val speedMetersPerSecond = location.speed
-        val speedKmPerHour = speedMetersPerSecond * 3.6
-        if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
-            isMooving = true
-            val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
-            distanceMade += distanceCovered.toDouble()
-            val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
-            units += additionalUnits
-            Log.d("TaximeterViewModel", "onLocationUpdate New units: $units")
-        } else {
-            isMooving = false
-        }
-        previousLocation = location
-    }*/
-
     fun mapScreenshotReady(bitmap: Bitmap, onIntentReady: (Intent) -> Unit) {
 
         val newWidth = bitmap.width / 1.3
@@ -410,7 +400,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             startAddress = startAddress,
             startCoords = startLocation,
             endAddress = endAddress,
-            endCoords = endLocation,
+            endCoords = currentPosition,
             startHour = startTime,
             endHour = endTime,
             units = finalUnits,

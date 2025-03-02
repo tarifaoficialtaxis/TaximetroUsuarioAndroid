@@ -1,17 +1,10 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -103,21 +96,6 @@ class TaximeterActivity : BaseActivity() {
             )
         }
     }
-    /*
-         private val locationReceiver = object : BroadcastReceiver() {
-             override fun onReceive(context: Context?, intent: Intent?) {
-                 Log.d("TaximeterActivity", "onReceive")
-                 intent?.let {
-                     val location = it.getParcelableExtra<android.location.Location>(
-                         LocationUpdatesService.EXTRA_LOCATION
-                     )
-                     location?.let { loc ->
-                         // Forward the location to the ViewModel for processing
-                         viewModel.onLocationUpdate(loc)
-                     }
-                 }
-             }
-         }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -144,20 +122,6 @@ class TaximeterActivity : BaseActivity() {
             viewModel.endLocation = Gson().fromJson(it, UserLocation::class.java)
         }
     }
-
-    /*@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override fun onStart() {
-        super.onStart()
-        registerReceiver(
-            locationReceiver,
-            IntentFilter(LocationUpdatesService.ACTION_LOCATION_BROADCAST),
-            Context.RECEIVER_NOT_EXPORTED
-        )
-    }
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(locationReceiver)
-    }*/
 
     override fun onResume() {
         super.onResume()

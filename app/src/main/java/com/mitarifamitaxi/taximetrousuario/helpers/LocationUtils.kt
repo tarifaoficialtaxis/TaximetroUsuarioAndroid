@@ -58,20 +58,22 @@ fun getCityFromCoordinates(
 
                             if (types != null) {
                                 if (types.toString().contains("locality")) {
-                                    city = component.optString("long_name")
+                                    city = component.optString("short_name")
                                 } else if (city == null && types.toString()
                                         .contains("administrative_area_level_1")
                                 ) {
-                                    city = component.optString("long_name")
-                                } else if (types.toString().contains("country")) {
-                                    country = component.optString("long_name")
+                                    city = component.optString("short_name")
+                                }
+
+                                if (types.toString().contains("country")) {
+                                    country = component.optString("short_name")
                                 }
                             }
                         }
                     }
 
                     val countryCodeWhatsapp =
-                        countries.find { it.name == country }?.dial?.replace("+", "")
+                        countries.find { it.code == country }?.dial?.replace("+", "")
 
                     callbackSuccess(city, countryCodeWhatsapp)
                 } else {

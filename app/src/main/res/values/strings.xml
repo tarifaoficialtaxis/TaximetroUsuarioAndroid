@@ -90,6 +90,8 @@
     <string name="select_complaint_reason">Selecciona el motivo de la denuncia</string>
 
     <string name="fare">Tarifa:</string>
+    <string name="fare_base">Tarifa base:</string>
+    <string name="total">Total:</string>
 
     <string name="start_address">Dirección de recogida</string>
     <string name="destination_address">Dirección de destino</string>

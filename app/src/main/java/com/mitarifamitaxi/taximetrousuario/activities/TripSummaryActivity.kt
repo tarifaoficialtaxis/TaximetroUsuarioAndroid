@@ -209,7 +209,9 @@ class TripSummaryActivity : BaseActivity() {
                             )
 
                             Text(
-                                text = "$ ${viewModel.tripData.total?.toInt()?.formatNumberWithDots()} COP",
+                                text = "$ ${
+                                    viewModel.tripData.total?.toInt()?.formatNumberWithDots()
+                                } COP",
                                 fontFamily = MontserratFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
@@ -316,6 +318,13 @@ class TripSummaryActivity : BaseActivity() {
                             value = viewModel.tripData.units?.toInt().toString()
                         )
                     }
+
+                    TripInfoRow(
+                        title = stringResource(id = R.string.fare_base),
+                        value = "$${
+                            viewModel.tripData.baseRate?.toInt()?.formatNumberWithDots()
+                        } COP"
+                    )
 
                     if (viewModel.tripData.airportSurchargeEnabled == false &&
                         viewModel.tripData.nightSurchargeEnabled == false &&

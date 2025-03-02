@@ -1,25 +1,24 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.net.Uri
 import android.os.Looper
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -29,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.TaximeterActivity
@@ -40,7 +40,6 @@ import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Rates
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
-import com.mitarifamitaxi.taximetrousuario.services.LocationUpdatesService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,6 +49,7 @@ import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
+import kotlin.math.min
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -139,7 +139,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 )
 
             } else {
-                FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel location null"))
+                FirebaseCrashlytics.getInstance()
+                    .recordException(Exception("TaximeterViewModel location null"))
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -184,7 +185,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             )
                         }
                     } else {
-                        FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty"))
+                        FirebaseCrashlytics.getInstance()
+                            .recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty"))
                         showCustomDialog(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
@@ -200,7 +202,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     )
                 }
             } else {
-                FirebaseCrashlytics.getInstance().recordException(Exception("TaximeterViewModel userCity null"))
+                FirebaseCrashlytics.getInstance()
+                    .recordException(Exception("TaximeterViewModel userCity null"))
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -332,7 +335,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         longitude = location.longitude
                     )
 
-                    if (previousLocation == null || (previousLocation?.latitude != location.latitude && previousLocation?.longitude != location.longitude)) {
+                    if (previousLocation == null || (previousLocation?.distanceTo(location)
+                            ?: 0f) >= 25f
+                    ) {
                         routeCoordinates = routeCoordinates + LatLng(
                             currentPosition.latitude ?: 0.0,
                             currentPosition.longitude ?: 0.0
@@ -403,8 +408,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             endCoords = currentPosition,
             startHour = startTime,
             endHour = endTime,
-            units = finalUnits,
-            total = finalUnits * (ratesObj.value.unitPrice ?: 0.0),
+            units = finalUnits.second,
+            total = finalUnits.second * (ratesObj.value.unitPrice ?: 0.0),
+            baseRate = finalUnits.first * (ratesObj.value.unitPrice ?: 0.0),
             distance = distanceMade,
             airportSurchargeEnabled = isAirportSurcharge,
             airportSurcharge = if (isAirportSurcharge) (ratesObj.value.airportRateUnits
@@ -425,13 +431,35 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     }
 
-    private fun getFinalUnits(): Double {
+    private fun getFinalUnits(): Pair<Double, Double> {
+        var totalRechargesUnits = 0.0
         val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
-        return if (units < minimumRateUnits) {
-            minimumRateUnits
-        } else {
-            units
+        if (isAirportSurcharge) {
+            totalRechargesUnits += ratesObj.value.airportRateUnits ?: 0.0
         }
+
+        if (isHolidaySurcharge) {
+            totalRechargesUnits += ratesObj.value.holidayRateUnits ?: 0.0
+        }
+        if (isDoorToDoorSurcharge) {
+            totalRechargesUnits += ratesObj.value.doorToDoorRateUnits ?: 0.0
+        }
+
+        val baseUnits = units - totalRechargesUnits
+
+        if (baseUnits < minimumRateUnits) {
+            return if (!isAirportSurcharge &&
+                !isHolidaySurcharge &&
+                !isDoorToDoorSurcharge
+            ) {
+                Pair(minimumRateUnits, minimumRateUnits)
+            } else {
+                Pair(minimumRateUnits, minimumRateUnits + totalRechargesUnits)
+            }
+        }
+
+        return Pair(baseUnits, units)
+
     }
 
 

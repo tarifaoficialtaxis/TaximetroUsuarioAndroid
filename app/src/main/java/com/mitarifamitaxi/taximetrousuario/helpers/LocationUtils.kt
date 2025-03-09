@@ -17,6 +17,10 @@ import kotlin.math.sqrt
 
 const val googleapisUrl = "https://maps.googleapis.com/maps/api/"
 
+private val citiesAliasDictionary = mutableMapOf(
+    "Bogotá, D.C." to "Bogotá"
+)
+
 fun getCityFromCoordinates(
     latitude: Double,
     longitude: Double,
@@ -58,11 +62,13 @@ fun getCityFromCoordinates(
 
                             if (types != null) {
                                 if (types.toString().contains("locality")) {
-                                    city = component.optString("short_name")
+                                    val shortName = component.optString("short_name")
+                                    city = getCityFromAlias(shortName)
                                 } else if (city == null && types.toString()
                                         .contains("administrative_area_level_1")
                                 ) {
-                                    city = component.optString("short_name")
+                                    val shortName = component.optString("short_name")
+                                    city = getCityFromAlias(shortName)
                                 }
 
                                 if (types.toString().contains("country")) {
@@ -82,6 +88,10 @@ fun getCityFromCoordinates(
             }
         }
     })
+}
+
+private fun getCityFromAlias(alias: String): String {
+    return citiesAliasDictionary[alias] ?: alias
 }
 
 fun getAddressFromCoordinates(

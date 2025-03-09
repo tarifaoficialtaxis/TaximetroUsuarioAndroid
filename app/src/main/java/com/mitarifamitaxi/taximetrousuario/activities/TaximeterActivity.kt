@@ -72,7 +72,6 @@ import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
-import com.mitarifamitaxi.taximetrousuario.services.LocationUpdatesService
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModelFactory
 
@@ -87,7 +86,6 @@ class TaximeterActivity : BaseActivity() {
     ) { granted ->
         if (granted) {
             viewModel.getCurrentLocation()
-            startService(Intent(this, LocationUpdatesService::class.java))
         } else {
             viewModel.showCustomDialog(
                 DialogType.ERROR,
@@ -152,7 +150,6 @@ class TaximeterActivity : BaseActivity() {
                         )
                     ) {
                         viewModel.stopTaximeter()
-                        stopService(Intent(this, LocationUpdatesService::class.java))
                     }
 
                 }

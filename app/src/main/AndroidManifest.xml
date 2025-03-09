@@ -84,12 +84,6 @@
             android:name=".activities.TermsConditionsActivity"
             android:exported="false" />
 
-        <service
-            android:name=".services.LocationUpdatesService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="location" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyA_JVIFufi7zeH8nfkrglUg4c2QOjQqCx8" />

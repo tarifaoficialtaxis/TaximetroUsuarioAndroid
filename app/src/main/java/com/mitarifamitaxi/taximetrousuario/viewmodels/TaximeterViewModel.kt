@@ -49,7 +49,6 @@ import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
-import kotlin.math.min
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -186,7 +185,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         }
                     } else {
                         FirebaseCrashlytics.getInstance()
-                            .recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty"))
+                            .recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty for city: $userCity"))
                         showCustomDialog(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
@@ -224,13 +223,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             )
         ) {
             isHolidaySurcharge = true
-            units += ratesObj.value.holidayRateUnits ?: 0.0
             return
         }
 
         if (isColombianHoliday()) {
             isHolidaySurcharge = true
-            units += ratesObj.value.holidayRateUnits ?: 0.0
         }
     }
 
@@ -269,6 +266,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 fitCameraPosition = true
             },
             callbackError = {
+                FirebaseCrashlytics.getInstance()
+                    .recordException(Exception("TaximeterViewModel error on stop, ${it.message}"))
+                appViewModel.isLoading = false
                 showCustomDialog(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
@@ -297,7 +297,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     }
                 }
 
-                //Log.d("TaximeterViewModel", "isMooving in timer: $isMooving")
                 if (!isMooving && isTaximeterStarted) {
 
                     dragTimeElapsed++
@@ -346,7 +345,14 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
                     val speedMetersPerSecond = location.speed
                     val speedKmPerHour = speedMetersPerSecond * 3.6
-                    //Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
+
+                    Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
+                    Log.d("TaximeterViewModel", "Drag Speed: ${ratesObj.value.dragSpeed}")
+                    Log.d(
+                        "TaximeterViewModel",
+                        "Condition: ${speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)}"
+                    )
+
                     if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
                         isMooving = true
 
@@ -355,9 +361,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
                         val additionalUnits = distanceCovered / (ratesObj.value.meters ?: 0)
                         units += additionalUnits
-
-                        Log.d("TaximeterViewModel", "onLocationResult New units: $units")
-
 
                     } else {
                         isMooving = false
@@ -432,6 +435,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     private fun getFinalUnits(): Pair<Double, Double> {
+
+        if (isHolidaySurcharge) {
+            units += ratesObj.value.holidayRateUnits ?: 0.0
+        }
+
         var totalRechargesUnits = 0.0
         val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
         if (isAirportSurcharge) {
@@ -447,18 +455,16 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
         val baseUnits = units - totalRechargesUnits
 
-        if (baseUnits < minimumRateUnits) {
-            return if (!isAirportSurcharge &&
-                !isHolidaySurcharge &&
-                !isDoorToDoorSurcharge
-            ) {
-                Pair(minimumRateUnits, minimumRateUnits)
-            } else {
-                Pair(minimumRateUnits, minimumRateUnits + totalRechargesUnits)
-            }
+        if (!isAirportSurcharge &&
+            !isHolidaySurcharge &&
+            !isDoorToDoorSurcharge
+        ) {
+            return Pair(minimumRateUnits, minimumRateUnits)
+        } else if (baseUnits < minimumRateUnits) {
+            return Pair(minimumRateUnits, minimumRateUnits + totalRechargesUnits)
+        } else {
+            return Pair(baseUnits, baseUnits + totalRechargesUnits)
         }
-
-        return Pair(baseUnits, units)
 
     }
 

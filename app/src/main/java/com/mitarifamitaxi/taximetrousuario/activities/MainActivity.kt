@@ -24,6 +24,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.mitarifamitaxi.taximetrousuario.R
+import androidx.core.net.toUri
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun validateNextScreen() {
-        val sharedPref = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
         val userJson = sharedPref.getString("USER_OBJECT", null)
 
         if (userJson != null) {
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun hasUserAcceptedTerms(): Boolean {
-        val sharedPref = this.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+        val sharedPref = this.getSharedPreferences("my_prefs", MODE_PRIVATE)
         return sharedPref.getBoolean("accepted_terms", false)
     }
 
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         val player = remember {
             ExoPlayer.Builder(context).build().apply {
                 val mediaItem =
-                    MediaItem.fromUri(Uri.parse("android.resource://${context.packageName}/${R.raw.splash}"))
+                    MediaItem.fromUri("android.resource://${context.packageName}/${R.raw.splash}".toUri())
                 setMediaItem(mediaItem)
                 prepare()
                 playWhenReady = true

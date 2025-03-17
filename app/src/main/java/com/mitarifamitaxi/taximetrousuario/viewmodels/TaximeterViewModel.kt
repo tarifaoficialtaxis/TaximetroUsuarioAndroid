@@ -355,7 +355,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
                     if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
                         isMooving = true
-
+                        dragTimeElapsed = 0
                         val distanceCovered: Float = previousLocation?.distanceTo(location) ?: 0f
                         distanceMade += distanceCovered.toDouble()
 

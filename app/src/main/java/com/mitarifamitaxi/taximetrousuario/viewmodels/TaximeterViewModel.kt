@@ -8,10 +8,11 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
-import android.net.Uri
 import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
@@ -49,6 +50,8 @@ import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.Executor
+import androidx.core.graphics.scale
+import androidx.core.net.toUri
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -75,20 +78,20 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     private val executor: Executor = ContextCompat.getMainExecutor(context)
 
     // Taximeter values
-    var total by mutableStateOf(0.0)
-    var distanceMade by mutableStateOf(0.0)
+    var total by mutableDoubleStateOf(0.0)
+    var distanceMade by mutableDoubleStateOf(0.0)
 
-    private val _units = mutableStateOf(0.0)
+    private val _units = mutableDoubleStateOf(0.0)
 
     var units: Double
-        get() = _units.value
+        get() = _units.doubleValue
         set(value) {
-            _units.value = value
+            _units.doubleValue = value
             onUnitsChanged(value)
         }
 
-    var timeElapsed by mutableStateOf(0)
-    var dragTimeElapsed by mutableStateOf(0)
+    var timeElapsed by mutableIntStateOf(0)
+    var dragTimeElapsed by mutableIntStateOf(0)
     var formattedTime by mutableStateOf("0")
 
     var isAirportSurcharge by mutableStateOf(false)
@@ -300,8 +303,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 if (!isMooving && isTaximeterStarted) {
 
                     dragTimeElapsed++
-                    val sumDrag = (dragTimeElapsed * (ratesObj.value.unitsPerHour ?: 0.0)) / 3600
-                    if (sumDrag >= 1) {
+                    val waitTime = ratesObj.value.waitTime ?: 24
+
+                    Log.d("TaximeterViewModel", "waitTime: $waitTime")
+                    Log.d("TaximeterViewModel", "dragTimeElapsed: $dragTimeElapsed")
+                    if (dragTimeElapsed >= waitTime) {
                         units += 1
                         dragTimeElapsed = 0
                     }
@@ -346,6 +352,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     val speedMetersPerSecond = location.speed
                     val speedKmPerHour = speedMetersPerSecond * 3.6
 
+                    Log.d("TaximeterViewModel", "Location Speed: $location.speed")
                     Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
                     Log.d("TaximeterViewModel", "Drag Speed: ${ratesObj.value.dragSpeed}")
                     Log.d(
@@ -394,7 +401,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val newWidth = bitmap.width / 1.3
         val newHeight = bitmap.height / 1.3
         val scaledBitmap =
-            Bitmap.createScaledBitmap(bitmap, newWidth.toInt(), newHeight.toInt(), true)
+            bitmap.scale(newWidth.toInt(), newHeight.toInt())
 
         val outputStream = ByteArrayOutputStream()
         scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
@@ -494,14 +501,14 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val url =
             "comgooglemaps://?saddr=$originLat,$originLng&daddr=$destLat,$destLng&directionsmode=driving"
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             intent.setPackage("com.google.android.apps.maps")
             onIntentReady(intent)
 
         } catch (e: Exception) {
             val webUrl =
                 "https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving"
-            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+            val webIntent = Intent(Intent.ACTION_VIEW, webUrl.toUri())
             onIntentReady(webIntent)
 
         }
@@ -510,12 +517,12 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     fun openWazeApp(destLat: Double, destLng: Double, onIntentReady: (Intent) -> Unit) {
         val wazeUrl = "waze://?ll=$destLat,$destLng&navigate=yes"
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(wazeUrl))
+            val intent = Intent(Intent.ACTION_VIEW, wazeUrl.toUri())
             intent.setPackage("com.waze")
             onIntentReady(intent)
         } catch (e: Exception) {
             val webUrl = "https://waze.com/ul?ll=$destLat,$destLng&navigate=yes"
-            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+            val webIntent = Intent(Intent.ACTION_VIEW, webUrl.toUri())
             onIntentReady(webIntent)
         }
     }

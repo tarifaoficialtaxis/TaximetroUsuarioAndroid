@@ -443,12 +443,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     private fun getFinalUnits(): Pair<Double, Double> {
 
-        if (isHolidaySurcharge) {
-            units += ratesObj.value.holidayRateUnits ?: 0.0
-        }
-
         var totalRechargesUnits = 0.0
         val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
+
         if (isAirportSurcharge) {
             totalRechargesUnits += ratesObj.value.airportRateUnits ?: 0.0
         }

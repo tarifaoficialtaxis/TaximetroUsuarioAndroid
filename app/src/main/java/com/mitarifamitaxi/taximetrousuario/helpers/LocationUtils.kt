@@ -1,15 +1,20 @@
 package com.mitarifamitaxi.taximetrousuario.helpers
 
+import android.content.Context
+import android.location.Geocoder
 import com.google.android.gms.maps.model.LatLng
 import com.mitarifamitaxi.taximetrousuario.models.Feature
 import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
 import com.mitarifamitaxi.taximetrousuario.models.Properties
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import com.mitarifamitaxi.taximetrousuario.resources.countries
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URLEncoder
+import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -21,73 +26,34 @@ private val citiesAliasDictionary = mutableMapOf(
     "Bogotá, D.C." to "Bogotá"
 )
 
-fun getCityFromCoordinates(
+suspend fun getCityFromCoordinates(
+    context: Context,
     latitude: Double,
     longitude: Double,
     callbackSuccess: (city: String?, countryCodeWhatsapp: String?) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
-    val url =
-        "${googleapisUrl}geocode/json?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
+    return withContext(Dispatchers.IO) {
+        try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
 
-    val client = OkHttpClient()
-    val request = Request.Builder().url(url).build()
 
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            callbackError(e)
-        }
+                callbackSuccess(
+                    address.locality,
+                    countries.find { it.code == address.countryCode }?.dial?.replace("+", "")
+                )
 
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!it.isSuccessful) {
-                    callbackError(IOException("Unexpected response $response"))
-                    return
-                }
-
-                val jsonResponse = JSONObject(it.body?.string() ?: "")
-                val results = jsonResponse.optJSONArray("results")
-
-                if (results != null && results.length() > 0) {
-                    val addressComponents =
-                        results.getJSONObject(0).optJSONArray("address_components")
-
-                    var city: String? = null
-                    var country: String? = null
-
-                    addressComponents?.let {
-                        for (i in 0 until it.length()) {
-                            val component = it.getJSONObject(i)
-                            val types = component.optJSONArray("types")
-
-                            if (types != null) {
-                                if (types.toString().contains("locality")) {
-                                    val shortName = component.optString("short_name")
-                                    city = getCityFromAlias(shortName)
-                                } else if (city == null && types.toString()
-                                        .contains("administrative_area_level_1")
-                                ) {
-                                    val shortName = component.optString("short_name")
-                                    city = getCityFromAlias(shortName)
-                                }
-
-                                if (types.toString().contains("country")) {
-                                    country = component.optString("short_name")
-                                }
-                            }
-                        }
-                    }
-
-                    val countryCodeWhatsapp =
-                        countries.find { it.code == country }?.dial?.replace("+", "")
-
-                    callbackSuccess(city, countryCodeWhatsapp)
-                } else {
-                    callbackError(IOException("No results found"))
-                }
+            } else {
+                callbackError(IOException("Unexpected response"))
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            callbackError(IOException("No results found"))
         }
-    })
+    }
 }
 
 private fun getCityFromAlias(alias: String): String {

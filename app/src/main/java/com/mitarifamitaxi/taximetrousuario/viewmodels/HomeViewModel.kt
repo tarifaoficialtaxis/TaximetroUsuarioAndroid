@@ -23,6 +23,7 @@ import com.google.android.gms.location.*
 
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
@@ -35,6 +36,7 @@ import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.models.CityArea
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 
 class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
@@ -101,30 +103,33 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         task.addOnSuccessListener(executor) { location ->
             if (location != null) {
 
-                getCityFromCoordinates(
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    callbackSuccess = { city, countryCodeWhatsapp ->
-                        isGettingLocation = false
-                        validateCity(city ?: "")
-                        updateUserData(
-                            location = UserLocation(
-                                latitude = location.latitude,
-                                longitude = location.longitude
-                            ),
-                            city = city ?: "",
-                            countryCodeWhatsapp = countryCodeWhatsapp ?: ""
-                        )
-                    },
-                    callbackError = { error ->
-                        Log.e("HomeViewModel", "Error getting city: $error")
-                        isGettingLocation = false
-                        showErrorMessage(
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.error_fetching_city)
-                        )
-                    }
-                )
+                viewModelScope.launch {
+                    getCityFromCoordinates(
+                        context = appContext,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        callbackSuccess = { city, countryCodeWhatsapp ->
+                            isGettingLocation = false
+                            validateCity(city ?: "")
+                            updateUserData(
+                                location = UserLocation(
+                                    latitude = location.latitude,
+                                    longitude = location.longitude
+                                ),
+                                city = city ?: "",
+                                countryCodeWhatsapp = countryCodeWhatsapp ?: ""
+                            )
+                        },
+                        callbackError = { error ->
+                            Log.e("HomeViewModel", "Error getting city: $error")
+                            isGettingLocation = false
+                            showErrorMessage(
+                                appContext.getString(R.string.something_went_wrong),
+                                appContext.getString(R.string.error_fetching_city)
+                            )
+                        }
+                    )
+                }
 
             } else {
                 isGettingLocation = false

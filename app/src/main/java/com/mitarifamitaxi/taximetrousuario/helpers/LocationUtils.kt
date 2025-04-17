@@ -42,7 +42,7 @@ suspend fun getCityFromCoordinates(
 
 
                 callbackSuccess(
-                    address.locality,
+                    getCityFromAlias(address.locality),
                     countries.find { it.code == address.countryCode }?.dial?.replace("+", "")
                 )
 

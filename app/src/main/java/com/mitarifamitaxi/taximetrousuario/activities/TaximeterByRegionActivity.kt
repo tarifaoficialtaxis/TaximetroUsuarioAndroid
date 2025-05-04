@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +64,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
 import com.mitarifamitaxi.taximetrousuario.components.ui.FloatingActionButtonRoutes
 import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
@@ -93,7 +91,7 @@ class TaximeterByRegionActivity : BaseActivity() {
         if (granted) {
             viewModel.getCurrentLocation()
         } else {
-            viewModel.showCustomDialog(
+            appViewModel.showMessage(
                 DialogType.ERROR,
                 getString(R.string.permission_required),
                 getString(R.string.background_location_permission_required)
@@ -146,27 +144,6 @@ class TaximeterByRegionActivity : BaseActivity() {
     @Composable
     override fun Content() {
         MainView()
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false },
-                onPrimaryActionClicked = {
-                    viewModel.showDialog = false
-                    if (viewModel.dialogType == DialogType.WARNING && viewModel.dialogPrimaryAction == getString(
-                            R.string.finish_trip
-                        )
-                    ) {
-                        viewModel.stopTaximeter()
-                    }
-
-                }
-            )
-        }
     }
 
     @OptIn(

@@ -38,6 +38,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import coil.compose.AsyncImage
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
@@ -54,8 +57,10 @@ import com.mitarifamitaxi.taximetrousuario.helpers.hourFormatDate
 import com.mitarifamitaxi.taximetrousuario.helpers.tripSummaryFormatDate
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
+import com.mitarifamitaxi.taximetrousuario.viewmodels.ForgotPasswordViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TripSummaryViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TripSummaryViewModelFactory
+import kotlinx.coroutines.launch
 
 class TripSummaryActivity : BaseActivity() {
 
@@ -65,6 +70,7 @@ class TripSummaryActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        observeViewModelEvents()
 
         val isDetails = intent.getBooleanExtra("is_details", false)
         viewModel.isDetails = isDetails
@@ -74,16 +80,26 @@ class TripSummaryActivity : BaseActivity() {
         }
     }
 
+
+    private fun observeViewModelEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigationEvents.collect { event ->
+                    when (event) {
+                        is TripSummaryViewModel.NavigationEvent.GoBack -> {
+                            finish()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Composable
     override fun Content() {
         MainView(
             onDeleteAction = {
-                viewModel.showCustomDialog(
-                    DialogType.WARNING,
-                    getString(R.string.delete_trip),
-                    getString(R.string.delete_trip_message),
-                    getString(R.string.delete)
-                )
+                viewModel.onDeleteAction()
             },
             onSosAction = {
                 startActivity(Intent(this, SosActivity::class.java))
@@ -97,25 +113,6 @@ class TripSummaryActivity : BaseActivity() {
                 }
             }
         )
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false },
-                onPrimaryActionClicked = {
-                    viewModel.showDialog = false
-                    if (viewModel.dialogPrimaryAction == getString(R.string.delete)) {
-                        viewModel.tripData.id?.let { viewModel.deleteTrip(it) }
-                    } else {
-                        finish()
-                    }
-                }
-            )
-        }
 
         if (viewModel.showShareDialog) {
             CustomTextFieldDialog(

@@ -58,7 +58,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
         }
     }
 
-    fun login(onResult: (Pair<Boolean, String?>) -> Unit) {
+    fun login(loginSuccess: () -> Unit) {
 
         userNameIsValid = !userName.isEmpty()
         passwordIsValid = !password.isEmpty()
@@ -87,9 +87,13 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                     getUserInformation(user.uid) { userExists ->
                         appViewModel.isLoading = false
                         if (userExists) {
-                            onResult(Pair(true, null))
+                            loginSuccess()
                         } else {
-                            onResult(Pair(false, null))
+                            appViewModel.showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.error_user_not_found)
+                            )
                         }
                     }
                 }

@@ -64,13 +64,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     var endAddress by mutableStateOf("")
     var endLocation by mutableStateOf(UserLocation())
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
     var isFabExpanded by mutableStateOf(false)
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -143,18 +136,18 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             } else {
                 FirebaseCrashlytics.getInstance()
                     .recordException(Exception("TaximeterViewModel location null"))
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_fetching_location)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_location)
                 )
             }
         }.addOnFailureListener {
             FirebaseCrashlytics.getInstance().recordException(it)
-            showCustomDialog(
-                DialogType.ERROR,
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_fetching_location)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_fetching_location)
             )
         }
     }
@@ -180,36 +173,36 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             validateSurcharges()
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
-                            showCustomDialog(
-                                DialogType.ERROR,
-                                appContext.getString(R.string.something_went_wrong),
-                                appContext.getString(R.string.general_error)
+                            appViewModel.showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.general_error)
                             )
                         }
                     } else {
                         FirebaseCrashlytics.getInstance()
                             .recordException(Exception("TaximeterViewModel ratesQuerySnapshot empty for city: $userCity"))
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.general_error)
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.general_error)
                         )
                     }
                 } catch (e: Exception) {
                     FirebaseCrashlytics.getInstance().recordException(e)
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.general_error)
                     )
                 }
             } else {
                 FirebaseCrashlytics.getInstance()
                     .recordException(Exception("TaximeterViewModel userCity null"))
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_no_city_set)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_no_city_set)
                 )
             }
         }
@@ -247,12 +240,16 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     fun showFinishConfirmation() {
-        showCustomDialog(
-            DialogType.WARNING,
-            appContext.getString(R.string.finish_your_trip),
-            appContext.getString(R.string.you_are_about_to_finish),
-            appContext.getString(R.string.finish_trip)
+        appViewModel.showMessage(
+            type = DialogType.WARNING,
+            title = appContext.getString(R.string.finish_your_trip),
+            message = appContext.getString(R.string.you_are_about_to_finish),
+            buttonText = appContext.getString(R.string.finish_trip),
         )
+
+        appViewModel.dialogOnPrimaryActionClicked = {
+            stopTaximeter()
+        }
     }
 
     fun stopTaximeter() {
@@ -272,10 +269,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 FirebaseCrashlytics.getInstance()
                     .recordException(Exception("TaximeterViewModel error on stop, ${it.message}"))
                 appViewModel.isLoading = false
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_getting_address)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_getting_address)
                 )
             }
         )
@@ -470,22 +467,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             return Pair(baseUnits, baseUnits + totalRechargesUnits)
         }
 
-    }
-
-
-    fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-        primaryAction: String? = null,
-        showCloseButton: Boolean = true
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = showCloseButton
     }
 
     fun openGoogleMapsApp(

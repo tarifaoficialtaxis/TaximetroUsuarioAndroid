@@ -22,6 +22,8 @@ import com.mitarifamitaxi.taximetrousuario.helpers.putIfNotNull
 import com.mitarifamitaxi.taximetrousuario.helpers.shareFormatDate
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
@@ -33,18 +35,30 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
 
     var isDetails by mutableStateOf(false)
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
     var tripData by mutableStateOf(Trip())
 
     var showShareDialog by mutableStateOf(false)
     var shareNumber = mutableStateOf("")
     var isShareNumberError = mutableStateOf(false)
+
+    private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    sealed class NavigationEvent {
+        object GoBack : NavigationEvent()
+    }
+
+    fun onDeleteAction() {
+        appViewModel.showMessage(
+            type = DialogType.WARNING,
+            title = appContext.getString(R.string.delete_trip),
+            message = appContext.getString(R.string.delete_trip_message),
+            buttonText = appContext.getString(R.string.delete),
+        )
+        appViewModel.dialogOnPrimaryActionClicked = {
+            tripData.id?.let { deleteTrip(it) }
+        }
+    }
 
     fun deleteTrip(tripId: String) {
 
@@ -54,22 +68,29 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 FirebaseFirestore.getInstance().collection("trips").document(tripId).delete()
                     .await()
                 appViewModel.isLoading = false
-                showCustomDialog(
-                    DialogType.SUCCESS,
-                    appContext.getString(R.string.success),
-                    appContext.getString(R.string.trip_deleted_successfully),
-                    appContext.getString(R.string.accept),
-                    false
+
+                appViewModel.showMessage(
+                    type = DialogType.SUCCESS,
+                    title = appContext.getString(R.string.success),
+                    message = appContext.getString(R.string.trip_deleted_successfully),
+                    buttonText = appContext.getString(R.string.accept),
+                    showCloseButton = false
                 )
+
+                appViewModel.dialogOnPrimaryActionClicked = {
+                    viewModelScope.launch {
+                        _navigationEvents.emit(NavigationEvent.GoBack)
+                    }
+                }
+
             } catch (error: Exception) {
                 Log.e("TripSummaryViewModel", "Error deleting trip: ${error.message}")
                 appViewModel.isLoading = false
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_on_delete_trip),
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_on_delete_trip),
                 )
-
             }
         }
     }
@@ -148,28 +169,13 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             } catch (error: Exception) {
                 appViewModel.isLoading = false
                 Log.e("TripSummaryViewModel", "Error saving trip data: ${error.message}")
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_on_save_trip)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_on_save_trip),
                 )
             }
         }
-    }
-
-    fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-        primaryAction: String? = null,
-        showCloseButton: Boolean = true
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = showCloseButton
     }
 
     fun sendWatsAppMessage(onIntentReady: (Intent) -> Unit) {
@@ -254,10 +260,10 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
         if (intent.resolveActivity(appContext.packageManager) != null) {
             onIntentReady(intent)
         } else {
-            showCustomDialog(
-                DialogType.ERROR,
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.whatsapp_not_installed)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.whatsapp_not_installed),
             )
         }
     }

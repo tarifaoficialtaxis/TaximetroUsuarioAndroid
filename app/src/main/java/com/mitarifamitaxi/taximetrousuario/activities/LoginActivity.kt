@@ -80,11 +80,9 @@ class LoginActivity : BaseActivity() {
                 startActivity(Intent(this, ForgotPasswordActivity::class.java))
             },
             onLoginClicked = {
-                viewModel.login { loginResult ->
-                    if (loginResult.first) {
-                        startActivity(Intent(this, HomeActivity::class.java))
-                        finish()
-                    }
+                viewModel.login {
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    finish()
                 }
             },
             onRegisterClicked = {

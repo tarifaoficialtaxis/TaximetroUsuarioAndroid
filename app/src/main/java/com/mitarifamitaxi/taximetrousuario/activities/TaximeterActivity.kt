@@ -87,10 +87,10 @@ class TaximeterActivity : BaseActivity() {
         if (granted) {
             viewModel.getCurrentLocation()
         } else {
-            viewModel.showCustomDialog(
-                DialogType.ERROR,
-                getString(R.string.permission_required),
-                getString(R.string.background_location_permission_required)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = getString(R.string.permission_required),
+                message = getString(R.string.background_location_permission_required)
             )
         }
     }
@@ -134,27 +134,6 @@ class TaximeterActivity : BaseActivity() {
     @Composable
     override fun Content() {
         MainView()
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false },
-                onPrimaryActionClicked = {
-                    viewModel.showDialog = false
-                    if (viewModel.dialogType == DialogType.WARNING && viewModel.dialogPrimaryAction == getString(
-                            R.string.finish_trip
-                        )
-                    ) {
-                        viewModel.stopTaximeter()
-                    }
-
-                }
-            )
-        }
     }
 
     @OptIn(

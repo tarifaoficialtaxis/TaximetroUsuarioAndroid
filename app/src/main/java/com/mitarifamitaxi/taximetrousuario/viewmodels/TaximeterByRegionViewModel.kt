@@ -62,13 +62,6 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
     var endAddress by mutableStateOf("")
     var endLocation by mutableStateOf(UserLocation())
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
     var isFabExpanded by mutableStateOf(false)
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -124,32 +117,33 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
                                 cityRatesDoc.toObject(RegionalRates::class.java) ?: RegionalRates()
                             getEstimatedPrice()
                         } catch (e: Exception) {
-                            showCustomDialog(
-                                DialogType.ERROR,
-                                appContext.getString(R.string.something_went_wrong),
-                                appContext.getString(R.string.general_error)
+                            Log.e("TaximeterViewModel", "Error parsing rates: ${e.message}")
+                            appViewModel.showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.general_error)
                             )
                         }
                     } else {
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.general_error)
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.general_error)
                         )
                     }
                 } catch (e: Exception) {
                     Log.e("TaximeterViewModel", "Error fetching contacts: ${e.message}")
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.general_error)
                     )
                 }
             } else {
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_no_city_set)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_no_city_set)
                 )
             }
         }
@@ -179,17 +173,17 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
                 )
 
             } else {
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_fetching_location)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_location)
                 )
             }
         }.addOnFailureListener {
-            showCustomDialog(
-                DialogType.ERROR,
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_fetching_location)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_fetching_location)
             )
         }
     }
@@ -273,12 +267,15 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
     }
 
     fun showFinishConfirmation() {
-        showCustomDialog(
-            DialogType.WARNING,
-            appContext.getString(R.string.finish_your_trip),
-            appContext.getString(R.string.you_are_about_to_finish),
-            appContext.getString(R.string.finish_trip)
+        appViewModel.showMessage(
+            type = DialogType.WARNING,
+            title = appContext.getString(R.string.finish_your_trip),
+            message = appContext.getString(R.string.you_are_about_to_finish),
+            buttonText = appContext.getString(R.string.finish_trip),
         )
+        appViewModel.dialogOnPrimaryActionClicked = {
+            stopTaximeter()
+        }
     }
 
     fun stopTaximeter() {
@@ -401,22 +398,6 @@ class TaximeterByRegionViewModel(context: Context, private val appViewModel: App
         intent.putExtra("trip_data", tripJson)
         onIntentReady(intent)
 
-    }
-
-
-    fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-        primaryAction: String? = null,
-        showCloseButton: Boolean = true
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = showCloseButton
     }
 
     fun openGoogleMapsApp(

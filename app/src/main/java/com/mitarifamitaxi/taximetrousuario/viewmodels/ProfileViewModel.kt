@@ -11,6 +11,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
@@ -36,9 +43,10 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     var tripsCount by mutableIntStateOf(0)
     var distanceCount by mutableIntStateOf(0)
 
+    var showPasswordPopUp by mutableStateOf(false)
+
     private val _hideKeyboardEvent = MutableLiveData<Boolean>()
     val hideKeyboardEvent: LiveData<Boolean> get() = _hideKeyboardEvent
-
 
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
@@ -194,39 +202,50 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     }
 
     fun handleDeleteAccount() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = appViewModel.userData?.id ?: ""
+
+        if (currentUser == null || userId.isEmpty()) {
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_deleting_account)
+            )
+            return
+        }
 
         viewModelScope.launch {
             try {
                 appViewModel.isLoading = true
 
-                // Delete all trips with userId
+                // 1. Delete Firestore Trips
                 val tripsSnapshot = FirebaseFirestore.getInstance()
                     .collection("trips")
-                    .whereEqualTo("userId", appViewModel.userData?.id ?: "")
+                    .whereEqualTo("userId", userId)
                     .get()
                     .await()
 
-                if (tripsSnapshot.documents.size > 0) {
+                if (tripsSnapshot.documents.isNotEmpty()) {
                     for (trip in tripsSnapshot.documents) {
                         trip.reference.delete().await()
+                        Log.d("ProfileViewModel", "Deleted trip ${trip.id}")
                     }
                 }
 
-                // Delete the user
-                val userSnapshot = FirebaseFirestore.getInstance()
+                // 2. Delete Firestore User Document
+                val userDocRef = FirebaseFirestore.getInstance()
                     .collection("users")
-                    .whereEqualTo("id", appViewModel.userData?.id ?: "")
-                    .get()
-                    .await()
+                    .document(userId)
 
-                if (userSnapshot.documents.size > 0) {
-                    userSnapshot.documents.first().reference.delete().await()
-                }
+                userDocRef.delete().await()
+                Log.d("ProfileViewModel", "Deleted Firestore user document $userId")
 
-                appViewModel.isLoading = false
-                logOut()
+                // 3. Delete Firebase Auth User
+                deleteFirebaseAuthUser()
+
             } catch (error: Exception) {
-                Log.e("ProfileViewModel", "Error deleting account: ${error.message}")
+                // Catch errors from Firestore deletion
+                Log.e("ProfileViewModel", "Error deleting account data: ${error.message}", error)
                 appViewModel.isLoading = false
                 appViewModel.showMessage(
                     type = DialogType.ERROR,
@@ -235,7 +254,131 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                 )
             }
         }
+    }
 
+    fun getUserAuthType() {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            for (profile in user.providerData) {
+                val providerId = profile.providerId
+                Log.d("AuthProviderCheck", "Provider ID: $providerId")
+
+                if (providerId == EmailAuthProvider.PROVIDER_ID) {
+                    Log.d("AuthProviderCheck", "Usuario autenticado con Correo/Contraseña")
+                    // Haz algo específico para usuarios de correo/contraseña
+                    showPasswordPopUp = true
+                } else if (providerId == GoogleAuthProvider.PROVIDER_ID) {
+                    Log.d("AuthProviderCheck", "Usuario autenticado con Google")
+                    // Haz algo específico para usuarios de Google
+                }
+
+            }
+        }
+    }
+
+    fun authenticateUserByEmailAndPassword(password: String) {
+
+        val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+        appViewModel.isLoading = true
+
+        viewModelScope.launch {
+            try {
+                if (email == null || email!!.isEmpty()) {
+                    appViewModel.isLoading = false
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.error_invalid_email)
+                    )
+                    return@launch
+                }
+
+                val userCredential =
+                    auth.signInWithEmailAndPassword(email!!.trim(), password).await()
+                val user = userCredential.user
+                if (user != null) {
+                    deleteFirebaseAuthUser()
+                }
+            } catch (e: Exception) {
+                appViewModel.isLoading = false
+
+                Log.e("ProfileViewModel", "Error logging in: ${e.message}")
+
+                val errorMessage = when (e) {
+                    is FirebaseAuthInvalidCredentialsException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    is FirebaseAuthInvalidUserException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    is FirebaseAuthException -> getFirebaseAuthErrorMessage(e.errorCode)
+                    else -> appContext.getString(R.string.something_went_wrong)
+                }
+
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = errorMessage,
+                )
+
+            }
+        }
+    }
+
+    fun deleteFirebaseAuthUser() {
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_deleting_account)
+            )
+            return
+        }
+
+        viewModelScope.launch {
+
+            try {
+                currentUser.delete().await()
+                Log.d("ProfileViewModel", "Deleted Firebase Auth user ${currentUser.uid}")
+                // If successful, proceed to log out
+                appViewModel.isLoading = false
+                logOut()
+            } catch (authError: FirebaseAuthRecentLoginRequiredException) {
+                appViewModel.isLoading = false
+                Log.w(
+                    "ProfileViewModel",
+                    "Auth deletion failed: Re-authentication required.",
+                    authError
+                )
+
+                getUserAuthType()
+
+            } catch (authError: Exception) {
+                // Handle other potential auth errors
+                Log.e(
+                    "ProfileViewModel",
+                    "Error deleting Firebase Auth user: ${authError.message}",
+                    authError
+                )
+                appViewModel.isLoading = false
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_deleting_account)
+                )
+            }
+        }
+    }
+
+    private fun getFirebaseAuthErrorMessage(errorCode: String): String {
+        return when (errorCode) {
+            "ERROR_INVALID_EMAIL" -> appContext.getString(R.string.error_invalid_email)
+            "ERROR_INVALID_CREDENTIAL" -> appContext.getString(R.string.error_wrong_credentials)
+            "ERROR_USER_NOT_FOUND" -> appContext.getString(R.string.error_user_not_found)
+            "ERROR_USER_DISABLED" -> appContext.getString(R.string.error_user_disabled)
+            "ERROR_TOO_MANY_REQUESTS" -> appContext.getString(R.string.error_too_many_requests)
+            "ERROR_OPERATION_NOT_ALLOWED" -> appContext.getString(R.string.error_operation_not_allowed)
+            else -> appContext.getString(R.string.error_authentication_failed)
+        }
     }
 
     fun logOut() {

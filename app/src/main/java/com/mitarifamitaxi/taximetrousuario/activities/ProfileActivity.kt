@@ -57,6 +57,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPasswordPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.ProfileViewModel
@@ -131,6 +132,20 @@ class ProfileActivity : BaseActivity() {
                 viewModel.logOut()
             }
         )
+
+        if (viewModel.showPasswordPopUp) {
+            CustomPasswordPopupDialog(
+                title = stringResource(id = R.string.warning),
+                message = stringResource(id = R.string.re_auth_message),
+                buttonText = stringResource(id = R.string.delete_account),
+                onDismiss = { viewModel.showPasswordPopUp = false },
+                onPasswordValid = { password ->
+                    viewModel.showPasswordPopUp = false
+                    viewModel.authenticateUserByEmailAndPassword(password)
+                }
+
+            )
+        }
 
     }
 

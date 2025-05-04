@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
@@ -27,6 +28,17 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
+
+    init {
+        if (Constants.IS_DEV) {
+            firstName = "Mateo"
+            lastName = "Ortiz"
+            mobilePhone = "3167502612"
+            email = "mateotest1@yopmail.com"
+            password = "12345678"
+            confirmPassword = "12345678"
+        }
+    }
 
     fun register(onResult: (Pair<Boolean, String?>) -> Unit) {
         // Login logic

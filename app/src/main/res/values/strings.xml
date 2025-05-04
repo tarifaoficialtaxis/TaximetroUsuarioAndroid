@@ -253,4 +253,7 @@
 
     <string name="error_updating_user">Ha ocurrido un error al intentar actualizar la información del perfil.</string>
 
+    <string name="re_auth_message">Esta operación requiere autenticación.</string>
+
+
 </resources>

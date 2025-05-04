@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPasswordPopupDialog
@@ -70,6 +72,14 @@ class ProfileActivity : BaseActivity() {
 
     private val viewModel: ProfileViewModel by viewModels {
         ProfileViewModelFactory(this, appViewModel)
+    }
+
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            viewModel.handleSignInResult(result.data)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +104,13 @@ class ProfileActivity : BaseActivity() {
 
                         is ProfileViewModel.NavigationEvent.Finish -> {
                             finish()
+                        }
+
+                        is ProfileViewModel.NavigationEvent.LaunchGoogleSignIn -> {
+                            viewModel.googleSignInClient.revokeAccess().addOnCompleteListener {
+                                val signInIntent = viewModel.googleSignInClient.signInIntent
+                                googleSignInLauncher.launch(signInIntent)
+                            }
                         }
                     }
                 }

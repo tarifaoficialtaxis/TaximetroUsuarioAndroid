@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +12,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuthException
@@ -32,6 +38,7 @@ import kotlinx.coroutines.tasks.await
 class ProfileViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val appContext = context.applicationContext
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     var firstName by mutableStateOf(appViewModel.userData?.firstName)
     var lastName by mutableStateOf(appViewModel.userData?.lastName)
@@ -54,6 +61,15 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     sealed class NavigationEvent {
         object LogOutComplete : NavigationEvent()
         object Finish : NavigationEvent()
+        object LaunchGoogleSignIn : NavigationEvent()
+    }
+
+    val googleSignInClient: GoogleSignInClient by lazy {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(appContext.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(appContext, gso)
     }
 
     init {
@@ -262,14 +278,14 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             for (profile in user.providerData) {
                 val providerId = profile.providerId
                 Log.d("AuthProviderCheck", "Provider ID: $providerId")
-
                 if (providerId == EmailAuthProvider.PROVIDER_ID) {
                     Log.d("AuthProviderCheck", "Usuario autenticado con Correo/Contraseña")
-                    // Haz algo específico para usuarios de correo/contraseña
                     showPasswordPopUp = true
                 } else if (providerId == GoogleAuthProvider.PROVIDER_ID) {
                     Log.d("AuthProviderCheck", "Usuario autenticado con Google")
-                    // Haz algo específico para usuarios de Google
+                    viewModelScope.launch {
+                        _navigationEvents.emit(NavigationEvent.LaunchGoogleSignIn)
+                    }
                 }
 
             }
@@ -277,8 +293,6 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     }
 
     fun authenticateUserByEmailAndPassword(password: String) {
-
-        val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
         appViewModel.isLoading = true
 
@@ -353,7 +367,6 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                 getUserAuthType()
 
             } catch (authError: Exception) {
-                // Handle other potential auth errors
                 Log.e(
                     "ProfileViewModel",
                     "Error deleting Firebase Auth user: ${authError.message}",
@@ -367,6 +380,51 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                 )
             }
         }
+    }
+
+    fun handleSignInResult(data: Intent?) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            val account: GoogleSignInAccount? = task.getResult(ApiException::class.java)
+            if (account != null) {
+                firebaseAuthWithGoogle(account.idToken!!)
+            } else {
+                Log.e("ProfileViewModel", "Google Sign-In failed: No account found")
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_google_sign_in)
+                )
+            }
+        } catch (e: ApiException) {
+            Log.e("ProfileViewModel", "Google Sign-In failed: ${e.localizedMessage}")
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_google_sign_in)
+            )
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(
+        idToken: String
+    ) {
+        appViewModel.isLoading = true
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    deleteFirebaseAuthUser()
+                } else {
+                    appViewModel.isLoading = false
+                    Log.e("ProfileViewModel", "Firebase Sign-In failed: ${task.exception}")
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.error_google_sign_in)
+                    )
+                }
+            }
     }
 
     private fun getFirebaseAuthErrorMessage(errorCode: String): String {

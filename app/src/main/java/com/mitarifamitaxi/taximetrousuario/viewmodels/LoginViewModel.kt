@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
@@ -36,7 +37,13 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     var userName by mutableStateOf("")
+    var userNameIsValid by mutableStateOf(true)
+    var userNameErrorMessage by mutableStateOf(appContext.getString(R.string.required_field))
+
     var password by mutableStateOf("")
+    var passwordIsValid by mutableStateOf(true)
+    var passwordErrorMessage by mutableStateOf(appContext.getString(R.string.required_field))
+
     var rememberMe by mutableStateOf(false)
 
     var dialogType by mutableStateOf(DialogType.SUCCESS)
@@ -48,22 +55,28 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
         private const val TAG = "LoginViewModel"
     }
 
+    init {
+        if (Constants.IS_DEV) {
+            userName = "mateotest1@yopmail.com"
+            password = "12345678"
+        }
+    }
+
     fun login(onResult: (Pair<Boolean, String?>) -> Unit) {
 
-        if (userName.isEmpty() || password.isEmpty()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.all_fields_required)
-            )
-            return
+        userNameIsValid = !userName.isEmpty()
+        passwordIsValid = !password.isEmpty()
+
+        if (!userName.isEmpty()) {
+
+            if (!userName.isValidEmail()) {
+                userNameIsValid = false
+                userNameErrorMessage = appContext.getString(R.string.invalid_email)
+
+            }
         }
 
-
-        if (!userName.isValidEmail()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_invalid_email)
-            )
+        if (!userNameIsValid && !passwordIsValid) {
             return
         }
 

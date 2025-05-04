@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.DrawerContent
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModelFactory
@@ -114,20 +115,8 @@ open class BaseActivity : ComponentActivity() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Content()
-
-                        // Loading overlay (if needed)
-                        if (appViewModel.isLoading) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Black.copy(alpha = 0.5f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    color = colorResource(id = R.color.main)
-                                )
-                            }
-                        }
+                        LoadingOverlayCompose()
+                        CustomPopUpDialogCompose()
                     }
                 }
             }
@@ -136,22 +125,46 @@ open class BaseActivity : ComponentActivity() {
             CompositionLocalProvider(LocalOpenDrawer provides {}) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Content()
-
-                    // Loading overlay (if needed)
-                    if (appViewModel.isLoading) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.5f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                color = colorResource(id = R.color.main)
-                            )
-                        }
-                    }
+                    LoadingOverlayCompose()
+                    CustomPopUpDialogCompose()
                 }
             }
+        }
+    }
+
+    @Composable
+    fun LoadingOverlayCompose() {
+        if (appViewModel.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = colorResource(id = R.color.main)
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun CustomPopUpDialogCompose() {
+        if (appViewModel.showDialog) {
+            CustomPopupDialog(
+                dialogType = appViewModel.dialogType,
+                title = appViewModel.dialogTitle,
+                message = appViewModel.dialogMessage,
+                primaryActionButton = appViewModel.dialogButtonText,
+                onDismiss = {
+                    appViewModel.showDialog = false
+                    appViewModel.dialogOnDismiss?.invoke()
+                },
+                onPrimaryActionClicked = {
+                    appViewModel.showDialog = false
+                    appViewModel.dialogOnPrimaryActionClicked?.invoke()
+                }
+            )
         }
     }
 

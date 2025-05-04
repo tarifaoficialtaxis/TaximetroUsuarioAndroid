@@ -76,8 +76,10 @@ class LoginActivity : BaseActivity() {
     @Composable
     override fun Content() {
 
-
         MainView(
+            onRestorePasswordClicked = {
+                startActivity(Intent(this, ForgotPasswordActivity::class.java))
+            },
             onLoginClicked = {
                 viewModel.login { loginResult ->
                     if (loginResult.first) {
@@ -110,6 +112,7 @@ class LoginActivity : BaseActivity() {
 
     @Composable
     private fun MainView(
+        onRestorePasswordClicked: () -> Unit,
         onLoginClicked: () -> Unit,
         onRegisterClicked: () -> Unit,
         onGoogleSignIn: () -> Unit
@@ -194,7 +197,9 @@ class LoginActivity : BaseActivity() {
                                     onValueChange = { viewModel.userName = it },
                                     placeholder = stringResource(id = R.string.user_name),
                                     leadingIcon = Icons.Rounded.Person,
-                                    keyboardType = KeyboardType.Email
+                                    keyboardType = KeyboardType.Email,
+                                    isError = !viewModel.userNameIsValid,
+                                    errorMessage = viewModel.userNameErrorMessage
                                 )
 
                                 CustomTextField(
@@ -203,6 +208,8 @@ class LoginActivity : BaseActivity() {
                                     placeholder = stringResource(id = R.string.password),
                                     isSecure = true,
                                     leadingIcon = Icons.Rounded.Lock,
+                                    isError = !viewModel.passwordIsValid,
+                                    errorMessage = viewModel.passwordErrorMessage
                                 )
                             }
 
@@ -221,7 +228,7 @@ class LoginActivity : BaseActivity() {
                                 )
 
                                 Button(
-                                    onClick = { },
+                                    onClick = { onRestorePasswordClicked() },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = colorResource(id = R.color.transparent),
                                     ),

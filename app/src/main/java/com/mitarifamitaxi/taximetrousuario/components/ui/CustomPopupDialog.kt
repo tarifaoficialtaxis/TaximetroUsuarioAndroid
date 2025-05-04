@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material3.*
@@ -52,7 +53,7 @@ fun CustomPopupDialog(
     }
 
     val imageIcon: ImageVector = when (dialogType) {
-        DialogType.SUCCESS -> Icons.Default.PriorityHigh
+        DialogType.SUCCESS -> Icons.Default.Check
         DialogType.ERROR -> Icons.Default.Close
         DialogType.WARNING -> Icons.Default.PriorityHigh
         DialogType.INFO -> Icons.Default.PriorityHigh
@@ -136,9 +137,8 @@ fun CustomPopupDialog(
                     )
                 }
 
-
                 if (showCloseButton) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedButton(
                         onClick = onDismiss,

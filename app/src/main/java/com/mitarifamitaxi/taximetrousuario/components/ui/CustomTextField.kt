@@ -1,11 +1,15 @@
 package com.mitarifamitaxi.taximetrousuario.components.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -16,6 +20,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -109,7 +114,13 @@ fun CustomTextField(
                 focusedTextColor = colorResource(id = R.color.gray1),
 
                 focusedIndicatorColor = focusedIndicatorColor,
-                unfocusedIndicatorColor = unfocusedIndicatorColor
+                unfocusedIndicatorColor = unfocusedIndicatorColor,
+
+                errorLabelColor = colorResource(id = R.color.red),
+                errorCursorColor = colorResource(id = R.color.main),
+                errorIndicatorColor = colorResource(id = R.color.red),
+                errorPlaceholderColor = colorResource(id = R.color.red),
+
             ),
             textStyle = TextStyle(
                 fontSize = 14.sp,
@@ -124,12 +135,23 @@ fun CustomTextField(
         )
 
         if (isError && !errorMessage.isNullOrEmpty()) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-            )
+            Row(
+                modifier = Modifier.padding(start = 5.dp, top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = "Error Icon",
+                    modifier = Modifier.size(16.dp),
+                    tint = colorResource(id = R.color.red)
+                )
+                Text(
+                    text = errorMessage,
+                    color = colorResource(id = R.color.red),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }

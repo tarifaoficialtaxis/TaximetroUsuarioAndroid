@@ -62,11 +62,6 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
     var isStartAddressFocused by mutableStateOf(false)
     var isEndAddressFocused by mutableStateOf(false)
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-
     private val _places = mutableStateOf<List<PlacePrediction>>(emptyList())
     val places: State<List<PlacePrediction>> = _places
 
@@ -127,17 +122,17 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                         )
                     },
                     callbackError = {
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.error_getting_address)
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.error_getting_address)
                         )
                     }
                 )
 
             } else {
                 appViewModel.isLoading = false
-                showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_fetching_location)
@@ -145,7 +140,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             }
         }.addOnFailureListener {
             appViewModel.isLoading = false
-            showCustomDialog(
+            appViewModel.showMessage(
                 DialogType.ERROR,
                 appContext.getString(R.string.something_went_wrong),
                 appContext.getString(R.string.error_fetching_location)
@@ -176,7 +171,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 tempLocationOnMap = UserLocation(latitude = latitude, longitude = longitude)
             },
             callbackError = {
-                showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_getting_address)
@@ -226,7 +221,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 routePoints = points
             },
             callbackError = {
-                showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_getting_route)
@@ -249,7 +244,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
                 _places.value = predictions
             },
             callbackError = {
-                showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_getting_places)
@@ -278,7 +273,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
 
                 },
                 callbackError = {
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.ERROR,
                         appContext.getString(R.string.something_went_wrong),
                         appContext.getString(R.string.error_getting_address)
@@ -294,7 +289,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
         if (startAddress.isEmpty() || startLocation.latitude == null || startLocation.longitude == null
             || endAddress.isEmpty() || endLocation.latitude == null || endLocation.longitude == null
         ) {
-            showCustomDialog(
+            appViewModel.showMessage(
                 DialogType.WARNING,
                 appContext.getString(R.string.attention),
                 appContext.getString(R.string.select_start_and_end_points)
@@ -318,17 +313,6 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             onIntentReady(intent)
         }
 
-    }
-
-    fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
     }
 
 }

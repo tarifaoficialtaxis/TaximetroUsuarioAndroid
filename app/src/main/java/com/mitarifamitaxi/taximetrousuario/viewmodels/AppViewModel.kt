@@ -18,13 +18,13 @@ class AppViewModel(context: Context) : ViewModel() {
 
     var userData: LocalUser? by mutableStateOf(null)
 
-
     var dialogType by mutableStateOf(DialogType.SUCCESS)
     var showDialog by mutableStateOf(false)
     var dialogTitle by mutableStateOf("")
     var dialogMessage by mutableStateOf("")
     var dialogButtonText: String? = null
 
+    var dialogShowCloseButton: Boolean = true
     var dialogOnDismiss: (() -> Unit)? = null
     var dialogOnPrimaryActionClicked: (() -> Unit)? = null
 
@@ -47,12 +47,14 @@ class AppViewModel(context: Context) : ViewModel() {
         title: String,
         message: String,
         buttonText: String? = null,
+        showCloseButton: Boolean = true,
     ) {
         dialogType = type
         dialogTitle = title
         dialogMessage = message
         showDialog = true
         dialogButtonText = buttonText
+        dialogShowCloseButton = showCloseButton
     }
 
 }

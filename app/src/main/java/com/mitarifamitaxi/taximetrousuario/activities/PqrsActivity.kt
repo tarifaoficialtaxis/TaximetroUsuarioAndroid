@@ -28,7 +28,6 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomMultilineTextField
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -50,18 +49,6 @@ class PqrsActivity : BaseActivity() {
                 }
             }
         )
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false }
-            )
-        }
-
     }
 
     @Composable

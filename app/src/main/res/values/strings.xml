@@ -251,5 +251,6 @@
 
     <string name="error_fetching_regions">Ha ocurrido un error al intentar obtener las regiones.</string>
 
+    <string name="error_updating_user">Ha ocurrido un error al intentar actualizar la información del perfil.</string>
 
 </resources>

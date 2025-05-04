@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,37 +28,35 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-
     fun register(onResult: (Pair<Boolean, String?>) -> Unit) {
         // Login logic
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.all_fields_required)
+
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.all_fields_required),
             )
             return
         }
 
         if (!email.isValidEmail()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_invalid_email)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_invalid_email),
             )
             return
         }
 
         if (password != confirmPassword) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.passwords_do_not_match)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.passwords_do_not_match),
             )
             return
         }
-
 
         viewModelScope.launch {
             try {
@@ -98,12 +97,16 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
                 onResult(Pair(true, null))
 
             } catch (e: Exception) {
+                Log.e("RegisterViewModel", "Error registering user: ${e.message}")
                 // Hide loading indicator
                 appViewModel.isLoading = false
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_registering_user)
+
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_registering_user)
                 )
+
             }
 
         }
@@ -117,12 +120,6 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
         }
     }
 
-    private fun showErrorMessage(title: String, message: String) {
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
-    }
 }
 
 class RegisterViewModelFactory(

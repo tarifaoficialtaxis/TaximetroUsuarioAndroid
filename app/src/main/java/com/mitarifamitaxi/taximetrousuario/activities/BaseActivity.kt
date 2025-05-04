@@ -156,6 +156,7 @@ open class BaseActivity : ComponentActivity() {
                 title = appViewModel.dialogTitle,
                 message = appViewModel.dialogMessage,
                 primaryActionButton = appViewModel.dialogButtonText,
+                showCloseButton = appViewModel.dialogShowCloseButton,
                 onDismiss = {
                     appViewModel.showDialog = false
                     appViewModel.dialogOnDismiss?.invoke()

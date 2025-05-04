@@ -44,7 +44,6 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.LoginViewModelFactory
@@ -98,15 +97,6 @@ class LoginActivity : BaseActivity() {
                 }
             }
         )
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                onDismiss = { viewModel.showDialog = false },
-            )
-        }
     }
 
 

@@ -46,10 +46,6 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
 
     var rememberMe by mutableStateOf(false)
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
 
     companion object {
         private const val TAG = "LoginViewModel"
@@ -109,9 +105,10 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                     else -> appContext.getString(R.string.something_went_wrong)
                 }
 
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    errorMessage
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = errorMessage,
                 )
 
             }
@@ -147,17 +144,19 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 firebaseAuthWithGoogle(account.idToken!!, onResult)
             } else {
                 Log.e(TAG, "Google Sign-In failed: No account found")
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_google_sign_in)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_google_sign_in)
                 )
             }
         } catch (e: ApiException) {
             Log.e(TAG, "Google Sign-In failed: ${e.localizedMessage}")
             //onResult(Pair("Error signing in with Google", null))
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_google_sign_in)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_google_sign_in)
             )
         }
     }
@@ -195,9 +194,10 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 } else {
                     appViewModel.isLoading = false
                     Log.e(TAG, "Firebase Sign-In failed: ${task.exception}")
-                    showErrorMessage(
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.error_google_sign_in)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.error_google_sign_in)
                     )
                 }
             }
@@ -219,9 +219,10 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error getting user information", e)
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_getting_user_info)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_getting_user_info)
             )
         }
     }
@@ -232,13 +233,6 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
             putString("USER_OBJECT", Gson().toJson(user))
             apply()
         }
-    }
-
-    private fun showErrorMessage(title: String, message: String) {
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
     }
 }
 

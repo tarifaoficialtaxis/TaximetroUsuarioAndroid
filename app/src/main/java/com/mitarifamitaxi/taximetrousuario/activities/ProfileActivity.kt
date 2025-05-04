@@ -52,13 +52,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.ProfileViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.ProfileViewModelFactory
+import kotlinx.coroutines.launch
 
 class ProfileActivity : BaseActivity() {
 
@@ -70,10 +73,29 @@ class ProfileActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        observeViewModelEvents()
         viewModel.hideKeyboardEvent.observe(this) { shouldHide ->
             if (shouldHide == true) {
                 hideKeyboard()
                 viewModel.resetHideKeyboardEvent()
+            }
+        }
+    }
+
+    private fun observeViewModelEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigationEvents.collect { event ->
+                    when (event) {
+                        is ProfileViewModel.NavigationEvent.LogOutComplete -> {
+                            logOutAction()
+                        }
+
+                        is ProfileViewModel.NavigationEvent.Finish -> {
+                            finish()
+                        }
+                    }
+                }
             }
         }
     }
@@ -100,40 +122,15 @@ class ProfileActivity : BaseActivity() {
                 finish()
             },
             onDeleteAccountClicked = {
-                viewModel.showDeleteAccountMessage()
+                viewModel.onDeleteAccountClicked()
             },
             onUpdateClicked = {
                 viewModel.handleUpdate()
             },
             onLogOutClicked = {
-                viewModel.logOut {
-                    logOutAction()
-                }
+                viewModel.logOut()
             }
         )
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false },
-                onPrimaryActionClicked = {
-                    viewModel.showDialog = false
-                    if (viewModel.dialogPrimaryAction == getString(R.string.delete_account)) {
-                        viewModel.handleDeleteAccount {
-                            viewModel.logOut {
-                                logOutAction()
-                            }
-                        }
-                    } else {
-                        finish()
-                    }
-                }
-            )
-        }
 
     }
 
@@ -409,8 +406,8 @@ class ProfileActivity : BaseActivity() {
                         ),
                         shape = RectangleShape,
                         modifier =
-                        Modifier
-                            .fillMaxWidth()
+                            Modifier
+                                .fillMaxWidth()
                     ) {
                         Text(
                             text = stringResource(id = R.string.delete_account).uppercase(),

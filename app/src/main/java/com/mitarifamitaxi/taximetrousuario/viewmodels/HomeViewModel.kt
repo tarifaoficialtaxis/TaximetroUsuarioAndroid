@@ -48,11 +48,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     private val executor: Executor = ContextCompat.getMainExecutor(context)
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-
     var isGettingLocation by mutableStateOf(false)
 
     private val _trips = mutableStateOf<List<Trip>>(emptyList())
@@ -123,9 +118,10 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         callbackError = { error ->
                             Log.e("HomeViewModel", "Error getting city: $error")
                             isGettingLocation = false
-                            showErrorMessage(
-                                appContext.getString(R.string.something_went_wrong),
-                                appContext.getString(R.string.error_fetching_city)
+                            appViewModel.showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.error_fetching_city)
                             )
                         }
                     )
@@ -133,16 +129,18 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
             } else {
                 isGettingLocation = false
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_fetching_location)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_location)
                 )
             }
         }.addOnFailureListener {
             isGettingLocation = false
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_fetching_location)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_fetching_location)
             )
         }
     }
@@ -187,7 +185,11 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
         tripsRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                showErrorMessage("Error listening to trips", error.message ?: "Unknown error")
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = error.message ?: appContext.getString(R.string.error_fetching_trips)
+                )
                 return@addSnapshotListener
             }
 
@@ -208,14 +210,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         }
     }
 
-
-    fun showErrorMessage(title: String, message: String) {
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
-    }
-
     private fun getCityAreas(city: String) {
 
         val database = FirebaseDatabase.getInstance()
@@ -233,26 +227,29 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         saveCityArea(cityArea ?: return)
                     } catch (e: Exception) {
                         Log.e("HomeViewModel", "Error parsing city data: ${e.message}")
-                        showErrorMessage(
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.error_fetching_regions)
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.error_fetching_regions)
                         )
                     }
 
                 } else {
                     Log.d("HomeViewModel", "No city found with the given name")
-                    showErrorMessage(
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.error_fetching_regions)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.error_fetching_regions)
                     )
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e("HomeViewModel", "Query cancelled or failed: ${error.message}")
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_fetching_regions)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_regions)
                 )
             }
         })

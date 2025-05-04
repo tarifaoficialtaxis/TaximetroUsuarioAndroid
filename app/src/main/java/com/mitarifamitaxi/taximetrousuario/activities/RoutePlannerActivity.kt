@@ -64,7 +64,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPlacePrediction
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
@@ -91,7 +90,7 @@ class RoutePlannerActivity : BaseActivity() {
             if (fineLocationGranted || coarseLocationGranted) {
                 viewModel.getCurrentLocation()
             } else {
-                viewModel.showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     getString(R.string.permission_required),
                     getString(R.string.location_permission_required)
@@ -107,15 +106,6 @@ class RoutePlannerActivity : BaseActivity() {
     @Composable
     override fun Content() {
         MainView()
-
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                onDismiss = { viewModel.showDialog = false }
-            )
-        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
@@ -383,9 +373,9 @@ class RoutePlannerActivity : BaseActivity() {
                 ),
                 shape = RectangleShape,
                 modifier =
-                Modifier
-                    .padding(top = 10.dp)
-                    .padding(horizontal = 15.dp)
+                    Modifier
+                        .padding(top = 10.dp)
+                        .padding(horizontal = 15.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

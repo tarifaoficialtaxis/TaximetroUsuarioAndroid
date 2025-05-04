@@ -1,6 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
 import android.content.Intent
+import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,19 +18,43 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButtonActionDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomImageButton
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.models.ItemImageButton
 import com.mitarifamitaxi.taximetrousuario.viewmodels.SosViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.SosViewModelFactory
+import kotlinx.coroutines.launch
 
 class SosActivity : BaseActivity() {
 
     private val viewModel: SosViewModel by viewModels {
         SosViewModelFactory(this, appViewModel)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        observeViewModelEvents()
+    }
+
+    private fun observeViewModelEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigationEvents.collect { event ->
+                    when (event) {
+                        is SosViewModel.NavigationEvent.GoToProfile -> {
+                            startActivity(
+                                Intent(this@SosActivity, ProfileActivity::class.java)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {
@@ -41,25 +66,6 @@ class SosActivity : BaseActivity() {
     override fun Content() {
         MainView()
 
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                showCloseButton = viewModel.dialogShowCloseButton,
-                primaryActionButton = viewModel.dialogPrimaryAction,
-                onDismiss = { viewModel.showDialog = false },
-                onPrimaryActionClicked = {
-                    viewModel.showDialog = false
-                    if (viewModel.dialogTitle == getString(R.string.support_number_not_found) || viewModel.dialogTitle == getString(
-                            R.string.family_number_not_found
-                        )
-                    ) {
-                        startActivity(Intent(this, ProfileActivity::class.java))
-                    }
-                }
-            )
-        }
 
         if (viewModel.showContactDialog) {
             CustomButtonActionDialog(

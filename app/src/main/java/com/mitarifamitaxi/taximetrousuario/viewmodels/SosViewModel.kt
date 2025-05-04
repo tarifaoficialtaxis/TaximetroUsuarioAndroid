@@ -18,6 +18,8 @@ import com.mitarifamitaxi.taximetrousuario.models.Contact
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.ItemImageButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -27,21 +29,21 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
     private val appContext = context.applicationContext
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
     var showContactDialog by mutableStateOf(false)
 
     private val contactObj = mutableStateOf(Contact())
     var itemSelected: ItemImageButton? = null
 
+    private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    sealed class NavigationEvent {
+        object GoToProfile : NavigationEvent()
+    }
+
     init {
         Handler(Looper.getMainLooper()).postDelayed({
-            showCustomDialog(
+            appViewModel.showMessage(
                 DialogType.WARNING,
                 appContext.getString(R.string.warning),
                 appContext.getString(R.string.article_35_message),
@@ -51,21 +53,6 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
         }, 700)
 
         getCityContacts(appViewModel.userData?.city)
-    }
-
-    private fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-        primaryAction: String? = null,
-        showCloseButton: Boolean = true
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = showCloseButton
     }
 
     private fun getCityContacts(userCity: String?) {
@@ -87,14 +74,15 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                             contactObj.value =
                                 contactsDoc.toObject(Contact::class.java) ?: Contact()
                         } catch (e: Exception) {
-                            showCustomDialog(
+                            Log.e("SosViewModel", "Error parsing contact data: ${e.message}")
+                            appViewModel.showMessage(
                                 DialogType.ERROR,
                                 appContext.getString(R.string.something_went_wrong),
                                 appContext.getString(R.string.general_error)
                             )
                         }
                     } else {
-                        showCustomDialog(
+                        appViewModel.showMessage(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
                             appContext.getString(R.string.error_no_contacts_found)
@@ -102,14 +90,14 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                     }
                 } catch (e: Exception) {
                     Log.e("SosViewModel", "Error fetching contacts: ${e.message}")
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.ERROR,
                         appContext.getString(R.string.something_went_wrong),
                         appContext.getString(R.string.general_error)
                     )
                 }
             } else {
-                showCustomDialog(
+                appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
                     appContext.getString(R.string.error_no_city_set)
@@ -171,12 +159,15 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         onIntentReady(intent)
                     }
                 } else {
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.WARNING,
                         appContext.getString(R.string.support_number_not_found),
                         appContext.getString(R.string.set_up_support_number),
                         appContext.getString(R.string.add_number),
                     )
+                    appViewModel.dialogOnPrimaryActionClicked = {
+                        goToProfile()
+                    }
                 }
             }
 
@@ -189,12 +180,15 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         onIntentReady(intent)
                     }
                 } else {
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.WARNING,
                         appContext.getString(R.string.family_number_not_found),
                         appContext.getString(R.string.set_up_family_number),
                         appContext.getString(R.string.add_number),
                     )
+                    appViewModel.dialogOnPrimaryActionClicked = {
+                        goToProfile()
+                    }
                 }
             }
 
@@ -235,12 +229,16 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         onIntentReady(intent)
                     }
                 } else {
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.WARNING,
                         appContext.getString(R.string.support_number_not_found),
                         appContext.getString(R.string.set_up_support_number),
                         appContext.getString(R.string.add_number),
                     )
+
+                    appViewModel.dialogOnPrimaryActionClicked = {
+                        goToProfile()
+                    }
                 }
             }
 
@@ -250,12 +248,16 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         onIntentReady(intent)
                     }
                 } else {
-                    showCustomDialog(
+                    appViewModel.showMessage(
                         DialogType.WARNING,
                         appContext.getString(R.string.family_number_not_found),
                         appContext.getString(R.string.set_up_family_number),
                         appContext.getString(R.string.add_number),
                     )
+
+                    appViewModel.dialogOnPrimaryActionClicked = {
+                        goToProfile()
+                    }
                 }
             }
 
@@ -293,7 +295,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
         if (intent.resolveActivity(appContext.packageManager) != null) {
             onIntentReady(intent)
         } else {
-            showCustomDialog(
+            appViewModel.showMessage(
                 DialogType.ERROR,
                 appContext.getString(R.string.something_went_wrong),
                 appContext.getString(R.string.whatsapp_not_installed)
@@ -309,6 +311,11 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
         onIntentReady(intent)
     }
 
+    fun goToProfile() {
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.GoToProfile)
+        }
+    }
 }
 
 class SosViewModelFactory(

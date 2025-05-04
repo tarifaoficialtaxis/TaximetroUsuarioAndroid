@@ -24,14 +24,6 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
     private val appContext = context.applicationContext
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
-
     var plate by mutableStateOf("")
     var idNumber by mutableStateOf("")
 
@@ -53,21 +45,6 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
         getEmailTemplate()
     }
 
-    private fun showCustomDialog(
-        type: DialogType,
-        title: String,
-        message: String,
-        primaryAction: String? = null,
-        showCloseButton: Boolean = true
-    ) {
-        showDialog = true
-        dialogType = type
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = showCloseButton
-    }
-
     private fun getContactEmail(userCity: String?) {
 
         viewModelScope.launch {
@@ -87,32 +64,34 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
                             contactObj.value =
                                 contactsDoc.toObject(Contact::class.java) ?: Contact()
                         } catch (e: Exception) {
-                            showCustomDialog(
-                                DialogType.ERROR,
-                                appContext.getString(R.string.something_went_wrong),
-                                appContext.getString(R.string.general_error)
+
+                            appViewModel.showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.general_error)
                             )
+
                         }
                     } else {
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.general_error)
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.general_error)
                         )
                     }
                 } catch (e: Exception) {
                     Log.e("PqrsViewModel", "Error fetching contacts: ${e.message}")
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.general_error)
                     )
                 }
             } else {
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_no_city_set)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_no_city_set)
                 )
             }
         }
@@ -138,25 +117,26 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         emailTemplateObj.value =
                             templateDoc.toObject(EmailTemplate::class.java) ?: EmailTemplate()
                     } catch (e: Exception) {
-                        showCustomDialog(
-                            DialogType.ERROR,
-                            appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.general_error)
+                        Log.e("PqrsViewModel", "Error fetching email template: ${e.message}")
+                        appViewModel.showMessage(
+                            type = DialogType.ERROR,
+                            title = appContext.getString(R.string.something_went_wrong),
+                            message = appContext.getString(R.string.general_error)
                         )
                     }
                 } else {
-                    showCustomDialog(
-                        DialogType.ERROR,
-                        appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
+                    appViewModel.showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.general_error)
                     )
                 }
             } catch (e: Exception) {
                 Log.e("PqrsViewModel", "Error fetching email template: ${e.message}")
-                showCustomDialog(
-                    DialogType.ERROR,
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.general_error)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.general_error)
                 )
             }
 
@@ -169,28 +149,28 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
     fun validateSendPqr(onIntentReady: (Intent) -> Unit) {
 
         if (idNumber.isEmpty() || plate.isEmpty()) {
-            showCustomDialog(
+            appViewModel.showMessage(
                 type = DialogType.ERROR,
-                appContext.getString(R.string.error),
-                appContext.getString(R.string.all_fields_required)
+                title = appContext.getString(R.string.error),
+                message = appContext.getString(R.string.all_fields_required)
             )
             return
         }
 
         if (!isHighFare && !isUserMistreated && !isServiceAbandonment && !isUnauthorizedCharges && !isNoFareNotice && !isDangerousDriving && !isOther) {
-            showCustomDialog(
+            appViewModel.showMessage(
                 type = DialogType.ERROR,
-                appContext.getString(R.string.error),
-                appContext.getString(R.string.select_complaint_reason)
+                title = appContext.getString(R.string.error),
+                message = appContext.getString(R.string.select_complaint_reason)
             )
             return
         }
 
         if (isOther && otherValue.isEmpty()) {
-            showCustomDialog(
+            appViewModel.showMessage(
                 type = DialogType.ERROR,
-                appContext.getString(R.string.error),
-                appContext.getString(R.string.other_reason_required)
+                title = appContext.getString(R.string.error),
+                message = appContext.getString(R.string.other_reason_required)
             )
             return
         }
@@ -222,7 +202,8 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
             .replace("{irregularities}", irregularities)
 
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:${contactObj.value.pqrEmail}?subject=${appContext.getString(R.string.email_subject)}&body=$bodyEmail")
+            data =
+                Uri.parse("mailto:${contactObj.value.pqrEmail}?subject=${appContext.getString(R.string.email_subject)}&body=$bodyEmail")
         }
 
         onIntentReady(emailIntent)

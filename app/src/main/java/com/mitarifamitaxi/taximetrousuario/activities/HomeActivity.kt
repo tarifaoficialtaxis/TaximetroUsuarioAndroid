@@ -39,7 +39,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitarifamitaxi.taximetrousuario.R
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.NoTripsView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripItem
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
@@ -56,6 +55,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import com.google.gson.Gson
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 
 class HomeActivity : BaseActivity() {
@@ -75,7 +75,8 @@ class HomeActivity : BaseActivity() {
             if (fineLocationGranted || coarseLocationGranted) {
                 viewModel.getCurrentLocation()
             } else {
-                viewModel.showErrorMessage(
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
                     getString(R.string.permission_required),
                     getString(R.string.location_permission_required)
                 )
@@ -117,14 +118,6 @@ class HomeActivity : BaseActivity() {
             }
         )
 
-        if (viewModel.showDialog) {
-            CustomPopupDialog(
-                dialogType = viewModel.dialogType,
-                title = viewModel.dialogTitle,
-                message = viewModel.dialogMessage,
-                onDismiss = { viewModel.showDialog = false },
-            )
-        }
     }
 
     @Composable

@@ -3,9 +3,8 @@ package com.mitarifamitaxi.taximetrousuario.viewmodels
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
+import com.mitarifamitaxi.taximetrousuario.R
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,12 +15,6 @@ import com.mitarifamitaxi.taximetrousuario.models.Trip
 
 class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
     private val appContext = context.applicationContext
-
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-
 
     private val _trips = mutableStateOf<List<Trip>>(emptyList())
     val trips: State<List<Trip>> = _trips
@@ -40,7 +33,12 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
         tripsRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 appViewModel.isLoading = false
-                showErrorMessage("Error listening to trips", error.message ?: "Unknown error")
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_trips),
+                )
+
                 return@addSnapshotListener
             }
             try {
@@ -61,16 +59,13 @@ class MyTripsViewModel(context: Context, private val appViewModel: AppViewModel)
         }
     }
 
-    private fun showErrorMessage(title: String, message: String) {
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
-    }
 
 }
 
-class MyTripsViewModelFactory(private val context: Context, private val appViewModel: AppViewModel) :
+class MyTripsViewModelFactory(
+    private val context: Context,
+    private val appViewModel: AppViewModel
+) :
     ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -17,6 +17,8 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -34,15 +36,17 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     var tripsCount by mutableIntStateOf(0)
     var distanceCount by mutableIntStateOf(0)
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-    var dialogShowCloseButton by mutableStateOf(true)
-    var dialogPrimaryAction: String? by mutableStateOf(null)
-
     private val _hideKeyboardEvent = MutableLiveData<Boolean>()
     val hideKeyboardEvent: LiveData<Boolean> get() = _hideKeyboardEvent
+
+
+    private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    sealed class NavigationEvent {
+        object LogOutComplete : NavigationEvent()
+        object Finish : NavigationEvent()
+    }
 
     init {
         viewModelScope.launch {
@@ -74,11 +78,11 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
         } catch (error: Exception) {
             Log.e("ProfileViewModel", "Error fetching trips: ${error.message}")
             appViewModel.isLoading = false
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_fetching_trips)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_fetching_trips),
             )
-
         }
     }
 
@@ -91,21 +95,22 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             (familyNumber ?: "").isEmpty() ||
             (supportNumber ?: "").isEmpty()
         ) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.all_fields_required)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.all_fields_required)
             )
             return
         }
 
         if (!(email ?: "").isValidEmail()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_invalid_email)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_invalid_email)
             )
             return
         }
-
 
         viewModelScope.launch {
             appViewModel.isLoading = true
@@ -137,18 +142,27 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                     appViewModel.userData = user
                     saveUserState(user)
                     appViewModel.isLoading = false
-                    showSuccessMessage(
-                        appContext.getString(R.string.profile_updated),
-                        appContext.getString(R.string.user_updated_successfully),
-                        appContext.getString(R.string.accept)
+                    appViewModel.showMessage(
+                        type = DialogType.SUCCESS,
+                        title = appContext.getString(R.string.profile_updated),
+                        message = appContext.getString(R.string.user_updated_successfully),
+                        buttonText = appContext.getString(R.string.accept)
                     )
+
+                    appViewModel.dialogOnPrimaryActionClicked = {
+                        viewModelScope.launch {
+                            _navigationEvents.emit(NavigationEvent.Finish)
+                        }
+                    }
+
                 }
             } catch (error: Exception) {
                 Log.e("ProfileViewModel", "Error updating user: ${error.message}")
                 appViewModel.isLoading = false
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_fetching_trips)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_updating_user)
                 )
             } finally {
                 appViewModel.isLoading = false
@@ -164,37 +178,22 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
         }
     }
 
-    private fun showErrorMessage(title: String, message: String) {
+    fun onDeleteAccountClicked() {
         _hideKeyboardEvent.value = true
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
-        dialogShowCloseButton = true
-        dialogPrimaryAction = null
+
+        appViewModel.showMessage(
+            type = DialogType.ERROR,
+            title = appContext.getString(R.string.delete_account_question),
+            message = appContext.getString(R.string.delete_account_message),
+            buttonText = appContext.getString(R.string.delete_account)
+        )
+
+        appViewModel.dialogOnPrimaryActionClicked = {
+            handleDeleteAccount()
+        }
     }
 
-    private fun showSuccessMessage(title: String, message: String, primaryAction: String) {
-        _hideKeyboardEvent.value = true
-        showDialog = true
-        dialogType = DialogType.SUCCESS
-        dialogTitle = title
-        dialogMessage = message
-        dialogPrimaryAction = primaryAction
-        dialogShowCloseButton = false
-    }
-
-    fun showDeleteAccountMessage() {
-        _hideKeyboardEvent.value = true
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = appContext.getString(R.string.delete_account_question)
-        dialogMessage = appContext.getString(R.string.delete_account_message)
-        dialogPrimaryAction = appContext.getString(R.string.delete_account)
-        dialogShowCloseButton = true
-    }
-
-    fun handleDeleteAccount(onLogoutComplete: () -> Unit) {
+    fun handleDeleteAccount() {
 
         viewModelScope.launch {
             try {
@@ -225,26 +224,30 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                 }
 
                 appViewModel.isLoading = false
-                onLogoutComplete()
+                logOut()
             } catch (error: Exception) {
                 Log.e("ProfileViewModel", "Error deleting account: ${error.message}")
                 appViewModel.isLoading = false
-                showErrorMessage(
-                    appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_deleting_account)
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_deleting_account)
                 )
             }
         }
 
     }
 
-    fun logOut(onLogoutComplete: () -> Unit) {
+    fun logOut() {
         val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             remove("USER_OBJECT")
             apply()
         }
-        onLogoutComplete()
+
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.LogOutComplete)
+        }
     }
 
 }

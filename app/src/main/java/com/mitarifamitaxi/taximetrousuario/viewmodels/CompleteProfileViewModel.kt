@@ -27,24 +27,23 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
     var mobilePhone by mutableStateOf("")
     var email by mutableStateOf("")
 
-    var dialogType by mutableStateOf(DialogType.SUCCESS)
-    var showDialog by mutableStateOf(false)
-    var dialogTitle by mutableStateOf("")
-    var dialogMessage by mutableStateOf("")
-
     fun completeProfile(onResult: (Pair<Boolean, String?>) -> Unit) {
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.all_fields_required)
+
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.all_fields_required),
             )
+
             return
         }
 
         if (!email.isValidEmail()) {
-            showErrorMessage(
-                appContext.getString(R.string.something_went_wrong),
-                appContext.getString(R.string.error_invalid_email)
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_invalid_email),
             )
             return
         }
@@ -97,13 +96,6 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
             putString("USER_OBJECT", Gson().toJson(user))
             apply()
         }
-    }
-
-    private fun showErrorMessage(title: String, message: String) {
-        showDialog = true
-        dialogType = DialogType.ERROR
-        dialogTitle = title
-        dialogMessage = message
     }
 
 }

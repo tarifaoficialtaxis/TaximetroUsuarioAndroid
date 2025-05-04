@@ -255,5 +255,9 @@
 
     <string name="re_auth_message">Esta operación requiere autenticación.</string>
 
+    <string name="new_app_version_message">Buenas noticias, hay una nueva versión disponible. Por favor actualiza la aplicación</string>
+    <string name="cannot_open_store_url">No se pudo abrir la URL de la aplicación en la play store.</string>
+
+
 
 </resources>

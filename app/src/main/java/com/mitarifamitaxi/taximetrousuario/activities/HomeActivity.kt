@@ -93,6 +93,11 @@ class HomeActivity : BaseActivity() {
         viewModel.stopLocationUpdates()
     }
 
+    override fun onResume() {
+        super.onResume()
+        appViewModel.reloadUserData()
+    }
+
     @Composable
     override fun Content() {
         MainView(

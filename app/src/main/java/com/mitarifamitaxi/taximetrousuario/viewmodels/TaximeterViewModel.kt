@@ -460,7 +460,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             !isHolidaySurcharge &&
             !isDoorToDoorSurcharge
         ) {
-            return Pair(baseUnits, baseUnits)
+            if (baseUnits < minimumRateUnits) {
+                return Pair(minimumRateUnits, minimumRateUnits)
+            } else {
+                return Pair(baseUnits, baseUnits)
+            }
         } else if (baseUnits < minimumRateUnits) {
             return Pair(minimumRateUnits, minimumRateUnits + totalRechargesUnits)
         } else {

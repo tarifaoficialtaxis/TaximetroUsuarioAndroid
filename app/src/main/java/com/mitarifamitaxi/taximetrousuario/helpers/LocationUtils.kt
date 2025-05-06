@@ -40,7 +40,6 @@ suspend fun getCityFromCoordinates(
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
 
-
                 callbackSuccess(
                     getCityFromAlias(address.locality),
                     countries.find { it.code == address.countryCode }?.dial?.replace("+", "")

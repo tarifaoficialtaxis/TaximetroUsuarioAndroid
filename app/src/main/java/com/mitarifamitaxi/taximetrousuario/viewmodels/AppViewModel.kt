@@ -78,13 +78,11 @@ class AppViewModel(context: Context) : ViewModel() {
                                 title = appContext.getString(R.string.attention),
                                 message = appContext.getString(R.string.new_app_version_message),
                                 buttonText = appContext.getString(R.string.update),
-                                showCloseButton = false
+                                showCloseButton = false,
+                                onButtonClicked = {
+                                    appVersionObj.urlStore?.let { openUrlStore(it) }
+                                }
                             )
-
-                            dialogOnPrimaryActionClicked = {
-                                appVersionObj.urlStore?.let { openUrlStore(it) }
-                            }
-
 
                         } else {
                             Log.i("AppViewModel", "App Version is up to date")
@@ -141,6 +139,8 @@ class AppViewModel(context: Context) : ViewModel() {
         message: String,
         buttonText: String? = null,
         showCloseButton: Boolean = true,
+        onDismiss: (() -> Unit)? = null,
+        onButtonClicked: (() -> Unit)? = null
     ) {
         dialogType = type
         dialogTitle = title
@@ -148,6 +148,8 @@ class AppViewModel(context: Context) : ViewModel() {
         showDialog = true
         dialogButtonText = buttonText
         dialogShowCloseButton = showCloseButton
+        dialogOnDismiss = onDismiss
+        dialogOnPrimaryActionClicked = onButtonClicked
     }
 
 }

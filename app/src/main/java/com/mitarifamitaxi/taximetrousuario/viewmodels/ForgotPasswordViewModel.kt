@@ -59,15 +59,14 @@ class ForgotPasswordViewModel(context: Context, private val appViewModel: AppVie
                         type = DialogType.SUCCESS,
                         title = appContext.getString(R.string.recoveryEmailSent),
                         message = appContext.getString(R.string.weHaveSentRecoveryEmailPassword),
-                        buttonText = appContext.getString(R.string.accept)
+                        buttonText = appContext.getString(R.string.accept),
+                        onDismiss = {
+                            goBack()
+                        },
+                        onButtonClicked = {
+                            goBack()
+                        }
                     )
-
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        goBack()
-                    }
-                    appViewModel.dialogOnDismiss = {
-                        goBack()
-                    }
 
                 } else {
                     val exception = task.exception
@@ -79,8 +78,6 @@ class ForgotPasswordViewModel(context: Context, private val appViewModel: AppVie
                             ?: appContext.getString(R.string.generalError)
                     )
 
-                    appViewModel.dialogOnPrimaryActionClicked = null
-                    appViewModel.dialogOnDismiss = null
                 }
             }
     }

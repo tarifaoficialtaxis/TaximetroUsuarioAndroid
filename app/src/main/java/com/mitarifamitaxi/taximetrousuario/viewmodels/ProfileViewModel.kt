@@ -170,14 +170,13 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                         type = DialogType.SUCCESS,
                         title = appContext.getString(R.string.profile_updated),
                         message = appContext.getString(R.string.user_updated_successfully),
-                        buttonText = appContext.getString(R.string.accept)
-                    )
-
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        viewModelScope.launch {
-                            _navigationEvents.emit(NavigationEvent.Finish)
+                        buttonText = appContext.getString(R.string.accept),
+                        onButtonClicked = {
+                            viewModelScope.launch {
+                                _navigationEvents.emit(NavigationEvent.Finish)
+                            }
                         }
-                    }
+                    )
 
                 }
             } catch (error: Exception) {
@@ -209,54 +208,20 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             type = DialogType.ERROR,
             title = appContext.getString(R.string.delete_account_question),
             message = appContext.getString(R.string.delete_account_message),
-            buttonText = appContext.getString(R.string.delete_account)
+            buttonText = appContext.getString(R.string.delete_account),
+            onButtonClicked = {
+                handleDeleteAccount()
+            }
         )
-
-        appViewModel.dialogOnPrimaryActionClicked = {
-            handleDeleteAccount()
-        }
     }
 
     fun handleDeleteAccount() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val userId = appViewModel.userData?.id ?: ""
-
-        if (currentUser == null || userId.isEmpty()) {
-            appViewModel.showMessage(
-                type = DialogType.ERROR,
-                title = appContext.getString(R.string.something_went_wrong),
-                message = appContext.getString(R.string.error_deleting_account)
-            )
-            return
-        }
 
         viewModelScope.launch {
             try {
                 appViewModel.isLoading = true
 
-                // 1. Delete Firestore Trips
-                val tripsSnapshot = FirebaseFirestore.getInstance()
-                    .collection("trips")
-                    .whereEqualTo("userId", userId)
-                    .get()
-                    .await()
-
-                if (tripsSnapshot.documents.isNotEmpty()) {
-                    for (trip in tripsSnapshot.documents) {
-                        trip.reference.delete().await()
-                        Log.d("ProfileViewModel", "Deleted trip ${trip.id}")
-                    }
-                }
-
-                // 2. Delete Firestore User Document
-                val userDocRef = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(userId)
-
-                userDocRef.delete().await()
-                Log.d("ProfileViewModel", "Deleted Firestore user document $userId")
-
-                // 3. Delete Firebase Auth User
+                // Delete Firebase Auth User
                 deleteFirebaseAuthUser()
 
             } catch (error: Exception) {
@@ -339,7 +304,9 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     fun deleteFirebaseAuthUser() {
 
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser == null) {
+        val userId = appViewModel.userData?.id ?: ""
+
+        if (currentUser == null || userId.isEmpty()) {
             appViewModel.showMessage(
                 type = DialogType.ERROR,
                 title = appContext.getString(R.string.something_went_wrong),
@@ -353,9 +320,41 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             try {
                 currentUser.delete().await()
                 Log.d("ProfileViewModel", "Deleted Firebase Auth user ${currentUser.uid}")
-                // If successful, proceed to log out
+
+                // Delete Firestore Trips
+                val tripsSnapshot = FirebaseFirestore.getInstance()
+                    .collection("trips")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .await()
+
+                if (tripsSnapshot.documents.isNotEmpty()) {
+                    for (trip in tripsSnapshot.documents) {
+                        trip.reference.delete().await()
+                        Log.d("ProfileViewModel", "Deleted trip ${trip.id}")
+                    }
+                }
+
+                // Delete Firestore User Document
+                val userDocRef = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(userId)
+
+                userDocRef.delete().await()
+                Log.d("ProfileViewModel", "Deleted Firestore user document $userId")
+
                 appViewModel.isLoading = false
-                logOut()
+                appViewModel.showMessage(
+                    type = DialogType.SUCCESS,
+                    title = appContext.getString(R.string.warning),
+                    message = appContext.getString(R.string.account_deleted_message),
+                    buttonText = appContext.getString(R.string.accept),
+                    showCloseButton = false,
+                    onButtonClicked = {
+                        logOut()
+                    }
+                )
+
             } catch (authError: FirebaseAuthRecentLoginRequiredException) {
                 appViewModel.isLoading = false
                 Log.w(

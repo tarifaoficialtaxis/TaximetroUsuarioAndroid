@@ -164,10 +164,10 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         appContext.getString(R.string.support_number_not_found),
                         appContext.getString(R.string.set_up_support_number),
                         appContext.getString(R.string.add_number),
+                        onButtonClicked = {
+                            goToProfile()
+                        }
                     )
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        goToProfile()
-                    }
                 }
             }
 
@@ -185,10 +185,10 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         appContext.getString(R.string.family_number_not_found),
                         appContext.getString(R.string.set_up_family_number),
                         appContext.getString(R.string.add_number),
+                        onButtonClicked = {
+                            goToProfile()
+                        }
                     )
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        goToProfile()
-                    }
                 }
             }
 
@@ -234,11 +234,11 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         appContext.getString(R.string.support_number_not_found),
                         appContext.getString(R.string.set_up_support_number),
                         appContext.getString(R.string.add_number),
+                        onButtonClicked = {
+                            goToProfile()
+                        }
                     )
 
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        goToProfile()
-                    }
                 }
             }
 
@@ -253,11 +253,11 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         appContext.getString(R.string.family_number_not_found),
                         appContext.getString(R.string.set_up_family_number),
                         appContext.getString(R.string.add_number),
+                        onButtonClicked = {
+                            goToProfile()
+                        }
                     )
 
-                    appViewModel.dialogOnPrimaryActionClicked = {
-                        goToProfile()
-                    }
                 }
             }
 

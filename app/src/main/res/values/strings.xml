@@ -258,6 +258,6 @@
     <string name="new_app_version_message">Buenas noticias, hay una nueva versión disponible. Por favor actualiza la aplicación</string>
     <string name="cannot_open_store_url">No se pudo abrir la URL de la aplicación en la play store.</string>
 
-
+    <string name="account_deleted_message">Cuenta eliminada satisfactoriamente.</string>
 
 </resources>

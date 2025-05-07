@@ -54,10 +54,10 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             title = appContext.getString(R.string.delete_trip),
             message = appContext.getString(R.string.delete_trip_message),
             buttonText = appContext.getString(R.string.delete),
+            onButtonClicked = {
+                tripData.id?.let { deleteTrip(it) }
+            }
         )
-        appViewModel.dialogOnPrimaryActionClicked = {
-            tripData.id?.let { deleteTrip(it) }
-        }
     }
 
     fun deleteTrip(tripId: String) {
@@ -74,14 +74,13 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                     title = appContext.getString(R.string.success),
                     message = appContext.getString(R.string.trip_deleted_successfully),
                     buttonText = appContext.getString(R.string.accept),
-                    showCloseButton = false
-                )
-
-                appViewModel.dialogOnPrimaryActionClicked = {
-                    viewModelScope.launch {
-                        _navigationEvents.emit(NavigationEvent.GoBack)
+                    showCloseButton = false,
+                    onButtonClicked = {
+                        viewModelScope.launch {
+                            _navigationEvents.emit(NavigationEvent.GoBack)
+                        }
                     }
-                }
+                )
 
             } catch (error: Exception) {
                 Log.e("TripSummaryViewModel", "Error deleting trip: ${error.message}")

@@ -245,11 +245,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             title = appContext.getString(R.string.finish_your_trip),
             message = appContext.getString(R.string.you_are_about_to_finish),
             buttonText = appContext.getString(R.string.finish_trip),
+            onButtonClicked = {
+                stopTaximeter()
+            }
         )
-
-        appViewModel.dialogOnPrimaryActionClicked = {
-            stopTaximeter()
-        }
     }
 
     fun stopTaximeter() {

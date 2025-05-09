@@ -60,9 +60,14 @@ fun hourFormatDate(dateString: String): String {
 }
 
 fun shareFormatDate(dateString: String): String {
-    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-    val date = formatter.parse(dateString)
-    return date?.let { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(it) } ?: ""
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm a", Locale("es", "CO"))
+    val instant = Instant.parse(dateString)
+    val localDateTime =
+        instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
+
+    return localDateTime.format(formatter)
+        .replace("a. m.", "AM")
+        .replace("p. m.", "PM")
 }
 
 private fun getColombianHolidays(year: Int): List<LocalDate> {

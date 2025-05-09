@@ -170,9 +170,8 @@ class TripSummaryActivity : BaseActivity() {
                     AsyncImage(
                         model = viewModel.tripData.routeImage,
                         contentDescription = "Trip route map image",
-                        contentScale = ContentScale.FillBounds,
+                        contentScale = ContentScale.FillWidth,
                         modifier = Modifier
-                            .height(250.dp)
                             .fillMaxWidth()
                     )
                 } else {
@@ -180,9 +179,8 @@ class TripSummaryActivity : BaseActivity() {
                         Image(
                             bitmap = it.asImageBitmap(),
                             contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
+                            contentScale = ContentScale.FillWidth,
                             modifier = Modifier
-                                .height(250.dp)
                                 .fillMaxWidth()
                         )
                     }

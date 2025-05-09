@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.components.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,7 +46,6 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.models.ItemSideMenu
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
-
 
 @Composable
 fun DrawerContent(

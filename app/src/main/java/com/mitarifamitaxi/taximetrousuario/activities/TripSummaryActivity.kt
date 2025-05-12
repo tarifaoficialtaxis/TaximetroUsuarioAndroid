@@ -307,10 +307,10 @@ class TripSummaryActivity : BaseActivity() {
                         value = "${((viewModel.tripData.distance ?: 0.0) / 1000).formatDigits(1)} KM"
                     )
 
-                    if (viewModel.tripData.units != null) {
+                    if (viewModel.tripData.baseUnits != null) {
                         TripInfoRow(
-                            title = stringResource(id = R.string.units),
-                            value = viewModel.tripData.units?.toInt().toString()
+                            title = stringResource(id = R.string.units_base),
+                            value = viewModel.tripData.baseUnits?.toInt().toString()
                         )
                     }
 
@@ -320,6 +320,13 @@ class TripSummaryActivity : BaseActivity() {
                             viewModel.tripData.baseRate?.toInt()?.formatNumberWithDots()
                         } COP"
                     )
+
+                    if (viewModel.tripData.rechargeUnits != null) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.units_recharge),
+                            value = viewModel.tripData.rechargeUnits?.toInt().toString()
+                        )
+                    }
 
                     if (viewModel.tripData.airportSurchargeEnabled == false &&
                         viewModel.tripData.nightSurchargeEnabled == false &&
@@ -376,6 +383,23 @@ class TripSummaryActivity : BaseActivity() {
                             title = stringResource(id = R.string.holiday_surcharge),
                             value = "+$${
                                 viewModel.tripData.holidayOrNightSurcharge?.toInt()
+                                    ?.formatNumberWithDots()
+                            } COP"
+                        )
+                    }
+
+                    if (viewModel.tripData.units != null) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.total_units),
+                            value = viewModel.tripData.units?.toInt().toString()
+                        )
+                    }
+
+                    if (viewModel.tripData.total != null) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.total),
+                            value = "$${
+                                viewModel.tripData.total?.toInt()
                                     ?.formatNumberWithDots()
                             } COP"
                         )

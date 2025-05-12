@@ -13,6 +13,8 @@ data class Trip(
     val startHour: String? = null,
     val endHour: String? = null,
     val units: Double? = null,
+    val baseUnits: Double? = null,
+    val rechargeUnits: Double? = null,
     val total: Double? = null,
     val distance: Double? = null,
 

@@ -376,8 +376,13 @@ class TaximeterActivity : BaseActivity() {
             )
 
             TaximeterInfoRow(
-                title = stringResource(id = R.string.units),
+                title = stringResource(id = R.string.units_base),
                 value = viewModel.units.toInt().toString()
+            )
+
+            TaximeterInfoRow(
+                title = stringResource(id = R.string.units_recharge),
+                value = viewModel.rechargeUnits.toInt().toString()
             )
 
             TaximeterInfoRow(
@@ -432,9 +437,9 @@ class TaximeterActivity : BaseActivity() {
                     onValueChange = {
                         viewModel.isDoorToDoorSurcharge = it
                         if (it) {
-                            viewModel.units += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                            viewModel.rechargeUnits += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
                         } else {
-                            viewModel.units -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
+                            viewModel.rechargeUnits -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
                         }
                     }
                 )
@@ -446,9 +451,9 @@ class TaximeterActivity : BaseActivity() {
                     onValueChange = {
                         viewModel.isAirportSurcharge = it
                         if (it) {
-                            viewModel.units += viewModel.ratesObj.value.airportRateUnits ?: 0.0
+                            viewModel.rechargeUnits += viewModel.ratesObj.value.airportRateUnits ?: 0.0
                         } else {
-                            viewModel.units -= viewModel.ratesObj.value.airportRateUnits ?: 0.0
+                            viewModel.rechargeUnits -= viewModel.ratesObj.value.airportRateUnits ?: 0.0
                         }
                     }
                 )
@@ -459,7 +464,6 @@ class TaximeterActivity : BaseActivity() {
                     isEnabled = false,
                     onValueChange = {}
                 )
-
 
             }
 

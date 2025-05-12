@@ -138,6 +138,8 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                     putIfNotNull("endHour", tripData.endHour)
                     putIfNotNull("distance", tripData.distance)
                     putIfNotNull("units", tripData.units)
+                    putIfNotNull("baseUnits", tripData.baseUnits)
+                    putIfNotNull("rechargeUnits", tripData.rechargeUnits)
                     putIfNotNull("total", tripData.total)
                     putIfNotNull("baseRate", tripData.baseRate)
                     putIfNotNull("isAirportSurcharge", tripData.airportSurchargeEnabled)
@@ -197,9 +199,11 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                     tripData.distance?.let { (it / 1000).formatDigits(1) }
                 } KM\n"
             )
-            append("*Unidades:* ${tripData.units}\n")
+            append("*Unidades base:* ${tripData.baseUnits}\n")
 
             append("*Tarifa base:* ${tripData.baseRate?.toInt()?.formatNumberWithDots()} COP\n")
+
+            append("*Unidades recargo:* ${tripData.rechargeUnits}\n")
 
             if (tripData.airportSurchargeEnabled == true) {
                 append(
@@ -240,6 +244,8 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                     } COP\n"
                 )
             }
+
+            append("*Unidades totales:* ${tripData.units}\n")
 
             append(
                 "*${appContext.getString(R.string.total)}* ${

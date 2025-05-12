@@ -83,6 +83,14 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             onUnitsChanged(value)
         }
 
+    private val _rechargeUnits = mutableDoubleStateOf(0.0)
+    var rechargeUnits: Double
+        get() = _rechargeUnits.doubleValue
+        set(value) {
+            _rechargeUnits.doubleValue = value
+            updateTotal(value)
+        }
+
     var timeElapsed by mutableIntStateOf(0)
     var dragTimeElapsed by mutableIntStateOf(0)
     var formattedTime by mutableStateOf("0")
@@ -218,17 +226,25 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 ratesObj.value.morningMinuteSurcharge ?: 30
             )
         ) {
+            rechargeUnits += ratesObj.value.holidayRateUnits ?: 0.0
             isHolidaySurcharge = true
             return
         }
 
         if (isColombianHoliday()) {
+            rechargeUnits += ratesObj.value.holidayRateUnits ?: 0.0
             isHolidaySurcharge = true
+            return
         }
     }
 
     private fun onUnitsChanged(newValue: Double) {
-        total = newValue * (ratesObj.value.unitPrice ?: 0.0)
+        //total = newValue * (ratesObj.value.unitPrice ?: 0.0)
+        total = (newValue + rechargeUnits) * (ratesObj.value.unitPrice ?: 0.0)
+    }
+
+    private fun updateTotal(rechargeUnits: Double) {
+        total = (rechargeUnits + units) * (ratesObj.value.unitPrice ?: 0.0)
     }
 
     fun startTaximeter() {
@@ -405,7 +421,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val compressedBitmap =
             BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
 
-        val finalUnits = getFinalUnits()
+        val baseUnits = if (units < (ratesObj.value.minimumRateUnits ?: 0.0)) ratesObj.value.minimumRateUnits ?: 0.0 else units
 
         val tripObj = Trip(
             startAddress = startAddress,
@@ -414,9 +430,11 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             endCoords = currentPosition,
             startHour = startTime,
             endHour = endTime,
-            units = finalUnits.second,
-            total = finalUnits.second * (ratesObj.value.unitPrice ?: 0.0),
-            baseRate = finalUnits.first * (ratesObj.value.unitPrice ?: 0.0),
+            units = baseUnits + rechargeUnits,
+            baseUnits = baseUnits,
+            rechargeUnits = rechargeUnits,
+            total = (baseUnits + rechargeUnits) * (ratesObj.value.unitPrice ?: 0.0),
+            baseRate = baseUnits * (ratesObj.value.unitPrice ?: 0.0),
             distance = distanceMade,
             airportSurchargeEnabled = isAirportSurcharge,
             airportSurcharge = if (isAirportSurcharge) (ratesObj.value.airportRateUnits
@@ -434,41 +452,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val intent = Intent(appContext, TripSummaryActivity::class.java)
         intent.putExtra("trip_data", tripJson)
         onIntentReady(intent)
-
-    }
-
-    private fun getFinalUnits(): Pair<Double, Double> {
-
-        var totalRechargesUnits = 0.0
-        val minimumRateUnits = ratesObj.value.minimumRateUnits ?: 0.0
-
-        if (isAirportSurcharge) {
-            totalRechargesUnits += ratesObj.value.airportRateUnits ?: 0.0
-        }
-
-        if (isHolidaySurcharge) {
-            totalRechargesUnits += ratesObj.value.holidayRateUnits ?: 0.0
-        }
-        if (isDoorToDoorSurcharge) {
-            totalRechargesUnits += ratesObj.value.doorToDoorRateUnits ?: 0.0
-        }
-
-        val baseUnits = units - totalRechargesUnits
-
-        if (!isAirportSurcharge &&
-            !isHolidaySurcharge &&
-            !isDoorToDoorSurcharge
-        ) {
-            if (baseUnits < minimumRateUnits) {
-                return Pair(minimumRateUnits, minimumRateUnits)
-            } else {
-                return Pair(baseUnits, baseUnits)
-            }
-        } else if (baseUnits < minimumRateUnits) {
-            return Pair(minimumRateUnits, minimumRateUnits + totalRechargesUnits)
-        } else {
-            return Pair(baseUnits, baseUnits + totalRechargesUnits)
-        }
 
     }
 

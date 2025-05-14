@@ -240,6 +240,7 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             input = input,
             latitude = appViewModel.userData?.location?.latitude ?: 0.0,
             longitude = appViewModel.userData?.location?.longitude ?: 0.0,
+            country = appViewModel.userData?.countryCode ?: "CO",
             callbackSuccess = { predictions ->
                 _places.value = predictions
             },

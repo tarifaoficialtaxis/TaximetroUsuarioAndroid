@@ -103,7 +103,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                         context = appContext,
                         latitude = location.latitude,
                         longitude = location.longitude,
-                        callbackSuccess = { city, countryCodeWhatsapp ->
+                        callbackSuccess = { city, countryCode, countryCodeWhatsapp ->
                             isGettingLocation = false
                             validateCity(city ?: "")
                             updateUserData(
@@ -112,6 +112,7 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
                                     longitude = location.longitude
                                 ),
                                 city = city ?: "",
+                                countryCode = countryCode ?: "",
                                 countryCodeWhatsapp = countryCodeWhatsapp ?: ""
                             )
                         },
@@ -151,10 +152,11 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         }
     }
 
-    private fun updateUserData(location: UserLocation, city: String, countryCodeWhatsapp: String) {
+    private fun updateUserData(location: UserLocation, city: String, countryCode: String, countryCodeWhatsapp: String) {
         appViewModel.userData = appViewModel.userData?.copy(
             location = location,
             city = city,
+            countryCode = countryCode,
             countryCodeWhatsapp = countryCodeWhatsapp
         )
 

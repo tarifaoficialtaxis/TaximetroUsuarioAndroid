@@ -30,7 +30,7 @@ suspend fun getCityFromCoordinates(
     context: Context,
     latitude: Double,
     longitude: Double,
-    callbackSuccess: (city: String?, countryCodeWhatsapp: String?) -> Unit,
+    callbackSuccess: (city: String?, countryCode: String?, countryCodeWhatsapp: String?) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
     return withContext(Dispatchers.IO) {
@@ -42,6 +42,7 @@ suspend fun getCityFromCoordinates(
 
                 callbackSuccess(
                     getCityFromAlias(address.locality),
+                    address.countryCode,
                     countries.find { it.code == address.countryCode }?.dial?.replace("+", "")
                 )
 
@@ -105,6 +106,7 @@ fun getPlacePredictions(
     input: String,
     latitude: Double,
     longitude: Double,
+    country: String = "CO",
     radius: Int = 30000,
     callbackSuccess: (ArrayList<PlacePrediction>) -> Unit,
     callbackError: (Exception) -> Unit
@@ -118,7 +120,7 @@ fun getPlacePredictions(
                 "&radius=$radius" +
                 "&language=es" +
                 "&strictbounds" +
-                "&components=country:co" +
+                "&components=country:$country" +
                 "&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()

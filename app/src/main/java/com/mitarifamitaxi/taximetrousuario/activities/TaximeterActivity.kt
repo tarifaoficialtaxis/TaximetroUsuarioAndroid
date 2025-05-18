@@ -45,6 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -72,13 +75,29 @@ import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import com.mitarifamitaxi.taximetrousuario.viewmodels.ForgotPasswordViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TaximeterViewModelFactory
+import kotlinx.coroutines.launch
 
 class TaximeterActivity : BaseActivity() {
 
     private val viewModel: TaximeterViewModel by viewModels {
         TaximeterViewModelFactory(this, appViewModel)
+    }
+
+    private fun observeViewModelEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigationEvents.collect { event ->
+                    when (event) {
+                        is TaximeterViewModel.NavigationEvent.GoBack -> {
+                            finish()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     val backgroundLocationPermissionLauncher = registerForActivityResult(
@@ -97,6 +116,7 @@ class TaximeterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        observeViewModelEvents()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -348,7 +368,9 @@ class TaximeterActivity : BaseActivity() {
         ) {
 
             Text(
-                text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
+                text = "$ ${
+                    viewModel.total.toInt().formatNumberWithDots()
+                } ${appViewModel.userData?.countryCurrency}",
                 color = colorResource(id = R.color.main),
                 fontSize = 36.sp,
                 fontFamily = MontserratFamily,
@@ -430,40 +452,54 @@ class TaximeterActivity : BaseActivity() {
                     .padding(top = 10.dp)
             ) {
 
-                CustomCheckBox(
-                    text = stringResource(id = R.string.door_to_door_surcharge).replace(":", ""),
-                    checked = viewModel.isDoorToDoorSurcharge,
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isDoorToDoorSurcharge = it
-                        if (it) {
-                            viewModel.rechargeUnits += viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
-                        } else {
-                            viewModel.rechargeUnits -= viewModel.ratesObj.value.doorToDoorRateUnits ?: 0.0
-                        }
-                    }
-                )
 
-                CustomCheckBox(
-                    text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
-                    checked = viewModel.isAirportSurcharge,
-                    isEnabled = viewModel.isTaximeterStarted,
-                    onValueChange = {
-                        viewModel.isAirportSurcharge = it
-                        if (it) {
-                            viewModel.rechargeUnits += viewModel.ratesObj.value.airportRateUnits ?: 0.0
-                        } else {
-                            viewModel.rechargeUnits -= viewModel.ratesObj.value.airportRateUnits ?: 0.0
+                if (viewModel.ratesObj.value.doorToDoorRateUnits != null && viewModel.ratesObj.value.doorToDoorRateUnits != 0.0) {
+                    CustomCheckBox(
+                        text = stringResource(id = R.string.door_to_door_surcharge).replace(
+                            ":",
+                            ""
+                        ),
+                        checked = viewModel.isDoorToDoorSurcharge,
+                        isEnabled = viewModel.isTaximeterStarted,
+                        onValueChange = {
+                            viewModel.isDoorToDoorSurcharge = it
+                            if (it) {
+                                viewModel.rechargeUnits += viewModel.ratesObj.value.doorToDoorRateUnits
+                                    ?: 0.0
+                            } else {
+                                viewModel.rechargeUnits -= viewModel.ratesObj.value.doorToDoorRateUnits
+                                    ?: 0.0
+                            }
                         }
-                    }
-                )
+                    )
+                }
 
-                CustomCheckBox(
-                    text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
-                    checked = viewModel.isHolidaySurcharge,
-                    isEnabled = false,
-                    onValueChange = {}
-                )
+                if (viewModel.ratesObj.value.airportRateUnits != null && viewModel.ratesObj.value.airportRateUnits != 0.0) {
+                    CustomCheckBox(
+                        text = stringResource(id = R.string.airport_surcharge).replace(":", ""),
+                        checked = viewModel.isAirportSurcharge,
+                        isEnabled = viewModel.isTaximeterStarted,
+                        onValueChange = {
+                            viewModel.isAirportSurcharge = it
+                            if (it) {
+                                viewModel.rechargeUnits += viewModel.ratesObj.value.airportRateUnits
+                                    ?: 0.0
+                            } else {
+                                viewModel.rechargeUnits -= viewModel.ratesObj.value.airportRateUnits
+                                    ?: 0.0
+                            }
+                        }
+                    )
+                }
+
+                if (viewModel.ratesObj.value.holidayRateUnits != null && viewModel.ratesObj.value.holidayRateUnits != 0.0) {
+                    CustomCheckBox(
+                        text = stringResource(id = R.string.holiday_surcharge).replace(":", ""),
+                        checked = viewModel.isHolidaySurcharge,
+                        isEnabled = false,
+                        onValueChange = {}
+                    )
+                }
 
             }
 
@@ -536,7 +572,9 @@ class TaximeterActivity : BaseActivity() {
             ) {
 
                 Text(
-                    text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
+                    text = "$ ${
+                        viewModel.total.toInt().formatNumberWithDots()
+                    } ${appViewModel.userData?.countryCurrency}",
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,

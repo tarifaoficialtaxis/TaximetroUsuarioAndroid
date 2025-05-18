@@ -23,14 +23,15 @@ import kotlin.math.sqrt
 const val googleapisUrl = "https://maps.googleapis.com/maps/api/"
 
 private val citiesAliasDictionary = mutableMapOf(
-    "Bogotá, D.C." to "Bogotá"
+    "Bogotá, D.C." to "Bogotá",
+    "Oaxaca de Juárez" to "Oaxaca",
 )
 
 suspend fun getCityFromCoordinates(
     context: Context,
     latitude: Double,
     longitude: Double,
-    callbackSuccess: (city: String?, countryCode: String?, countryCodeWhatsapp: String?) -> Unit,
+    callbackSuccess: (city: String?, countryCode: String?, countryCodeWhatsapp: String?, countryCurrency: String?) -> Unit,
     callbackError: (Exception) -> Unit
 ) {
     return withContext(Dispatchers.IO) {
@@ -40,10 +41,13 @@ suspend fun getCityFromCoordinates(
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
 
+                val country = countries.find { it.code == address.countryCode }
+
                 callbackSuccess(
                     getCityFromAlias(address.locality),
                     address.countryCode,
-                    countries.find { it.code == address.countryCode }?.dial?.replace("+", "")
+                    country?.dial?.replace("+", ""),
+                    country?.currency
                 )
 
             } else {

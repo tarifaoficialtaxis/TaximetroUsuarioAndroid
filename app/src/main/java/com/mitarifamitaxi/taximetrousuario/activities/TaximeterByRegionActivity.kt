@@ -370,7 +370,9 @@ class TaximeterByRegionActivity : BaseActivity() {
         ) {
 
             Text(
-                text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
+                text = "$ ${
+                    viewModel.total.toInt().formatNumberWithDots()
+                } ${appViewModel.userData?.countryCurrency}",
                 color = colorResource(id = R.color.main),
                 fontSize = 36.sp,
                 fontFamily = MontserratFamily,
@@ -556,7 +558,9 @@ class TaximeterByRegionActivity : BaseActivity() {
             ) {
 
                 Text(
-                    text = "$ ${viewModel.total.toInt().formatNumberWithDots()} COP",
+                    text = "$ ${
+                        viewModel.total.toInt().formatNumberWithDots()
+                    } ${appViewModel.userData?.countryCurrency}",
                     fontFamily = MontserratFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,

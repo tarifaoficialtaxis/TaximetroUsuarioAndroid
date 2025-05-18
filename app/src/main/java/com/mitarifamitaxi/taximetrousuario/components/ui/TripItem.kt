@@ -45,7 +45,7 @@ fun TripItem(trip: Trip, onTripClicked: () -> Unit) {
             .fillMaxWidth()
             .padding(1.dp),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp), // Use elevation for shadow
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = R.color.white)
         )
@@ -121,7 +121,7 @@ fun TripItem(trip: Trip, onTripClicked: () -> Unit) {
                     }
 
                     Text(
-                        text = "$ ${trip.total?.toInt()?.formatNumberWithDots()} COP",
+                        text = "$ ${trip.total?.toInt()?.formatNumberWithDots()} ${trip.currency ?: ""}",
                         fontFamily = MontserratFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,

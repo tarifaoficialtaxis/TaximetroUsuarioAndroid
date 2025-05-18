@@ -368,7 +368,6 @@ class HomeActivity : BaseActivity() {
                                         trip, onTripClicked = {
                                             onTripClicked(trip)
                                         }
-
                                     )
                                 }
                             }

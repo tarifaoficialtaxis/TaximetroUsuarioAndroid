@@ -52,11 +52,21 @@ import java.util.Locale
 import java.util.concurrent.Executor
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import com.mitarifamitaxi.taximetrousuario.viewmodels.ForgotPasswordViewModel.NavigationEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
 
     private val appContext = context.applicationContext
+
+    private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    sealed class NavigationEvent {
+        object GoBack : NavigationEvent()
+    }
 
     var startAddress by mutableStateOf("")
     var startLocation by mutableStateOf(UserLocation())
@@ -178,13 +188,16 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         try {
                             ratesObj.value =
                                 cityRatesDoc.toObject(Rates::class.java) ?: Rates()
-                            validateSurcharges()
+                            //validateSurcharges()
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
                             appViewModel.showMessage(
                                 type = DialogType.ERROR,
                                 title = appContext.getString(R.string.something_went_wrong),
-                                message = appContext.getString(R.string.general_error)
+                                message = appContext.getString(R.string.general_error),
+                                onDismiss = {
+                                    goBack()
+                                }
                             )
                         }
                     } else {
@@ -193,7 +206,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         appViewModel.showMessage(
                             type = DialogType.ERROR,
                             title = appContext.getString(R.string.something_went_wrong),
-                            message = appContext.getString(R.string.general_error)
+                            message = appContext.getString(R.string.general_error),
+                            onDismiss = {
+                                goBack()
+                            }
                         )
                     }
                 } catch (e: Exception) {
@@ -201,7 +217,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     appViewModel.showMessage(
                         type = DialogType.ERROR,
                         title = appContext.getString(R.string.something_went_wrong),
-                        message = appContext.getString(R.string.general_error)
+                        message = appContext.getString(R.string.general_error),
+                        onDismiss = {
+                            goBack()
+                        }
                     )
                 }
             } else {
@@ -210,15 +229,22 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 appViewModel.showMessage(
                     type = DialogType.ERROR,
                     title = appContext.getString(R.string.something_went_wrong),
-                    message = appContext.getString(R.string.error_no_city_set)
+                    message = appContext.getString(R.string.error_no_city_set),
+                    onDismiss = {
+                        goBack()
+                    }
                 )
             }
         }
+    }
 
+    private fun goBack() {
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.GoBack)
+        }
     }
 
     private fun validateSurcharges() {
-
         if (isNightTime(
                 ratesObj.value.nightHourSurcharge ?: 21,
                 ratesObj.value.nighMinuteSurcharge ?: 0,
@@ -421,7 +447,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         val compressedBitmap =
             BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
 
-        val baseUnits = if (units < (ratesObj.value.minimumRateUnits ?: 0.0)) ratesObj.value.minimumRateUnits ?: 0.0 else units
+        val baseUnits =
+            if (units < (ratesObj.value.minimumRateUnits ?: 0.0)) ratesObj.value.minimumRateUnits
+                ?: 0.0 else units
 
         val tripObj = Trip(
             startAddress = startAddress,
@@ -445,6 +473,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             doorToDoorSurchargeEnabled = isDoorToDoorSurcharge,
             doorToDoorSurcharge = if (isDoorToDoorSurcharge) (ratesObj.value.doorToDoorRateUnits
                 ?: 0.0) * (ratesObj.value.unitPrice ?: 0.0) else null,
+            currency = appViewModel.userData?.countryCurrency,
             routeImageLocal = compressedBitmap
         )
 

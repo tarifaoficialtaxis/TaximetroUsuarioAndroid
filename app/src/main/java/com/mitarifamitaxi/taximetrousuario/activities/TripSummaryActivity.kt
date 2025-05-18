@@ -206,7 +206,7 @@ class TripSummaryActivity : BaseActivity() {
                             Text(
                                 text = "$ ${
                                     viewModel.tripData.total?.toInt()?.formatNumberWithDots()
-                                } COP",
+                                } ${viewModel.tripData.currency}",
                                 fontFamily = MontserratFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 24.sp,
@@ -318,7 +318,7 @@ class TripSummaryActivity : BaseActivity() {
                         title = stringResource(id = R.string.fare_base),
                         value = "$${
                             viewModel.tripData.baseRate?.toInt()?.formatNumberWithDots()
-                        } COP"
+                        } ${viewModel.tripData.currency}"
                     )
 
                     if (viewModel.tripData.rechargeUnits != null) {
@@ -345,7 +345,7 @@ class TripSummaryActivity : BaseActivity() {
                             title = stringResource(id = R.string.airport_surcharge),
                             value = "+$${
                                 viewModel.tripData.airportSurcharge?.toInt()?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 
@@ -355,7 +355,7 @@ class TripSummaryActivity : BaseActivity() {
                             value = "+$${
                                 viewModel.tripData.doorToDoorSurcharge?.toInt()
                                     ?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 
@@ -365,7 +365,7 @@ class TripSummaryActivity : BaseActivity() {
                             value = "+$${
                                 viewModel.tripData.nightSurcharge?.toInt()
                                     ?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 
@@ -374,7 +374,7 @@ class TripSummaryActivity : BaseActivity() {
                             title = stringResource(id = R.string.holiday_surcharge_only),
                             value = "+$${
                                 viewModel.tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 
@@ -384,7 +384,7 @@ class TripSummaryActivity : BaseActivity() {
                             value = "+$${
                                 viewModel.tripData.holidayOrNightSurcharge?.toInt()
                                     ?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 
@@ -401,7 +401,7 @@ class TripSummaryActivity : BaseActivity() {
                             value = "$${
                                 viewModel.tripData.total?.toInt()
                                     ?.formatNumberWithDots()
-                            } COP"
+                            } ${viewModel.tripData.currency}"
                         )
                     }
 

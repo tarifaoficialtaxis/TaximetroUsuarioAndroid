@@ -46,7 +46,6 @@ class MyTripsActivity : BaseActivity() {
                 startActivity(intent)
             }
         )
-
     }
 
     @Composable
@@ -84,7 +83,10 @@ class MyTripsActivity : BaseActivity() {
                             .verticalScroll(rememberScrollState())
                     ) {
                         trips.forEach { trip ->
-                            TripItem(trip, onTripClicked = { onTripClicked(trip) })
+                            TripItem(
+                                trip,
+                                onTripClicked = { onTripClicked(trip) }
+                            )
                         }
                     }
                 }

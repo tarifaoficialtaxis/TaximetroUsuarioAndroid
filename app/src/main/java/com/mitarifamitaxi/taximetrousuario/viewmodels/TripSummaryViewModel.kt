@@ -155,6 +155,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                         tripData.holidayOrNightSurchargeEnabled
                     )
                     putIfNotNull("holidayOrNightSurcharge", tripData.holidayOrNightSurcharge)
+                    putIfNotNull("currency", appViewModel.userData?.countryCurrency)
                     putIfNotNull("startAddress", tripData.startAddress)
                     putIfNotNull("endAddress", tripData.endAddress)
                     putIfNotNull("routeImage", imageUrl)
@@ -201,7 +202,11 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             )
             append("*Unidades base:* ${tripData.baseUnits}\n")
 
-            append("*Tarifa base:* ${tripData.baseRate?.toInt()?.formatNumberWithDots()} COP\n")
+            append(
+                "*Tarifa base:* ${
+                    tripData.baseRate?.toInt()?.formatNumberWithDots()
+                } ${appViewModel.userData?.countryCurrency}\n"
+            )
 
             append("*Unidades recargo:* ${tripData.rechargeUnits}\n")
 
@@ -209,7 +214,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo aeropuerto:* ${
                         tripData.airportSurcharge?.toInt()?.formatNumberWithDots()
-                    } COP\n"
+                    } ${appViewModel.userData?.countryCurrency}\n"
                 )
             }
 
@@ -217,7 +222,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo nocturno dominical o festivo:* ${
                         tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
-                    } COP\n"
+                    } ${appViewModel.userData?.countryCurrency}\n"
                 )
             }
 
@@ -225,7 +230,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo puerta a puerta:* ${
                         tripData.doorToDoorSurcharge?.toInt()?.formatNumberWithDots()
-                    } COP\n"
+                    } ${appViewModel.userData?.countryCurrency}\n"
                 )
             }
 
@@ -233,7 +238,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo dominical o festivo:* ${
                         tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
-                    } COP\n"
+                    } ${appViewModel.userData?.countryCurrency}\n"
                 )
             }
 
@@ -241,7 +246,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 append(
                     "*Recargo nocturno:* ${
                         tripData.nightSurcharge?.toInt()?.formatNumberWithDots()
-                    } COP\n"
+                    } ${appViewModel.userData?.countryCurrency}\n"
                 )
             }
 
@@ -250,7 +255,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
             append(
                 "*${appContext.getString(R.string.total)}* ${
                     tripData.total?.toInt()?.formatNumberWithDots()
-                } COP"
+                } ${appViewModel.userData?.countryCurrency}"
             )
         }
 

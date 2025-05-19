@@ -101,9 +101,9 @@
     <string name="email_template_not_found">Plantilla de correo no encontrada</string>
     <string name="select_complaint_reason">Selecciona el motivo de la denuncia</string>
 
-    <string name="fare">Tarifa:</string>
-    <string name="fare_base">Tarifa base:</string>
-    <string name="total">Total:</string>
+    <string name="fare">Tarifa</string>
+    <string name="fare_base">Tarifa base</string>
+    <string name="total">Total</string>
 
     <string name="start_address">Dirección de recogida</string>
     <string name="destination_address">Dirección de destino</string>
@@ -131,19 +131,19 @@
     <string name="finish">Finalizar</string>
 
     <string name="distance_made">Distancia recorrida</string>
-    <string name="units">Unidades:</string>
+    <string name="units">Unidades</string>
 
-    <string name="units_base">Unidades base:</string>
-    <string name="units_recharge">Unidades de recargo:</string>
-    <string name="total_units">Unidades totales:</string>
+    <string name="units_base">Unidades base</string>
+    <string name="units_recharge">Unidades de recargo</string>
+    <string name="total_units">Unidades totales</string>
 
     <string name="without_recharges">Sin Recargos</string>
     <string name="recharges">Recargos</string>
-    <string name="airport_surcharge">Recargo Aeropuerto:</string>
-    <string name="holiday_surcharge">Recargo nocturno dominical o festivo:</string>
-    <string name="holiday_surcharge_only">Recargo dominical o festivo:</string>
-    <string name="night_surcharge_only">Recargo nocturno:</string>
-    <string name="door_to_door_surcharge">Recargo puerta a puerta:</string>
+    <string name="airport_surcharge">Recargo Aeropuerto</string>
+    <string name="holiday_surcharge">Recargo nocturno dominical o festivo</string>
+    <string name="holiday_surcharge_only">Recargo dominical o festivo</string>
+    <string name="night_surcharge_only">Recargo nocturno</string>
+    <string name="door_to_door_surcharge">Recargo puerta a puerta</string>
 
     <string name="begin_your_trip">Inicia tu viaje</string>
     <string name="select_start_and_end">Selecciona inicio y fin de tu viaje,</string>

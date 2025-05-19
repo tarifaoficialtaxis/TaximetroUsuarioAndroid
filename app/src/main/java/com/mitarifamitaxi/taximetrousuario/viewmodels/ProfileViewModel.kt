@@ -96,7 +96,7 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             if (!tripsSnapshot.isEmpty) {
                 val trips = tripsSnapshot.documents
                 val distance = trips.sumOf { it.getDouble("distance") ?: 0.0 }
-                distanceCount = distance.toInt()
+                distanceCount = (distance / 1000).toInt()
             }
             appViewModel.isLoading = false
         } catch (error: Exception) {

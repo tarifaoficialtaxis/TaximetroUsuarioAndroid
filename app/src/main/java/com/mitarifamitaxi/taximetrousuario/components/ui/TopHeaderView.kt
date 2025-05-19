@@ -49,9 +49,7 @@ fun TopHeaderView(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(colorResource(id = R.color.white))
-
                 .padding(horizontal = 20.dp, vertical = 10.dp)
-
         ) {
 
             if (leadingIcon != null) {

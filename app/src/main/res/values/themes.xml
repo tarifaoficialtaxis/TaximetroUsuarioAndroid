@@ -1,5 +1,12 @@
 <resources>
+
     <style name="Theme.TaximetroUsuarioNative" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:navigationBarColor">@color/white</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="colorPrimary">@color/main</item>
         <item name="android:windowBackground">@color/white</item>

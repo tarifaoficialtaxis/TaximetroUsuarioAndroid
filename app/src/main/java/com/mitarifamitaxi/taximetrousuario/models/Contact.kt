@@ -6,5 +6,7 @@ data class Contact(
     val city: String? = null,
     val firefightersNumber: String? = null,
     val policeNumber: String? = null,
-    val pqrEmail: String? = null
+    val pqrEmail: String? = null,
+    val showSosWarning: Boolean = false,
+    val warningMessage: String? = null,
 )

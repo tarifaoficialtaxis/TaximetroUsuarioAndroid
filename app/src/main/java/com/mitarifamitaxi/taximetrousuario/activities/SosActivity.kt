@@ -51,6 +51,10 @@ class SosActivity : BaseActivity() {
                                 Intent(this@SosActivity, ProfileActivity::class.java)
                             )
                         }
+
+                        is SosViewModel.NavigationEvent.GoBack -> {
+                            finish()
+                        }
                     }
                 }
             }
@@ -66,20 +70,19 @@ class SosActivity : BaseActivity() {
     override fun Content() {
         MainView()
 
-
         if (viewModel.showContactDialog) {
             CustomButtonActionDialog(
                 title = stringResource(id = R.string.select_one_action),
                 onDismiss = { viewModel.showContactDialog = false },
                 onPrimaryActionClicked = {
                     viewModel.showContactDialog = false
-                    viewModel.validateSendMessageAction(onIntentReady = {
+                    viewModel.validateSosAction(isCall = false, onIntentReady = {
                         startActivity(it)
                     })
                 },
                 onSecondaryActionClicked = {
                     viewModel.showContactDialog = false
-                    viewModel.validateCallAction(onIntentReady = {
+                    viewModel.validateSosAction(isCall = true, onIntentReady = {
                         startActivity(it)
                     })
                 }

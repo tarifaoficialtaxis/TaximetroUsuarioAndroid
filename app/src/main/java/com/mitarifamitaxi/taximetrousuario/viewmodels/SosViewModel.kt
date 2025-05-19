@@ -39,19 +39,10 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
     sealed class NavigationEvent {
         object GoToProfile : NavigationEvent()
+        object GoBack : NavigationEvent()
     }
 
     init {
-        Handler(Looper.getMainLooper()).postDelayed({
-            appViewModel.showMessage(
-                DialogType.WARNING,
-                appContext.getString(R.string.warning),
-                appContext.getString(R.string.article_35_message),
-                appContext.getString(R.string.confirm),
-                showCloseButton = false
-            )
-        }, 700)
-
         getCityContacts(appViewModel.userData?.city)
     }
 
@@ -73,6 +64,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         try {
                             contactObj.value =
                                 contactsDoc.toObject(Contact::class.java) ?: Contact()
+                            validateShowModal()
                         } catch (e: Exception) {
                             Log.e("SosViewModel", "Error parsing contact data: ${e.message}")
                             appViewModel.showMessage(
@@ -85,7 +77,10 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                         appViewModel.showMessage(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
-                            appContext.getString(R.string.error_no_contacts_found)
+                            appContext.getString(R.string.error_no_contacts_found),
+                            onDismiss = {
+                                goBack()
+                            }
                         )
                     }
                 } catch (e: Exception) {
@@ -93,14 +88,20 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                     appViewModel.showMessage(
                         DialogType.ERROR,
                         appContext.getString(R.string.something_went_wrong),
-                        appContext.getString(R.string.general_error)
+                        appContext.getString(R.string.general_error),
+                        onDismiss = {
+                            goBack()
+                        }
                     )
                 }
             } else {
                 appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),
-                    appContext.getString(R.string.error_no_city_set)
+                    appContext.getString(R.string.error_no_city_set),
+                    onDismiss = {
+                        goBack()
+                    }
                 )
             }
         }
@@ -108,56 +109,51 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
     }
 
-    fun validateSendMessageAction(onIntentReady: (Intent) -> Unit) {
+    fun validateShowModal() {
+        if (contactObj.value.showSosWarning) {
+            appViewModel.showMessage(
+                DialogType.WARNING,
+                appContext.getString(R.string.warning),
+                contactObj.value.warningMessage ?: "",
+                appContext.getString(R.string.confirm),
+                showCloseButton = false
+            )
+        }
+    }
+
+    fun validateSosAction(isCall: Boolean, onIntentReady: (Intent) -> Unit) {
+
+        var contactNumber = ""
+        var sosType = ""
+        var event: String? = null
 
         when (itemSelected?.id) {
             "POLICE" -> {
-                sendWhatsappMessage(
-                    contactObj.value.policeNumber ?: "",
-                    appContext.getString(R.string.police)
-                ) { intent ->
-                    onIntentReady(intent)
-                }
+                contactNumber = contactObj.value.policeNumber ?: ""
+                sosType = appContext.getString(R.string.police)
             }
 
             "FIRE_FIGHTERS" -> {
-                sendWhatsappMessage(
-                    contactObj.value.firefightersNumber ?: "",
-                    appContext.getString(R.string.fire_fighters)
-                ) { intent ->
-                    onIntentReady(intent)
-                }
-
+                contactNumber = contactObj.value.firefightersNumber ?: ""
+                sosType = appContext.getString(R.string.fire_fighters)
             }
 
             "AMBULANCE" -> {
-                sendWhatsappMessage(
-                    contactObj.value.ambulanceNumber ?: "",
-                    appContext.getString(R.string.ambulance)
-                ) { intent ->
-                    onIntentReady(intent)
-                }
+                contactNumber = contactObj.value.ambulanceNumber ?: ""
+                sosType = appContext.getString(R.string.ambulance)
             }
 
             "ANIMAL_CARE" -> {
-                sendWhatsappMessage(
-                    contactObj.value.animalCareNumber ?: "",
-                    appContext.getString(R.string.animal_care),
-                    appContext.getString(R.string.sos_animal_care)
-                ) { intent ->
-                    onIntentReady(intent)
-                }
+                contactNumber = contactObj.value.animalCareNumber ?: ""
+                sosType = appContext.getString(R.string.animal_care)
+                event = appContext.getString(R.string.sos_animal_care)
             }
 
             "SUPPORT" -> {
 
                 if (appViewModel.userData?.supportNumber != null) {
-                    sendWhatsappMessage(
-                        appViewModel.userData?.supportNumber ?: "",
-                        appContext.getString(R.string.support),
-                    ) { intent ->
-                        onIntentReady(intent)
-                    }
+                    contactNumber = appViewModel.userData?.supportNumber ?: ""
+                    sosType = appContext.getString(R.string.support)
                 } else {
                     appViewModel.showMessage(
                         DialogType.WARNING,
@@ -173,12 +169,8 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
             "FAMILY" -> {
                 if (appViewModel.userData?.familyNumber != null) {
-                    sendWhatsappMessage(
-                        appViewModel.userData?.familyNumber ?: "",
-                        appContext.getString(R.string.family),
-                    ) { intent ->
-                        onIntentReady(intent)
-                    }
+                    contactNumber = appViewModel.userData?.familyNumber ?: ""
+                    sosType = appContext.getString(R.string.family)
                 } else {
                     appViewModel.showMessage(
                         DialogType.WARNING,
@@ -194,77 +186,22 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
 
         }
 
-    }
-
-    fun validateCallAction(onIntentReady: (Intent) -> Unit) {
-
-        when (itemSelected?.id) {
-            "POLICE" -> {
-                buildIntentCall(contactObj.value.policeNumber ?: "") { intent ->
-                    onIntentReady(intent)
-                }
+        if (isCall) {
+            buildIntentCall(contactNumber) { intent ->
+                onIntentReady(intent)
             }
-
-            "FIRE_FIGHTERS" -> {
-                buildIntentCall(contactObj.value.firefightersNumber ?: "") { intent ->
-                    onIntentReady(intent)
-                }
+        } else {
+            sendWhatsappMessage(
+                contactNumber,
+                sosType,
+                event
+            ) { intent ->
+                onIntentReady(intent)
             }
-
-            "AMBULANCE" -> {
-                buildIntentCall(contactObj.value.ambulanceNumber ?: "") { intent ->
-                    onIntentReady(intent)
-                }
-            }
-
-            "ANIMAL_CARE" -> {
-                buildIntentCall(contactObj.value.animalCareNumber ?: "") { intent ->
-                    onIntentReady(intent)
-                }
-            }
-
-            "SUPPORT" -> {
-                if (appViewModel.userData?.supportNumber != null) {
-                    buildIntentCall(appViewModel.userData?.supportNumber ?: "") { intent ->
-                        onIntentReady(intent)
-                    }
-                } else {
-                    appViewModel.showMessage(
-                        DialogType.WARNING,
-                        appContext.getString(R.string.support_number_not_found),
-                        appContext.getString(R.string.set_up_support_number),
-                        appContext.getString(R.string.add_number),
-                        onButtonClicked = {
-                            goToProfile()
-                        }
-                    )
-
-                }
-            }
-
-            "FAMILY" -> {
-                if (appViewModel.userData?.familyNumber != null) {
-                    buildIntentCall(appViewModel.userData?.familyNumber ?: "") { intent ->
-                        onIntentReady(intent)
-                    }
-                } else {
-                    appViewModel.showMessage(
-                        DialogType.WARNING,
-                        appContext.getString(R.string.family_number_not_found),
-                        appContext.getString(R.string.set_up_family_number),
-                        appContext.getString(R.string.add_number),
-                        onButtonClicked = {
-                            goToProfile()
-                        }
-                    )
-
-                }
-            }
-
         }
 
-    }
 
+    }
 
     private fun sendWhatsappMessage(
         phoneNumber: String,
@@ -314,6 +251,12 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
     fun goToProfile() {
         viewModelScope.launch {
             _navigationEvents.emit(NavigationEvent.GoToProfile)
+        }
+    }
+
+    fun goBack() {
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.GoBack)
         }
     }
 }

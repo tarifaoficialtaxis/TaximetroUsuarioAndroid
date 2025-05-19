@@ -210,7 +210,6 @@
     <string name="error_missing_phone_number">Debes ingresar un número de celular.</string>
 
     <string name="warning">Advertencia</string>
-    <string name="article_35_message">De conformidad con lo establecido en el artículo 35 del Código de Policía, utilizar de forma inadecuada la línea de atención de emergencia será sancionado con multa.</string>
     <string name="confirm">Confirmar</string>
     <string name="send_message">Enviar mensaje</string>
     <string name="call">Llamar</string>
@@ -263,5 +262,7 @@
     <string name="cannot_open_store_url">No se pudo abrir la URL de la aplicación en la play store.</string>
 
     <string name="account_deleted_message">Cuenta eliminada satisfactoriamente.</string>
+
+    <string name="version_param">Versión: %1$s</string>
 
 </resources>

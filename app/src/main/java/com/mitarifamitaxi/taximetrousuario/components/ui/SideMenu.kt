@@ -42,10 +42,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mitarifamitaxi.taximetrousuario.BuildConfig
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.models.ItemSideMenu
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
+import androidx.compose.foundation.layout.WindowInsets
 
 @Composable
 fun DrawerContent(
@@ -57,7 +59,9 @@ fun DrawerContent(
     val sideMenuItems = sideMenuItems()
 
     ModalDrawerSheet(
-        drawerShape = RoundedCornerShape(0.dp)
+        drawerShape = RoundedCornerShape(0.dp),
+        drawerContainerColor = colorResource(id = R.color.white),
+        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -73,7 +77,7 @@ fun DrawerContent(
                         colorResource(id = R.color.main),
                         shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
                     )
-                    .padding(top = 20.dp)
+                    .padding(top = 30.dp)
 
             ) {
                 Image(
@@ -96,8 +100,8 @@ fun DrawerContent(
                     ),
                     shape = RectangleShape,
                     modifier =
-                    Modifier
-                        .padding(horizontal = 29.dp)
+                        Modifier
+                            .padding(horizontal = 29.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -179,7 +183,24 @@ fun DrawerContent(
                         SideMenuItemRow(item)
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = stringResource(
+                        id = R.string.version_param,
+                        "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+                    ),
+                    color = colorResource(id = R.color.blue1),
+                    fontSize = 14.sp,
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
             }
+
 
         }
     }

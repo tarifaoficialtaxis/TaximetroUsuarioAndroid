@@ -321,22 +321,10 @@ class TripSummaryActivity : BaseActivity() {
                         } ${viewModel.tripData.currency}"
                     )
 
-                    if (viewModel.tripData.rechargeUnits != null) {
+                    viewModel.tripData.rechargeUnits?.takeIf { it > 0.0 }?.let {
                         TripInfoRow(
                             title = stringResource(id = R.string.units_recharge),
-                            value = viewModel.tripData.rechargeUnits?.toInt().toString()
-                        )
-                    }
-
-                    if (viewModel.tripData.airportSurchargeEnabled == false &&
-                        viewModel.tripData.nightSurchargeEnabled == false &&
-                        viewModel.tripData.holidayOrNightSurchargeEnabled == false &&
-                        viewModel.tripData.holidaySurchargeEnabled == false &&
-                        viewModel.tripData.doorToDoorSurchargeEnabled == false
-                    ) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.recharges),
-                            value = stringResource(id = R.string.without_recharges)
+                            value = it.toInt().toString()
                         )
                     }
 

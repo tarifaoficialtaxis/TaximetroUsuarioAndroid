@@ -188,7 +188,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                         try {
                             ratesObj.value =
                                 cityRatesDoc.toObject(Rates::class.java) ?: Rates()
-                            //validateSurcharges()
+
+                            if (ratesObj.value.validateHolidaySurcharge == true) {
+                                validateSurcharges()
+                            }
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
                             appViewModel.showMessage(

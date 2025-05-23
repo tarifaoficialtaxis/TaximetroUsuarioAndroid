@@ -61,7 +61,9 @@ fun DrawerContent(
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(0.dp),
         drawerContainerColor = colorResource(id = R.color.white),
-        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
+        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
+        modifier = Modifier
+            .fillMaxWidth(0.87f)
     ) {
         Column(
             modifier = Modifier

@@ -167,7 +167,7 @@ class HomeActivity : BaseActivity() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(20.dp),
+                        .padding(20.dp)
                 ) {
 
                     OutlinedButton(
@@ -229,7 +229,7 @@ class HomeActivity : BaseActivity() {
                         .width(220.dp)
                         .height(100.dp)
                         .align(Alignment.BottomEnd)
-                        .offset(x = 20.dp, y = 15.dp)
+                        .offset(x = 30.dp, y = 15.dp)
                 )
             }
 
@@ -258,15 +258,14 @@ class HomeActivity : BaseActivity() {
                 Column(
                     Modifier
                         .padding(horizontal = 29.dp)
-                        .padding(top = 40.dp)
+                        .padding(top = 30.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
 
                     OutlinedButton(
                         onClick = onTaximeterClick,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp),
+                            .fillMaxWidth(),
                         border = null,
                         contentPadding = PaddingValues(0.dp),
                         shape = RoundedCornerShape(20.dp)
@@ -274,7 +273,7 @@ class HomeActivity : BaseActivity() {
                         Image(
                             painter = painterResource(id = R.drawable.home_taximetro_button),
                             contentDescription = null,
-                            contentScale = ContentScale.FillWidth,
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier
                                 .fillMaxSize()
                         )
@@ -289,8 +288,7 @@ class HomeActivity : BaseActivity() {
                         OutlinedButton(
                             onClick = onSosClick,
                             modifier = Modifier
-                                .weight(1.0f)
-                                .height(140.dp),
+                                .weight(1.0f),
                             border = null,
                             contentPadding = PaddingValues(0.dp),
                             shape = RoundedCornerShape(20.dp)
@@ -298,7 +296,7 @@ class HomeActivity : BaseActivity() {
                             Image(
                                 painter = painterResource(id = R.drawable.home_sos_button),
                                 contentDescription = null,
-                                contentScale = ContentScale.FillBounds,
+                                contentScale = ContentScale.Fit,
                                 modifier = Modifier
                                     .fillMaxSize()
                             )
@@ -307,8 +305,7 @@ class HomeActivity : BaseActivity() {
                         OutlinedButton(
                             onClick = onPqrsClick,
                             modifier = Modifier
-                                .weight(1.0f)
-                                .height(140.dp),
+                                .weight(1.0f),
                             border = null,
                             contentPadding = PaddingValues(0.dp),
                             shape = RoundedCornerShape(20.dp)
@@ -316,7 +313,7 @@ class HomeActivity : BaseActivity() {
                             Image(
                                 painter = painterResource(id = R.drawable.home_pqrs_button),
                                 contentDescription = null,
-                                contentScale = ContentScale.FillBounds,
+                                contentScale = ContentScale.Fit,
                                 modifier = Modifier
                                     .fillMaxSize()
                             )

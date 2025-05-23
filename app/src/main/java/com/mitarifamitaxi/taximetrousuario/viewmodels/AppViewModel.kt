@@ -72,7 +72,7 @@ class AppViewModel(context: Context) : ViewModel() {
                         val appVersionObj =
                             querySnapshot.toObject(AppVersion::class.java) ?: AppVersion()
 
-                        if (BuildConfig.VERSION_NAME != appVersionObj.version && appVersionObj.show == true) {
+                        if ((BuildConfig.VERSION_NAME != appVersionObj.version || BuildConfig.VERSION_CODE != appVersionObj.build) && appVersionObj.show == true) {
                             showMessage(
                                 type = DialogType.WARNING,
                                 title = appContext.getString(R.string.attention),

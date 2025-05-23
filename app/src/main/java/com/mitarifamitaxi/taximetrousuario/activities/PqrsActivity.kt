@@ -86,14 +86,6 @@ class PqrsActivity : BaseActivity() {
                         placeholder = stringResource(id = R.string.plate),
                         leadingIcon = Icons.Rounded.DirectionsCar,
                     )
-
-                    CustomTextField(
-                        value = viewModel.idNumber,
-                        onValueChange = { viewModel.idNumber = it },
-                        placeholder = stringResource(id = R.string.cedula),
-                        leadingIcon = Icons.Rounded.Person,
-                        keyboardType = KeyboardType.Number
-                    )
                 }
 
                 Column(

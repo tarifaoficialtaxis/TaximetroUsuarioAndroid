@@ -192,6 +192,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             if (ratesObj.value.validateHolidaySurcharge == true) {
                                 validateSurcharges()
                             }
+
+                            startTaximeter()
+
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
                             appViewModel.showMessage(

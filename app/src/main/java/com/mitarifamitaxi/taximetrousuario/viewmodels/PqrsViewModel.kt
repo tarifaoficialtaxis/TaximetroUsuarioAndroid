@@ -25,8 +25,6 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
     private val appContext = context.applicationContext
 
     var plate by mutableStateOf("")
-    var idNumber by mutableStateOf("")
-
     var isHighFare by mutableStateOf(false)
     var isUserMistreated by mutableStateOf(false)
     var isServiceAbandonment by mutableStateOf(false)
@@ -148,7 +146,7 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
     fun validateSendPqr(onIntentReady: (Intent) -> Unit) {
 
-        if (idNumber.isEmpty() || plate.isEmpty()) {
+        if (plate.isEmpty()) {
             appViewModel.showMessage(
                 type = DialogType.ERROR,
                 title = appContext.getString(R.string.error),
@@ -196,7 +194,6 @@ class PqrsViewModel(context: Context, private val appViewModel: AppViewModel) : 
         val bodyEmail = (emailTemplateObj.value.body ?: "")
             .replace("{city}", appViewModel.userData?.city ?: "")
             .replace("{user_name}", fullName)
-            .replace("{document_number}", idNumber)
             .replace("{plate}", plate)
             .replace("{newline}", "\n")
             .replace("{irregularities}", irregularities)

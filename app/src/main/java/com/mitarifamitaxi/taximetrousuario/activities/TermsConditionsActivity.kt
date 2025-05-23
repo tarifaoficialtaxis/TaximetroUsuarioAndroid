@@ -36,23 +36,21 @@ import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TermsConditionsViewModelFactory
 
-class TermsConditionsActivity : AppCompatActivity() {
+class TermsConditionsActivity : BaseActivity() {
 
     private val viewModel: TermsConditionsViewModel by viewModels {
         TermsConditionsViewModelFactory(this)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            MainView(
-                onAcceptClicked = {
-                    viewModel.saveAcceptedTerms()
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
-                }
-            )
-        }
+    @Composable
+    override fun Content() {
+        MainView(
+            onAcceptClicked = {
+                viewModel.saveAcceptedTerms()
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        )
     }
 
     @Composable

@@ -1,9 +1,11 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.res.colorResource
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.DrawerContent
+import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModelFactory
 import kotlinx.coroutines.launch
@@ -30,6 +33,23 @@ open class BaseActivity : ComponentActivity() {
     val appViewModel: AppViewModel by viewModels {
         AppViewModelFactory(this)
     }
+
+    val locationPermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+            val coarseLocationGranted =
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+            if (fineLocationGranted || coarseLocationGranted) {
+                appViewModel.getCurrentLocation()
+            } else {
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    getString(R.string.permission_required),
+                    getString(R.string.location_permission_required)
+                )
+            }
+        }
 
     open fun isDrawerEnabled(): Boolean = false
 

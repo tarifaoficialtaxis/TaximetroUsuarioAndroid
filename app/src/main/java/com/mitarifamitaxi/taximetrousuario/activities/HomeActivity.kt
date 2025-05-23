@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,7 +43,6 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TripItem
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.HomeViewModelFactory
-import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import androidx.compose.foundation.BorderStroke
@@ -55,7 +53,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import com.google.gson.Gson
-import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
 
 class HomeActivity : BaseActivity() {
@@ -66,31 +63,14 @@ class HomeActivity : BaseActivity() {
         HomeViewModelFactory(this, appViewModel)
     }
 
-    val locationPermissionRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-            val coarseLocationGranted =
-                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-
-            if (fineLocationGranted || coarseLocationGranted) {
-                viewModel.getCurrentLocation()
-            } else {
-                appViewModel.showMessage(
-                    type = DialogType.ERROR,
-                    getString(R.string.permission_required),
-                    getString(R.string.location_permission_required)
-                )
-            }
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.requestLocationPermission(this)
+        appViewModel.requestLocationPermission(this)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.stopLocationUpdates()
+        appViewModel.stopLocationUpdates()
     }
 
     override fun onResume() {
@@ -233,7 +213,7 @@ class HomeActivity : BaseActivity() {
                 )
             }
 
-            if (viewModel.isGettingLocation) {
+            if (appViewModel.isGettingLocation) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {

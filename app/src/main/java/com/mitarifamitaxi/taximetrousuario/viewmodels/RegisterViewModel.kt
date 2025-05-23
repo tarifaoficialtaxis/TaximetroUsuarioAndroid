@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
+import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
@@ -106,7 +107,7 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
                     email = email.trim(),
                     authProvider = AuthProvider.email
                 )
-                saveUserState(localUser)
+                LocalUserManager(appContext).saveUserState(localUser)
 
                 onResult(Pair(true, null))
 
@@ -123,14 +124,6 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
 
             }
 
-        }
-    }
-
-    private fun saveUserState(user: LocalUser) {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("USER_OBJECT", Gson().toJson(user))
-            apply()
         }
     }
 

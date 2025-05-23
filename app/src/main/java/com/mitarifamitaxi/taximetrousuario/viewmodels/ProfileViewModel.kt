@@ -27,6 +27,7 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
@@ -164,7 +165,7 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
                         ).await()
 
                     appViewModel.userData = user
-                    saveUserState(user)
+                    LocalUserManager(appContext).saveUserState(user)
                     appViewModel.isLoading = false
                     appViewModel.showMessage(
                         type = DialogType.SUCCESS,
@@ -190,14 +191,6 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
             } finally {
                 appViewModel.isLoading = false
             }
-        }
-    }
-
-    private fun saveUserState(user: LocalUser) {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("USER_OBJECT", Gson().toJson(user))
-            apply()
         }
     }
 
@@ -439,12 +432,7 @@ class ProfileViewModel(context: Context, private val appViewModel: AppViewModel)
     }
 
     fun logOut() {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            remove("USER_OBJECT")
-            apply()
-        }
-
+        LocalUserManager(appContext).deleteUserState()
         viewModelScope.launch {
             _navigationEvents.emit(NavigationEvent.LogOutComplete)
         }

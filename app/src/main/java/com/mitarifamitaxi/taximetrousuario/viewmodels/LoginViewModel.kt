@@ -19,9 +19,9 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
-import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
+import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
 import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
@@ -220,7 +220,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 val userData = userDoc.toObject<LocalUser>()
                 if (userData != null) {
                     userData.authProvider = authProvider
-                    saveUserState(userData)
+                    LocalUserManager(appContext).saveUserState(userData)
                     userExistsCallback(true)
                 } else {
                     throw Exception("User data not found in Firestore")
@@ -235,14 +235,6 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                 title = appContext.getString(R.string.something_went_wrong),
                 message = appContext.getString(R.string.error_getting_user_info)
             )
-        }
-    }
-
-    private fun saveUserState(user: LocalUser) {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("USER_OBJECT", Gson().toJson(user))
-            apply()
         }
     }
 }

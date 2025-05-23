@@ -1,5 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.viewmodels
 
+import android.Manifest
+import android.annotation.SuppressLint
 import com.mitarifamitaxi.taximetrousuario.BuildConfig
 import android.content.Context
 import android.util.Log
@@ -10,7 +12,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.models.AppVersion
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
@@ -20,7 +21,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.Task
+import com.mitarifamitaxi.taximetrousuario.activities.BaseActivity
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
+import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
+import com.mitarifamitaxi.taximetrousuario.models.UserLocation
+import java.util.Date
+import java.util.concurrent.Executor
+
+sealed class UserDataUpdateEvent {
+    object FirebaseUserUpdated : UserDataUpdateEvent()
+}
 
 class AppViewModel(context: Context) : ViewModel() {
 
@@ -40,6 +62,15 @@ class AppViewModel(context: Context) : ViewModel() {
     var dialogOnDismiss: (() -> Unit)? = null
     var dialogOnPrimaryActionClicked: (() -> Unit)? = null
 
+    // Location variables
+    private lateinit var locationCallback: LocationCallback
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    private val executor: Executor = ContextCompat.getMainExecutor(context)
+    var isGettingLocation by mutableStateOf(false)
+
+    private val _userDataUpdateEvents = MutableSharedFlow<UserDataUpdateEvent>()
+    val userDataUpdateEvents = _userDataUpdateEvents.asSharedFlow()
+
     init {
         loadUserData()
         validateAppVersion()
@@ -50,9 +81,7 @@ class AppViewModel(context: Context) : ViewModel() {
     }
 
     private fun loadUserData() {
-        val sharedPref = appContext.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val userJson = sharedPref.getString("USER_OBJECT", null)
-        userData = Gson().fromJson(userJson, LocalUser::class.java)
+        userData = LocalUserManager(appContext).getUserState()
     }
 
     fun validateAppVersion() {
@@ -151,6 +180,151 @@ class AppViewModel(context: Context) : ViewModel() {
         dialogOnDismiss = onDismiss
         dialogOnPrimaryActionClicked = onButtonClicked
     }
+
+
+    // Location permission and updates
+
+    override fun onCleared() {
+        stopLocationUpdates()
+        super.onCleared()
+    }
+
+    fun requestLocationPermission(activity: BaseActivity) {
+        if (ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            activity.locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        } else {
+            getCurrentLocation()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getCurrentLocation() {
+
+        isGettingLocation = true
+        val cancellationTokenSource = CancellationTokenSource()
+
+        val task: Task<Location> = fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        )
+
+        task.addOnSuccessListener(executor) { location ->
+            if (location != null) {
+
+                viewModelScope.launch {
+                    getCityFromCoordinates(
+                        context = appContext,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        callbackSuccess = { city, countryCode, countryCodeWhatsapp, countryCurrency ->
+                            isGettingLocation = false
+                            updateUserData(
+                                location = UserLocation(
+                                    latitude = location.latitude,
+                                    longitude = location.longitude
+                                ),
+                                city = city ?: "",
+                                countryCode = countryCode ?: "",
+                                countryCodeWhatsapp = countryCodeWhatsapp ?: "",
+                                countryCurrency = countryCurrency ?: ""
+                            )
+                        },
+                        callbackError = { error ->
+                            Log.e("HomeViewModel", "Error getting city: $error")
+                            isGettingLocation = false
+                            showMessage(
+                                type = DialogType.ERROR,
+                                title = appContext.getString(R.string.something_went_wrong),
+                                message = appContext.getString(R.string.error_fetching_city)
+                            )
+                        }
+                    )
+                }
+
+            } else {
+                isGettingLocation = false
+                showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_fetching_location)
+                )
+            }
+        }.addOnFailureListener {
+            isGettingLocation = false
+            showMessage(
+                type = DialogType.ERROR,
+                title = appContext.getString(R.string.something_went_wrong),
+                message = appContext.getString(R.string.error_fetching_location)
+            )
+        }
+    }
+
+    fun stopLocationUpdates() {
+        if (::locationCallback.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+    }
+
+    private fun updateUserData(
+        location: UserLocation,
+        city: String,
+        countryCode: String,
+        countryCodeWhatsapp: String,
+        countryCurrency: String
+    ) {
+        userData = userData?.copy(
+            location = location,
+            city = city,
+            countryCode = countryCode,
+            countryCodeWhatsapp = countryCodeWhatsapp,
+            countryCurrency = countryCurrency,
+            lastActive = Date()
+        )
+
+        userData?.let {
+            LocalUserManager(appContext).saveUserState(it)
+            updateUserDataOnFirebase(it)
+        }
+
+    }
+
+    private fun updateUserDataOnFirebase(user: LocalUser) {
+        val db = FirebaseFirestore.getInstance()
+        user.id?.let { userId ->
+            db.collection("users")
+                .document(userId)
+                .set(user)
+                .addOnSuccessListener {
+                    Log.d("HomeViewModel", "User data updated in Firestore")
+                    viewModelScope.launch {
+                        _userDataUpdateEvents.emit(UserDataUpdateEvent.FirebaseUserUpdated)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("HomeViewModel", "Failed to update user data in Firestore: ${e.message}")
+                    showMessage(
+                        type = DialogType.ERROR,
+                        title = appContext.getString(R.string.something_went_wrong),
+                        message = appContext.getString(R.string.error_fetching_location)
+                    )
+                }
+        }
+    }
+
 
 }
 

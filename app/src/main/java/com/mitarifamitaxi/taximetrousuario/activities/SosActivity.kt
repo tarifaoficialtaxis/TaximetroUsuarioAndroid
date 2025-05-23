@@ -36,9 +36,16 @@ class SosActivity : BaseActivity() {
         SosViewModelFactory(this, appViewModel)
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appViewModel.requestLocationPermission(this)
         observeViewModelEvents()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appViewModel.stopLocationUpdates()
     }
 
     private fun observeViewModelEvents() {

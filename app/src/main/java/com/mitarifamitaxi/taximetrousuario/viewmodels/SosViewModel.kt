@@ -3,8 +3,9 @@ package com.mitarifamitaxi.taximetrousuario.viewmodels
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,8 +19,6 @@ import com.mitarifamitaxi.taximetrousuario.models.Contact
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.ItemImageButton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -43,7 +42,24 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
     }
 
     init {
-        getCityContacts(appViewModel.userData?.city)
+        appViewModel.isLoading = true
+        observeAppViewModelEvents()
+    }
+
+    private fun observeAppViewModelEvents() {
+        viewModelScope.launch {
+            appViewModel.userDataUpdateEvents.collectLatest { event ->
+                when (event) {
+                    is UserDataUpdateEvent.FirebaseUserUpdated -> {
+                        Log.d(
+                            "SosViewModel",
+                            "Received FirebaseUserUpdated event. Current appViewModel city: ${appViewModel.userData?.city}"
+                        )
+                        getCityContacts(appViewModel.userData?.city)
+                    }
+                }
+            }
+        }
     }
 
     private fun getCityContacts(userCity: String?) {
@@ -62,11 +78,13 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                     if (!ratesQuerySnapshot.isEmpty) {
                         val contactsDoc = ratesQuerySnapshot.documents[0]
                         try {
+                            appViewModel.isLoading = false
                             contactObj.value =
                                 contactsDoc.toObject(Contact::class.java) ?: Contact()
                             validateShowModal()
                         } catch (e: Exception) {
                             Log.e("SosViewModel", "Error parsing contact data: ${e.message}")
+                            appViewModel.isLoading = false
                             appViewModel.showMessage(
                                 DialogType.ERROR,
                                 appContext.getString(R.string.something_went_wrong),
@@ -74,6 +92,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                             )
                         }
                     } else {
+                        appViewModel.isLoading = false
                         appViewModel.showMessage(
                             DialogType.ERROR,
                             appContext.getString(R.string.something_went_wrong),
@@ -85,6 +104,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                     }
                 } catch (e: Exception) {
                     Log.e("SosViewModel", "Error fetching contacts: ${e.message}")
+                    appViewModel.isLoading = false
                     appViewModel.showMessage(
                         DialogType.ERROR,
                         appContext.getString(R.string.something_went_wrong),
@@ -95,6 +115,7 @@ class SosViewModel(context: Context, private val appViewModel: AppViewModel) : V
                     )
                 }
             } else {
+                appViewModel.isLoading = false
                 appViewModel.showMessage(
                     DialogType.ERROR,
                     appContext.getString(R.string.something_went_wrong),

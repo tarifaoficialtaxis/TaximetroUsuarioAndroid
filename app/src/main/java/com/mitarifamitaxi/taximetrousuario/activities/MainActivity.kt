@@ -24,6 +24,7 @@ import androidx.media3.ui.PlayerView
 import com.mitarifamitaxi.taximetrousuario.R
 import androidx.core.net.toUri
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
+import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -48,10 +49,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun validateNextScreen() {
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-        val userJson = sharedPref.getString("USER_OBJECT", null)
-
-        if (userJson != null) {
+        if (LocalUserManager(this).getUserState() != null) {
 
             startActivity(
                 Intent(this, HomeActivity::class.java)

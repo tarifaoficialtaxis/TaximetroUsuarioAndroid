@@ -39,6 +39,7 @@ import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextField
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import com.mitarifamitaxi.taximetrousuario.viewmodels.CompleteProfileViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.CompleteProfileViewModelFactory
@@ -62,6 +63,7 @@ class CompleteProfileActivity : BaseActivity() {
             viewModel.lastName = userData.lastName ?: ""
             viewModel.email = userData.email ?: ""
             viewModel.mobilePhone = userData.mobilePhone ?: ""
+            viewModel.authProvider = userData.authProvider ?: AuthProvider.google
         }
     }
 

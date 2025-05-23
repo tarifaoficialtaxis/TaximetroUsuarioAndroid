@@ -11,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
     var lastName by mutableStateOf("")
     var mobilePhone by mutableStateOf("")
     var email by mutableStateOf("")
+    var authProvider by mutableStateOf(AuthProvider.google)
 
     fun completeProfile(onResult: (Pair<Boolean, String?>) -> Unit) {
         if (firstName.isEmpty() || lastName.isEmpty() || mobilePhone.isEmpty() || email.isEmpty()) {
@@ -73,7 +75,8 @@ class CompleteProfileViewModel(context: Context, private val appViewModel: AppVi
                     firstName = firstName,
                     lastName = lastName,
                     mobilePhone = mobilePhone,
-                    email = email
+                    email = email,
+                    authProvider = authProvider
                 )
                 saveUserState(localUser)
 

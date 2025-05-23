@@ -1,5 +1,7 @@
 package com.mitarifamitaxi.taximetrousuario.models
 
+import java.util.Date
+
 data class LocalUser(
     val id: String? = null,
     val firstName: String? = null,
@@ -12,6 +14,13 @@ data class LocalUser(
     val city: String? = null,
     val location: UserLocation? = null,
     val familyNumber: String? = null,
-    val supportNumber: String? = null
+    val supportNumber: String? = null,
+    val lastActive: Date? = null,
+    var authProvider: AuthProvider? = null,
 )
+
+enum class AuthProvider {
+    google,
+    email
+}
 

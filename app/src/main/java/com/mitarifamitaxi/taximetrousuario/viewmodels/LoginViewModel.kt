@@ -23,6 +23,7 @@ import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
@@ -54,7 +55,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
     init {
         if (Constants.IS_DEV) {
             userName = "mateotest1@yopmail.com"
-            password = "12345678"
+            password = "12345678#"
         }
     }
 
@@ -84,7 +85,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                     auth.signInWithEmailAndPassword(userName.trim(), password).await()
                 val user = userCredential.user
                 if (user != null) {
-                    getUserInformation(user.uid) { userExists ->
+                    getUserInformation(user.uid, authProvider = AuthProvider.email) { userExists ->
                         appViewModel.isLoading = false
                         if (userExists) {
                             loginSuccess()
@@ -177,7 +178,7 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                     val user = auth.currentUser
                     Log.d(TAG, "Firebase Sign-In success. User: ${user?.displayName}")
                     viewModelScope.launch {
-                        getUserInformation(user?.uid ?: "", userExistsCallback = {
+                        getUserInformation(user?.uid ?: "", authProvider = AuthProvider.google, userExistsCallback = {
                             appViewModel.isLoading = false
                             if (it) {
                                 onResult(Pair("home", null))
@@ -188,7 +189,8 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
                                         email = it.email,
                                         firstName = it.displayName?.split(" ")?.get(0),
                                         lastName = it.displayName?.split(" ")?.get(1),
-                                        mobilePhone = it.phoneNumber
+                                        mobilePhone = it.phoneNumber,
+                                        authProvider = AuthProvider.google
                                     )
                                     onResult(Pair("complete_profile", userData))
                                 }
@@ -207,12 +209,17 @@ class LoginViewModel(context: Context, private val appViewModel: AppViewModel) :
             }
     }
 
-    private suspend fun getUserInformation(userId: String, userExistsCallback: (Boolean) -> Unit) {
+    private suspend fun getUserInformation(
+        userId: String,
+        authProvider: AuthProvider,
+        userExistsCallback: (Boolean) -> Unit
+    ) {
         try {
             val userDoc = db.collection("users").document(userId).get().await()
             if (userDoc.exists()) {
                 val userData = userDoc.toObject<LocalUser>()
                 if (userData != null) {
+                    userData.authProvider = authProvider
                     saveUserState(userData)
                     userExistsCallback(true)
                 } else {

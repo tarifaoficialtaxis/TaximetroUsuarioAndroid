@@ -23,6 +23,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.mitarifamitaxi.taximetrousuario.R
 import androidx.core.net.toUri
+import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,11 +35,15 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             SplashScreen {
-                validateNextScreen()
+                if (!Constants.IS_DEV) {
+                    validateNextScreen()
+                }
             }
         }
 
-        //validateNextScreen()
+        if (Constants.IS_DEV) {
+            validateNextScreen()
+        }
 
     }
 

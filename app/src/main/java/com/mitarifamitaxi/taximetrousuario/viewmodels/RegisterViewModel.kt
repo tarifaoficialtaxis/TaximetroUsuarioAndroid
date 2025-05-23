@@ -14,6 +14,7 @@ import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 import com.mitarifamitaxi.taximetrousuario.helpers.isValidEmail
+import com.mitarifamitaxi.taximetrousuario.models.AuthProvider
 import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.LocalUser
 import kotlinx.coroutines.launch
@@ -102,7 +103,8 @@ class RegisterViewModel(context: Context, private val appViewModel: AppViewModel
                     firstName = firstName,
                     lastName = lastName,
                     mobilePhone = mobilePhone.trim(),
-                    email = email.trim()
+                    email = email.trim(),
+                    authProvider = AuthProvider.email
                 )
                 saveUserState(localUser)
 

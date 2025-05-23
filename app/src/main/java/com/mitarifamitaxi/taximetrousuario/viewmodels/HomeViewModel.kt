@@ -37,6 +37,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.getCityFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.models.CityArea
 import com.mitarifamitaxi.taximetrousuario.models.UserLocation
 import kotlinx.coroutines.launch
+import java.util.Date
 import java.util.concurrent.Executor
 
 class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : ViewModel() {
@@ -159,11 +160,30 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
             city = city,
             countryCode = countryCode,
             countryCodeWhatsapp = countryCodeWhatsapp,
-            countryCurrency = countryCurrency
+            countryCurrency = countryCurrency,
+            lastActive = Date()
         )
 
-        appViewModel.userData?.let { saveUserState(it) }
+        appViewModel.userData?.let {
+            saveUserState(it)
+            updateUserDataOnFirebase(it)
+        }
 
+    }
+
+    private fun updateUserDataOnFirebase(user: LocalUser) {
+        val db = FirebaseFirestore.getInstance()
+        user.id?.let { userId ->
+            db.collection("users")
+                .document(userId)
+                .set(user)
+                .addOnSuccessListener {
+                    Log.d("HomeViewModel", "User data updated in Firestore")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("HomeViewModel", "Failed to update user data in Firestore: ${e.message}")
+                }
+        }
     }
 
     private fun validateCity(city: String) {

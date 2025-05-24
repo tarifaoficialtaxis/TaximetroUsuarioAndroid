@@ -225,6 +225,19 @@ class AppViewModel(context: Context) : ViewModel() {
         task.addOnSuccessListener(executor) { location ->
             if (location != null) {
 
+                val previousUserLocation = userData?.location
+                val locationChanged = previousUserLocation == null ||
+                        previousUserLocation.latitude != location.latitude ||
+                        previousUserLocation.longitude != location.longitude
+
+                if (!locationChanged) {
+                    isGettingLocation = false
+                    viewModelScope.launch {
+                        _userDataUpdateEvents.emit(UserDataUpdateEvent.FirebaseUserUpdated)
+                    }
+                    return@addOnSuccessListener
+                }
+
                 viewModelScope.launch {
                     getCityFromCoordinates(
                         context = appContext,

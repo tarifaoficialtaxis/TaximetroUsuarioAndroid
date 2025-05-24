@@ -79,14 +79,18 @@ fun CustomButtonActionDialog(
                     CustomContactBoxView(
                         icon = Icons.Default.Whatsapp,
                         text = stringResource(id = R.string.send_message),
-                        onClick = onPrimaryActionClicked
+                        onClick = onPrimaryActionClicked,
+                        modifier = Modifier
+                            .weight(1f)
                     )
 
 
                     CustomContactBoxView(
                         icon = Icons.Default.Call,
                         text = stringResource(id = R.string.call),
-                        onClick = onSecondaryActionClicked
+                        onClick = onSecondaryActionClicked,
+                        modifier = Modifier
+                            .weight(1f)
                     )
                 }
 

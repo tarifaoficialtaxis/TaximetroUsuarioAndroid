@@ -23,6 +23,9 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.mitarifamitaxi.taximetrousuario.R
 import androidx.core.net.toUri
+import com.mitarifamitaxi.taximetrousuario.activities.home.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.onboarding.LoginActivity
+import com.mitarifamitaxi.taximetrousuario.activities.onboarding.TermsConditionsActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.Constants
 import com.mitarifamitaxi.taximetrousuario.helpers.LocalUserManager
 

@@ -16,6 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import com.mitarifamitaxi.taximetrousuario.R
+import com.mitarifamitaxi.taximetrousuario.activities.home.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.pqrs.PqrsActivity
+import com.mitarifamitaxi.taximetrousuario.activities.profile.ProfileActivity
+import com.mitarifamitaxi.taximetrousuario.activities.routeplanner.RoutePlannerActivity
+import com.mitarifamitaxi.taximetrousuario.activities.sos.SosActivity
+import com.mitarifamitaxi.taximetrousuario.activities.taximeter.TaximeterActivity
+import com.mitarifamitaxi.taximetrousuario.activities.trips.MyTripsActivity
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.DrawerContent
 import com.mitarifamitaxi.taximetrousuario.models.DialogType

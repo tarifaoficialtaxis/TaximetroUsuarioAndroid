@@ -52,6 +52,11 @@ import java.util.Locale
 import java.util.concurrent.Executor
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storageMetadata
+import com.mitarifamitaxi.taximetrousuario.activities.home.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.sos.SosActivity
+import com.mitarifamitaxi.taximetrousuario.helpers.putIfNotNull
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -483,10 +488,12 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
             routeImageLocal = compressedBitmap
         )
 
-        val tripJson = Gson().toJson(tripObj)
-        val intent = Intent(appContext, TripSummaryActivity::class.java)
-        intent.putExtra("trip_data", tripJson)
-        onIntentReady(intent)
+        saveTripData(tripData = tripObj) {
+            val tripJson = Gson().toJson(tripObj)
+            val intent = Intent(appContext, TripSummaryActivity::class.java)
+            intent.putExtra("trip_data", tripJson)
+            onIntentReady(intent)
+        }
 
     }
 
@@ -529,6 +536,93 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     fun updateSheetStateFromUI(isExpanded: Boolean) {
         isSheetExpanded = isExpanded
     }
+
+    // Upload image and save trip
+
+    private suspend fun uploadImage(bitmap: Bitmap): String? {
+        return try {
+            // Create a unique reference path
+            val fileName = "images/${System.currentTimeMillis()}.png"
+            val storageRef = FirebaseStorage.getInstance().reference.child(fileName)
+
+            // Set metadata, including content type
+            val metadata = storageMetadata {
+                contentType = "image/png"
+            }
+
+            // Convert bitmap to byte array
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+
+            // Upload byte array directly
+            storageRef.putBytes(byteArray, metadata).await()
+
+            // Get download URL
+            storageRef.downloadUrl.await().toString()
+        } catch (error: Exception) {
+            Log.e("TripSummaryViewModel", "Error uploading image: ${error.message}")
+            null
+        }
+    }
+
+
+    fun saveTripData(tripData: Trip, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+
+                appViewModel.isLoading = true
+
+                val imageUrl = tripData.routeImageLocal?.let { uploadImage(it) }
+
+                val tripDataReq = mutableMapOf<String, Any?>().apply {
+                    putIfNotNull("userId", appViewModel.userData?.id)
+                    putIfNotNull("startCoords", tripData.startCoords)
+                    putIfNotNull("endCoords", tripData.endCoords)
+                    putIfNotNull("startHour", tripData.startHour)
+                    putIfNotNull("endHour", tripData.endHour)
+                    putIfNotNull("distance", tripData.distance)
+                    putIfNotNull("units", tripData.units)
+                    putIfNotNull("baseUnits", tripData.baseUnits)
+                    putIfNotNull("rechargeUnits", tripData.rechargeUnits)
+                    putIfNotNull("total", tripData.total)
+                    putIfNotNull("baseRate", tripData.baseRate)
+                    putIfNotNull("isAirportSurcharge", tripData.airportSurchargeEnabled)
+                    putIfNotNull("airportSurcharge", tripData.airportSurcharge)
+                    putIfNotNull("isHolidaySurcharge", tripData.holidaySurchargeEnabled)
+                    putIfNotNull("holidaySurcharge", tripData.holidaySurcharge)
+                    putIfNotNull("isDoorToDoorSurcharge", tripData.doorToDoorSurchargeEnabled)
+                    putIfNotNull("doorToDoorSurcharge", tripData.doorToDoorSurcharge)
+                    putIfNotNull("isNightSurcharge", tripData.nightSurchargeEnabled)
+                    putIfNotNull("nightSurcharge", tripData.nightSurcharge)
+                    putIfNotNull(
+                        "isHolidayOrNightSurcharge",
+                        tripData.holidayOrNightSurchargeEnabled
+                    )
+                    putIfNotNull("holidayOrNightSurcharge", tripData.holidayOrNightSurcharge)
+                    putIfNotNull("currency", appViewModel.userData?.countryCurrency)
+                    putIfNotNull("startAddress", tripData.startAddress)
+                    putIfNotNull("endAddress", tripData.endAddress)
+                    putIfNotNull("routeImage", imageUrl)
+                }
+
+                FirebaseFirestore.getInstance().collection("trips").add(tripDataReq).await()
+                appViewModel.isLoading = false
+
+                onSuccess()
+
+            } catch (error: Exception) {
+                appViewModel.isLoading = false
+                Log.e("TripSummaryViewModel", "Error saving trip data: ${error.message}")
+                appViewModel.showMessage(
+                    type = DialogType.ERROR,
+                    title = appContext.getString(R.string.something_went_wrong),
+                    message = appContext.getString(R.string.error_on_save_trip),
+                )
+            }
+        }
+    }
+
 }
 
 class TaximeterViewModelFactory(

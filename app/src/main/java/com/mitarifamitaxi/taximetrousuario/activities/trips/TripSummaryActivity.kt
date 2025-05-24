@@ -1,5 +1,6 @@
 package com.mitarifamitaxi.taximetrousuario.activities.trips
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -44,6 +45,8 @@ import coil.compose.AsyncImage
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.BaseActivity
+import com.mitarifamitaxi.taximetrousuario.activities.home.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.sos.SosActivity
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextFieldDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
@@ -99,17 +102,17 @@ class TripSummaryActivity : BaseActivity() {
                 viewModel.onDeleteAction()
             },
             onSosAction = {
-                viewModel.saveTripData(isSos = true) { intent ->
-                    startActivity(intent)
-                }
+                val intent = Intent(this, SosActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
             },
             onShareAction = {
                 viewModel.showShareDialog = true
             },
             onFinishAction = {
-                viewModel.saveTripData() { intent ->
-                    startActivity(intent)
-                }
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
             }
         )
 

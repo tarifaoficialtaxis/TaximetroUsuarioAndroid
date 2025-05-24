@@ -16,6 +16,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storageMetadata
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.HomeActivity
+import com.mitarifamitaxi.taximetrousuario.activities.SosActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.putIfNotNull
@@ -122,7 +123,7 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
     }
 
 
-    fun saveTripData(onIntentReady: (Intent) -> Unit) {
+    fun saveTripData(isSos: Boolean = false, onIntentReady: (Intent) -> Unit) {
         viewModelScope.launch {
             try {
                 // Save data in Firestore
@@ -164,7 +165,12 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
                 FirebaseFirestore.getInstance().collection("trips").add(tripDataReq).await()
                 appViewModel.isLoading = false
 
-                val intent = Intent(appContext, HomeActivity::class.java)
+                var intent = Intent(appContext, HomeActivity::class.java)
+
+                if (isSos) {
+                    intent = Intent(appContext, SosActivity::class.java)
+                }
+
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 onIntentReady(intent)
 

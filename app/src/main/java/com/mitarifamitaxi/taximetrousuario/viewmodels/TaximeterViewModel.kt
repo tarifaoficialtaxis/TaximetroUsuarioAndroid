@@ -396,13 +396,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     val speedMetersPerSecond = location.speed
                     val speedKmPerHour = speedMetersPerSecond * 3.6
 
-                    Log.d("TaximeterViewModel", "Location Speed: ${location.speed}")
-                    Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
-                    Log.d("TaximeterViewModel", "Drag Speed: ${ratesObj.value.dragSpeed}")
-                    Log.d(
-                        "TaximeterViewModel",
-                        "Condition: ${speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)}"
-                    )
+                    //Log.d("TaximeterViewModel", "Location Speed: ${location.speed}")
+                    //Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")
+                    //Log.d("TaximeterViewModel", "Drag Speed: ${ratesObj.value.dragSpeed}")
+                    //Log.d("TaximeterViewModel", "Condition: ${speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)}")
 
                     if (speedKmPerHour > (ratesObj.value.dragSpeed ?: 0.0)) {
                         isMooving = true

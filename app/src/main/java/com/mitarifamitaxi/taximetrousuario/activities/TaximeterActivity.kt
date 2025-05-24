@@ -3,6 +3,7 @@ package com.mitarifamitaxi.taximetrousuario.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
@@ -154,6 +155,13 @@ class TaximeterActivity : BaseActivity() {
     @Composable
     override fun Content() {
         MainView()
+        BackHandler(enabled = true) {
+            if (viewModel.isTaximeterStarted) {
+                viewModel.showFinishConfirmation()
+            } else {
+                finish()
+            }
+        }
     }
 
     @OptIn(
@@ -266,7 +274,9 @@ class TaximeterActivity : BaseActivity() {
                         title = stringResource(id = R.string.taximeter),
                         leadingIcon = Icons.Filled.ChevronLeft,
                         onClickLeading = {
-                            finish()
+                            if (viewModel.isTaximeterStarted) {
+                                viewModel.showFinishConfirmation()
+                            }
                         }
                     )
 

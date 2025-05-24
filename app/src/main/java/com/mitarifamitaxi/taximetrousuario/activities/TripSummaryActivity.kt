@@ -1,6 +1,5 @@
 package com.mitarifamitaxi.taximetrousuario.activities
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -45,7 +44,6 @@ import coil.compose.AsyncImage
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
-import com.mitarifamitaxi.taximetrousuario.components.ui.CustomPopupDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomTextFieldDialog
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripInfoRow
@@ -55,9 +53,7 @@ import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.hourFormatDate
 import com.mitarifamitaxi.taximetrousuario.helpers.tripSummaryFormatDate
-import com.mitarifamitaxi.taximetrousuario.models.DialogType
 import com.mitarifamitaxi.taximetrousuario.models.Trip
-import com.mitarifamitaxi.taximetrousuario.viewmodels.ForgotPasswordViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TripSummaryViewModel
 import com.mitarifamitaxi.taximetrousuario.viewmodels.TripSummaryViewModelFactory
 import kotlinx.coroutines.launch
@@ -102,7 +98,9 @@ class TripSummaryActivity : BaseActivity() {
                 viewModel.onDeleteAction()
             },
             onSosAction = {
-                startActivity(Intent(this, SosActivity::class.java))
+                viewModel.saveTripData(isSos = true) { intent ->
+                    startActivity(intent)
+                }
             },
             onShareAction = {
                 viewModel.showShareDialog = true

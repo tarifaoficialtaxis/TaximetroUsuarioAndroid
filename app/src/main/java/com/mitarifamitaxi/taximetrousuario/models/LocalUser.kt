@@ -21,6 +21,7 @@ data class LocalUser(
 
 enum class AuthProvider {
     google,
-    email
+    email,
+    apple
 }
 

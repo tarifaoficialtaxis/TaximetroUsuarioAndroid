@@ -436,7 +436,7 @@ class ProfileActivity : BaseActivity() {
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(id = R.color.red2)
                         ),
-                        shape = RectangleShape,
+                        shape = RoundedCornerShape(50),
                         modifier =
                             Modifier.Companion
                                 .fillMaxWidth()

@@ -3,6 +3,7 @@ package com.mitarifamitaxi.taximetrousuario.helpers
 import android.content.Context
 import android.location.Geocoder
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mitarifamitaxi.taximetrousuario.models.Feature
 import com.mitarifamitaxi.taximetrousuario.models.PlacePrediction
 import com.mitarifamitaxi.taximetrousuario.models.Properties
@@ -20,13 +21,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-const val googleapisUrl = "https://maps.googleapis.com/maps/api/"
-
-private val citiesAliasDictionary = mutableMapOf(
-    "Bogotá, D.C." to "Bogotá",
-    "Oaxaca de Juárez" to "Oaxaca",
-)
-
 suspend fun getCityFromCoordinates(
     context: Context,
     latitude: Double,
@@ -43,12 +37,18 @@ suspend fun getCityFromCoordinates(
 
                 val country = countries.find { it.code == address.countryCode }
 
-                callbackSuccess(
-                    getCityFromAlias(address.locality),
-                    address.countryCode,
-                    country?.dial?.replace("+", ""),
-                    country?.currency
-                )
+                getCityFromAlias(input = address.locality ?: address.subAdminArea) { cityAlias ->
+                    if (cityAlias != null) {
+                        callbackSuccess(
+                            cityAlias,
+                            address.countryCode,
+                            country?.dial?.replace("+", ""),
+                            country?.currency
+                        )
+                    } else {
+                        callbackError(IOException("No results found"))
+                    }
+                }
 
             } else {
                 callbackError(IOException("Unexpected response"))
@@ -60,8 +60,21 @@ suspend fun getCityFromCoordinates(
     }
 }
 
-private fun getCityFromAlias(alias: String): String {
-    return citiesAliasDictionary[alias] ?: alias
+fun getCityFromAlias(input: String, onResult: (String?) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("citiesAlias")
+        .whereArrayContains("aliases", input)
+        .limit(1)
+        .get()
+        .addOnSuccessListener { snaps ->
+            val canonical = if (snaps.isEmpty) input
+            else snaps.documents[0].getString("canonicalName")
+            onResult(canonical)
+        }
+        .addOnFailureListener { e ->
+            e.printStackTrace()
+            onResult(null)
+        }
 }
 
 fun getAddressFromCoordinates(
@@ -71,7 +84,7 @@ fun getAddressFromCoordinates(
     callbackError: (Exception) -> Unit
 ) {
     val url =
-        "${googleapisUrl}geocode/json?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
+        "${Constants.MAPS_API_URL}geocode/json?latlng=$latitude,$longitude&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()
@@ -118,7 +131,7 @@ fun getPlacePredictions(
     val encodedInput = URLEncoder.encode(input, "UTF-8")
 
     val url =
-        "${googleapisUrl}place/autocomplete/json?" +
+        "${Constants.MAPS_API_URL}place/autocomplete/json?" +
                 "input=$encodedInput" +
                 "&location=$latitude,$longitude" +
                 "&radius=$radius" +
@@ -172,7 +185,7 @@ fun getPlaceDetails(
     callbackError: (Exception) -> Unit
 ) {
     val url =
-        "${googleapisUrl}place/details/json?place_id=$placeId&key=${Constants.GOOGLE_API_KEY}&language=es"
+        "${Constants.MAPS_API_URL}place/details/json?place_id=$placeId&key=${Constants.GOOGLE_API_KEY}&language=es"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()
@@ -221,7 +234,7 @@ fun fetchRoute(
 
 
     val url =
-        "${googleapisUrl}directions/json?origin=$origin&destination=$destination&key=${Constants.GOOGLE_API_KEY}"
+        "${Constants.MAPS_API_URL}directions/json?origin=$origin&destination=$destination&key=${Constants.GOOGLE_API_KEY}"
 
     val client = OkHttpClient()
     val request = Request.Builder().url(url).build()

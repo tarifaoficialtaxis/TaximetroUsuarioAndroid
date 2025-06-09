@@ -615,6 +615,42 @@ class TaximeterActivity : BaseActivity() {
             ) {
 
                 Text(
+                    text = "${viewModel.units.toInt()}",
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Companion.Bold,
+                    fontSize = 22.sp,
+                    color = colorResource(id = R.color.main),
+                    modifier = Modifier.Companion
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Companion.Center
+                )
+
+                Text(
+                    text = stringResource(id = R.string.units).uppercase(),
+                    color = colorResource(id = R.color.gray1),
+                    fontSize = 12.sp,
+                    fontFamily = MontserratFamily,
+                    fontWeight = FontWeight.Companion.Bold,
+                    modifier = Modifier.Companion
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Companion.Center
+                )
+
+            }
+
+            Box(
+                modifier = Modifier.Companion
+                    .width(2.dp)
+                    .height(45.dp)
+                    .background(colorResource(id = R.color.gray2))
+            )
+
+            Column(
+                modifier = Modifier.Companion
+                    .weight(1f)
+            ) {
+
+                Text(
                     text = "$ ${
                         viewModel.total.toInt().formatNumberWithDots()
                     } ${appViewModel.userData?.countryCurrency}",
@@ -640,42 +676,7 @@ class TaximeterActivity : BaseActivity() {
                 )
             }
 
-            Box(
-                modifier = Modifier.Companion
-                    .width(2.dp)
-                    .height(45.dp)
-                    .background(colorResource(id = R.color.gray2))
-            )
 
-
-            Column(
-                modifier = Modifier.Companion
-                    .weight(1f)
-            ) {
-
-                Text(
-                    text = "${(viewModel.distanceMade / 1000).formatDigits(1)} KM",
-                    fontFamily = MontserratFamily,
-                    fontWeight = FontWeight.Companion.Bold,
-                    fontSize = 22.sp,
-                    color = colorResource(id = R.color.main),
-                    modifier = Modifier.Companion
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Companion.Center
-                )
-
-                Text(
-                    text = stringResource(id = R.string.distance_made),
-                    color = colorResource(id = R.color.gray1),
-                    fontSize = 12.sp,
-                    fontFamily = MontserratFamily,
-                    fontWeight = FontWeight.Companion.Bold,
-                    modifier = Modifier.Companion
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Companion.Center
-                )
-
-            }
 
 
         }

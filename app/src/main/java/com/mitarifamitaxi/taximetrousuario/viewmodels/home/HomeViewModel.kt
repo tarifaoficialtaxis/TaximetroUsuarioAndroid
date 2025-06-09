@@ -24,12 +24,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
         getTripsByUserId()
     }
 
-    /*private fun validateCity(city: String) {
-        if (city == "Pasto") {
-            getCityAreas(city)
-        }
-    }*/
-
     private fun getTripsByUserId() {
         val db = FirebaseFirestore.getInstance()
         val tripsRef = db.collection("trips")
@@ -63,60 +57,6 @@ class HomeViewModel(context: Context, private val appViewModel: AppViewModel) : 
 
         }
     }
-
-    /*private fun getCityAreas(city: String) {
-
-        val database = FirebaseDatabase.getInstance()
-        val citiesRef = database.getReference("cities")
-
-        val query = citiesRef.orderByChild("city").equalTo(city)
-
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-
-                    try {
-                        val cityArea =
-                            snapshot.children.firstOrNull()?.getValue(CityArea::class.java)
-                        saveCityArea(cityArea ?: return)
-                    } catch (e: Exception) {
-                        Log.e("HomeViewModel", "Error parsing city data: ${e.message}")
-                        appViewModel.showMessage(
-                            type = DialogType.ERROR,
-                            title = appContext.getString(R.string.something_went_wrong),
-                            message = appContext.getString(R.string.error_fetching_regions)
-                        )
-                    }
-
-                } else {
-                    Log.d("HomeViewModel", "No city found with the given name")
-                    appViewModel.showMessage(
-                        type = DialogType.ERROR,
-                        title = appContext.getString(R.string.something_went_wrong),
-                        message = appContext.getString(R.string.error_fetching_regions)
-                    )
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("HomeViewModel", "Query cancelled or failed: ${error.message}")
-                appViewModel.showMessage(
-                    type = DialogType.ERROR,
-                    title = appContext.getString(R.string.something_went_wrong),
-                    message = appContext.getString(R.string.error_fetching_regions)
-                )
-            }
-        })
-    }
-
-    private fun saveCityArea(area: CityArea) {
-        val sharedPref = appContext.getSharedPreferences("CityAreaData", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("CITY_AREA_OBJECT", Gson().toJson(area))
-            apply()
-        }
-    }*/
-
 }
 
 class HomeViewModelFactory(private val context: Context, private val appViewModel: AppViewModel) :

@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TaximetroUsuarioNative"
+        android:theme="@style/Theme.MiTarifaMiTaxi"
         tools:targetApi="31">
 
         <activity
@@ -45,11 +45,6 @@
 
         <activity
             android:name=".activities.onboarding.ForgotPasswordActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.taximeter.TaximeterByRegionActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"
             android:exported="false" />

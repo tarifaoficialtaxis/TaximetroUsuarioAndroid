@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Theme.TaximetroUsuarioNative" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.MiTarifaMiTaxi" parent="Theme.AppCompat.Light.NoActionBar">
 
         <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:navigationBarColor">@color/white</item>

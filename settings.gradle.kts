@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TaximetroUsuarioNative"
+rootProject.name = "MiTarifaMiTaxi"
 include(":app")

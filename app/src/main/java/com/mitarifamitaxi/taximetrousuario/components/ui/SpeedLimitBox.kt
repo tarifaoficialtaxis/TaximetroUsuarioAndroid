@@ -3,6 +3,7 @@ package com.mitarifamitaxi.taximetrousuario.components.ui
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -90,7 +91,7 @@ fun SpeedLimitBox(
                 text = speedLimit.toString(),
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
+                fontSize = 25.sp,
                 modifier = Modifier
                     .padding(vertical = 10.dp)
             )
@@ -98,6 +99,7 @@ fun SpeedLimitBox(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy((-7).dp),
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 5.dp)
         ) {
@@ -105,7 +107,7 @@ fun SpeedLimitBox(
                 text = speed.toString(),
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
+                fontSize = 25.sp,
                 color = speedColor,
             )
 

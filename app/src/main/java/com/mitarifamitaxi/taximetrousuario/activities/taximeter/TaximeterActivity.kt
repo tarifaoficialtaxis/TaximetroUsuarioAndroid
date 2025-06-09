@@ -68,8 +68,10 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.CustomButton
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomCheckBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.CustomSizedMarker
 import com.mitarifamitaxi.taximetrousuario.components.ui.FloatingActionButtonRoutes
+import com.mitarifamitaxi.taximetrousuario.components.ui.SpeedLimitBox
 import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
+import com.mitarifamitaxi.taximetrousuario.components.ui.WaitTimeBox
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.calculateBearing
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
@@ -351,6 +353,24 @@ class TaximeterActivity : BaseActivity() {
                     }
                 }
             }
+
+            WaitTimeBox(
+                time = "${viewModel.dragTimeElapsed}",
+                modifier = Modifier.Companion
+                    .align(Alignment.Companion.TopEnd)
+                    .offset(y = 75.dp)
+                    .padding(end = 12.dp)
+            )
+
+            SpeedLimitBox(
+                speed = viewModel.currentSpeed,
+                speedLimit = viewModel.ratesObj.value.speedLimit ?: 0,
+                units = viewModel.ratesObj.value.speedUnits ?: "km/h",
+                modifier = Modifier.Companion
+                    .align(Alignment.Companion.TopStart)
+                    .offset(y = sheetTopOffset - sheetTopOffsetAdjust)
+                    .padding(start = 16.dp)
+            )
 
             FloatingActionButtonRoutes(
                 expanded = viewModel.isFabExpanded,

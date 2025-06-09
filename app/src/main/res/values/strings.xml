@@ -136,6 +136,8 @@
     <string name="units_base">Unidades base</string>
     <string name="units_recharge">Unidades de recargo</string>
     <string name="total_units">Unidades totales</string>
+    <string name="time">Tiempo</string>
+    <string name="of_wait">de espera</string>
 
     <string name="without_recharges">Sin Recargos</string>
     <string name="recharges">Recargos</string>

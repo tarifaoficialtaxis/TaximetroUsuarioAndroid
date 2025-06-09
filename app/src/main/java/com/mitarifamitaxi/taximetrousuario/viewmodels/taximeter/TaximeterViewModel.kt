@@ -133,6 +133,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     private var startTime by mutableStateOf("")
     private var endTime by mutableStateOf("")
 
+    var currentSpeed by mutableIntStateOf(0)
+
     init {
         getCityRates(appViewModel.userData?.city)
     }
@@ -403,6 +405,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
                     val speedMetersPerSecond = location.speed
                     val speedKmPerHour = speedMetersPerSecond * 3.6
+
+                    currentSpeed = speedKmPerHour.toInt()
 
                     //Log.d("TaximeterViewModel", "Location Speed: ${location.speed}")
                     //Log.d("TaximeterViewModel", "Speed: $speedKmPerHour")

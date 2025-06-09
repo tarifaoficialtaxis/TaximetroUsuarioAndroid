@@ -16,4 +16,6 @@ data class Rates(
     val morningHourSurcharge: Int? = null,
     val morningMinuteSurcharge: Int? = null,
     val validateHolidaySurcharge: Boolean? = null,
+    val speedLimit: Int? = null,
+    val speedUnits: String? = null
 )

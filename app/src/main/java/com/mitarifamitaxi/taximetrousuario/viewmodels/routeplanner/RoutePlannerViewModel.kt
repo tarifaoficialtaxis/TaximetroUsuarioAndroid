@@ -15,7 +15,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.mitarifamitaxi.taximetrousuario.R
 import com.mitarifamitaxi.taximetrousuario.activities.taximeter.TaximeterActivity
-import com.mitarifamitaxi.taximetrousuario.activities.taximeter.TaximeterByRegionActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.fetchRoute
 import com.mitarifamitaxi.taximetrousuario.helpers.getAddressFromCoordinates
 import com.mitarifamitaxi.taximetrousuario.helpers.getPlaceDetails
@@ -250,21 +249,12 @@ class RoutePlannerViewModel(context: Context, private val appViewModel: AppViewM
             return
         }
 
-        if (appViewModel.userData?.city == "Pasto") {
-            val intent = Intent(appContext, TaximeterByRegionActivity::class.java)
-            intent.putExtra("start_address", startAddress)
-            intent.putExtra("start_location", Gson().toJson(startLocation))
-            intent.putExtra("end_address", endAddress)
-            intent.putExtra("end_location", Gson().toJson(endLocation))
-            onIntentReady(intent)
-        } else {
-            val intent = Intent(appContext, TaximeterActivity::class.java)
-            intent.putExtra("start_address", startAddress)
-            intent.putExtra("start_location", Gson().toJson(startLocation))
-            intent.putExtra("end_address", endAddress)
-            intent.putExtra("end_location", Gson().toJson(endLocation))
-            onIntentReady(intent)
-        }
+        val intent = Intent(appContext, TaximeterActivity::class.java)
+        intent.putExtra("start_address", startAddress)
+        intent.putExtra("start_location", Gson().toJson(startLocation))
+        intent.putExtra("end_address", endAddress)
+        intent.putExtra("end_location", Gson().toJson(endLocation))
+        onIntentReady(intent)
 
     }
 

@@ -37,6 +37,8 @@ class TripSummaryViewModel(context: Context, private val appViewModel: AppViewMo
     var shareNumber = mutableStateOf("")
     var isShareNumberError = mutableStateOf(false)
 
+    var isDetailsOpen by mutableStateOf(false)
+
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 

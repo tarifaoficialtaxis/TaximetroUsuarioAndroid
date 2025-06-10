@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +27,7 @@ fun TripInfoRow(
     Column {
 
         Row(
+            verticalAlignment = Alignment.Bottom,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
@@ -35,7 +37,7 @@ fun TripInfoRow(
                 text = title,
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = colorResource(id = R.color.black),
                 modifier = Modifier.weight(0.6f)
             )
@@ -44,7 +46,7 @@ fun TripInfoRow(
                 text = value,
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = colorResource(id = R.color.gray1),
                 modifier = Modifier.weight(0.4f),
                 textAlign = TextAlign.End

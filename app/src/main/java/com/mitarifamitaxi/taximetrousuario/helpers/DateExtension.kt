@@ -1,16 +1,13 @@
 package com.mitarifamitaxi.taximetrousuario.helpers
 
-import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.Locale
-
+import java.time.Duration
 
 fun tripCardFormatDate(dateString: String): String {
     val formatter = DateTimeFormatter.ofPattern("E d MMM • h:mm a", Locale("es", "CO"))
@@ -57,6 +54,25 @@ fun hourFormatDate(dateString: String): String {
     return localDateTime.format(formatter)
         .replace("a. m.", "AM")
         .replace("p. m.", "PM")
+}
+
+fun formatElapsed(startIso: String, endIso: String): String {
+    val start = Instant.parse(startIso)
+    val end = Instant.parse(endIso)
+
+    val duration = Duration.between(start, end).abs()
+
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes() % 60
+
+    return buildString {
+        if (hours > 0) {
+            append("${hours}h")
+            if (minutes > 0) append(" ${minutes}m")
+        } else {
+            append("${minutes}m")
+        }
+    }
 }
 
 fun shareFormatDate(dateString: String): String {

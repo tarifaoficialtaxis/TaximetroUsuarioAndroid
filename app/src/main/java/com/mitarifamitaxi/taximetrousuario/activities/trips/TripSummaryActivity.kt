@@ -23,9 +23,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,8 +40,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -53,6 +60,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.TripInfoRow
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
+import com.mitarifamitaxi.taximetrousuario.helpers.formatElapsed
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
 import com.mitarifamitaxi.taximetrousuario.helpers.getShortAddress
 import com.mitarifamitaxi.taximetrousuario.helpers.hourFormatDate
@@ -304,84 +312,20 @@ class TripSummaryActivity : BaseActivity() {
                             .background(colorResource(id = R.color.gray2))
                     )
 
-                    TripInfoRow(
-                        title = stringResource(id = R.string.distance_made),
-                        value = "${((viewModel.tripData.distance ?: 0.0) / 1000).formatDigits(1)} KM"
-                    )
-
-                    if (viewModel.tripData.baseUnits != null) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.units_base),
-                            value = viewModel.tripData.baseUnits?.toInt().toString()
-                        )
-                    }
-
-                    TripInfoRow(
-                        title = stringResource(id = R.string.fare_base),
-                        value = "$${
-                            viewModel.tripData.baseRate?.toInt()?.formatNumberWithDots()
-                        } ${viewModel.tripData.currency}"
-                    )
-
-                    viewModel.tripData.rechargeUnits?.takeIf { it > 0.0 }?.let {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.units_recharge),
-                            value = it.toInt().toString()
-                        )
-                    }
-
-                    if (viewModel.tripData.airportSurchargeEnabled == true) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.airport_surcharge),
-                            value = "+$${
-                                viewModel.tripData.airportSurcharge?.toInt()?.formatNumberWithDots()
-                            } ${viewModel.tripData.currency}"
-                        )
-                    }
-
-                    if (viewModel.tripData.doorToDoorSurchargeEnabled == true) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.door_to_door_surcharge),
-                            value = "+$${
-                                viewModel.tripData.doorToDoorSurcharge?.toInt()
-                                    ?.formatNumberWithDots()
-                            } ${viewModel.tripData.currency}"
-                        )
-                    }
-
-                    if (viewModel.tripData.nightSurchargeEnabled == true) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.night_surcharge_only),
-                            value = "+$${
-                                viewModel.tripData.nightSurcharge?.toInt()
-                                    ?.formatNumberWithDots()
-                            } ${viewModel.tripData.currency}"
-                        )
-                    }
-
-                    if (viewModel.tripData.holidaySurchargeEnabled == true) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.holiday_surcharge_only),
-                            value = "+$${
-                                viewModel.tripData.holidaySurcharge?.toInt()?.formatNumberWithDots()
-                            } ${viewModel.tripData.currency}"
-                        )
-                    }
-
-                    if (viewModel.tripData.holidayOrNightSurchargeEnabled == true) {
-                        TripInfoRow(
-                            title = stringResource(id = R.string.holiday_surcharge),
-                            value = "+$${
-                                viewModel.tripData.holidayOrNightSurcharge?.toInt()
-                                    ?.formatNumberWithDots()
-                            } ${viewModel.tripData.currency}"
-                        )
-                    }
-
                     if (viewModel.tripData.units != null) {
                         TripInfoRow(
-                            title = stringResource(id = R.string.total_units),
+                            title = stringResource(id = R.string.units),
                             value = viewModel.tripData.units?.toInt().toString()
+                        )
+                    }
+
+                    if (viewModel.tripData.startHour != null && viewModel.tripData.endHour != null) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.time_trip),
+                            value = formatElapsed(
+                                viewModel.tripData.startHour ?: "",
+                                viewModel.tripData.endHour ?: ""
+                            )
                         )
                     }
 
@@ -394,6 +338,147 @@ class TripSummaryActivity : BaseActivity() {
                             } ${viewModel.tripData.currency}"
                         )
                     }
+
+                    Row {
+
+                        Spacer(
+                            modifier = Modifier.Companion.weight(1f)
+                        )
+
+                        Button(
+                            onClick = {
+                                viewModel.isDetailsOpen = !viewModel.isDetailsOpen
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(id = R.color.transparent)
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+
+                                Text(
+                                    text = stringResource(id = R.string.see_details),
+                                    fontFamily = MontserratFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.main),
+                                )
+
+                                Icon(
+                                    imageVector = if (viewModel.isDetailsOpen) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = colorResource(id = R.color.main),
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                )
+
+                            }
+
+
+                        }
+                    }
+
+                    if (viewModel.isDetailsOpen) {
+                        TripInfoRow(
+                            title = stringResource(id = R.string.distance_made),
+                            value = "${((viewModel.tripData.distance ?: 0.0) / 1000).formatDigits(1)} KM"
+                        )
+
+                        TripInfoRow(
+                            title = stringResource(id = R.string.base),
+                            value = ""
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 29.dp)
+                        ) {
+                            if (viewModel.tripData.baseUnits != null) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.units_base),
+                                    value = viewModel.tripData.baseUnits?.toInt().toString()
+                                )
+                            }
+
+                            TripInfoRow(
+                                title = stringResource(id = R.string.fare_base),
+                                value = "$${
+                                    viewModel.tripData.baseRate?.toInt()?.formatNumberWithDots()
+                                } ${viewModel.tripData.currency}"
+                            )
+                        }
+
+                        TripInfoRow(
+                            title = stringResource(id = R.string.recharges),
+                            value = ""
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 29.dp)
+                        ) {
+                            viewModel.tripData.rechargeUnits?.takeIf { it > 0.0 }?.let {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.units_recharge),
+                                    value = it.toInt().toString()
+                                )
+                            }
+
+                            if (viewModel.tripData.airportSurchargeEnabled == true) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.airport_surcharge),
+                                    value = "+$${
+                                        viewModel.tripData.airportSurcharge?.toInt()
+                                            ?.formatNumberWithDots()
+                                    } ${viewModel.tripData.currency}"
+                                )
+                            }
+
+                            if (viewModel.tripData.doorToDoorSurchargeEnabled == true) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.door_to_door_surcharge),
+                                    value = "+$${
+                                        viewModel.tripData.doorToDoorSurcharge?.toInt()
+                                            ?.formatNumberWithDots()
+                                    } ${viewModel.tripData.currency}"
+                                )
+                            }
+
+                            if (viewModel.tripData.nightSurchargeEnabled == true) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.night_surcharge_only),
+                                    value = "+$${
+                                        viewModel.tripData.nightSurcharge?.toInt()
+                                            ?.formatNumberWithDots()
+                                    } ${viewModel.tripData.currency}"
+                                )
+                            }
+
+                            if (viewModel.tripData.holidaySurchargeEnabled == true) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.holiday_surcharge_only),
+                                    value = "+$${
+                                        viewModel.tripData.holidaySurcharge?.toInt()
+                                            ?.formatNumberWithDots()
+                                    } ${viewModel.tripData.currency}"
+                                )
+                            }
+
+                            if (viewModel.tripData.holidayOrNightSurchargeEnabled == true) {
+                                TripInfoRow(
+                                    title = stringResource(id = R.string.holiday_surcharge),
+                                    value = "+$${
+                                        viewModel.tripData.holidayOrNightSurcharge?.toInt()
+                                            ?.formatNumberWithDots()
+                                    } ${viewModel.tripData.currency}"
+                                )
+                            }
+                        }
+                    }
+
 
                     Column(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -422,11 +507,11 @@ class TripSummaryActivity : BaseActivity() {
                         }
                     }
 
-
                 }
-            }
 
+            }
         }
 
     }
+
 }

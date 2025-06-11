@@ -1,6 +1,8 @@
 package com.mitarifamitaxi.taximetrousuario.activities.taximeter
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -73,6 +76,7 @@ import com.mitarifamitaxi.taximetrousuario.components.ui.TaximeterInfoRow
 import com.mitarifamitaxi.taximetrousuario.components.ui.TopHeaderView
 import com.mitarifamitaxi.taximetrousuario.components.ui.WaitTimeBox
 import com.mitarifamitaxi.taximetrousuario.helpers.MontserratFamily
+import com.mitarifamitaxi.taximetrousuario.helpers.NotificationForegroundService
 import com.mitarifamitaxi.taximetrousuario.helpers.calculateBearing
 import com.mitarifamitaxi.taximetrousuario.helpers.formatDigits
 import com.mitarifamitaxi.taximetrousuario.helpers.formatNumberWithDots
@@ -83,11 +87,17 @@ import com.mitarifamitaxi.taximetrousuario.viewmodels.taximeter.TaximeterViewMod
 import com.mitarifamitaxi.taximetrousuario.viewmodels.taximeter.TaximeterViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 class TaximeterActivity : BaseActivity() {
 
     private val viewModel: TaximeterViewModel by viewModels {
         TaximeterViewModelFactory(this, appViewModel)
+    }
+
+    private val serviceIntent by lazy {
+        Intent(this, NotificationForegroundService::class.java)
     }
 
     private fun observeViewModelEvents() {
@@ -97,6 +107,22 @@ class TaximeterActivity : BaseActivity() {
                     when (event) {
                         is TaximeterViewModel.NavigationEvent.GoBack -> {
                             finish()
+                        }
+
+                        is TaximeterViewModel.NavigationEvent.RequestBackgroundLocationPermission -> {
+                            showMessageBackgroundLocationPermissionRequired()
+                        }
+
+                        is TaximeterViewModel.NavigationEvent.StartLocationUpdateNotification -> {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                startForegroundServiceIfNeeded()
+                            }
+                        }
+
+                        is TaximeterViewModel.NavigationEvent.StopLocationUpdateNotification -> {
+                            stopService(serviceIntent)
                         }
                     }
                 }
@@ -113,7 +139,21 @@ class TaximeterActivity : BaseActivity() {
             appViewModel.showMessage(
                 type = DialogType.ERROR,
                 title = getString(R.string.permission_required),
-                message = getString(R.string.background_location_permission_required)
+                message = getString(R.string.background_location_permission_error)
+            )
+        }
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            startForegroundService(serviceIntent)
+        } else {
+            appViewModel.showMessage(
+                type = DialogType.ERROR,
+                title = getString(R.string.permission_required),
+                message = getString(R.string.notification_permission_denied)
             )
         }
     }
@@ -123,8 +163,6 @@ class TaximeterActivity : BaseActivity() {
         observeViewModelEvents()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
-        viewModel.requestBackgroundLocationPermission(this)
 
         val startAddress = intent.getStringExtra("start_address")
         startAddress?.let {
@@ -143,6 +181,12 @@ class TaximeterActivity : BaseActivity() {
         endLocation?.let {
             viewModel.endLocation = Gson().fromJson(it, UserLocation::class.java)
         }
+
+        Timer().schedule(500) {
+            viewModel.validateLocationPermission()
+            this.cancel()
+        }
+
     }
 
     override fun onResume() {
@@ -153,6 +197,22 @@ class TaximeterActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    fun showMessageBackgroundLocationPermissionRequired() {
+        appViewModel.showMessage(
+            type = DialogType.WARNING,
+            title = getString(R.string.permission_required),
+            message = getString(R.string.background_location_permission_required),
+            buttonText = getString(R.string.grant_permission),
+            onButtonClicked = {
+                viewModel.requestBackgroundLocationPermission(this)
+            }
+        )
+    }
+
+    private fun startForegroundServiceIfNeeded() {
+        startForegroundService(serviceIntent)
     }
 
     @Composable
@@ -588,7 +648,7 @@ class TaximeterActivity : BaseActivity() {
             ) {
                 CustomButton(
                     text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
-                    onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.startTaximeter() },
+                    onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.validateLocationPermission() },
                     color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
                     leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
                 )
@@ -677,8 +737,6 @@ class TaximeterActivity : BaseActivity() {
             }
 
 
-
-
         }
 
         Box(
@@ -688,7 +746,7 @@ class TaximeterActivity : BaseActivity() {
         ) {
             CustomButton(
                 text = stringResource(id = if (viewModel.isTaximeterStarted) R.string.finish_trip else R.string.start_trip).uppercase(),
-                onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.startTaximeter() },
+                onClick = { if (viewModel.isTaximeterStarted) viewModel.showFinishConfirmation() else viewModel.validateLocationPermission() },
                 color = colorResource(id = if (viewModel.isTaximeterStarted) R.color.gray1 else R.color.main),
                 leadingIcon = if (viewModel.isTaximeterStarted) Icons.Default.Close else Icons.Default.PlayArrow
             )

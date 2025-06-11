@@ -54,12 +54,11 @@ import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storageMetadata
-import com.mitarifamitaxi.taximetrousuario.activities.home.HomeActivity
-import com.mitarifamitaxi.taximetrousuario.activities.sos.SosActivity
 import com.mitarifamitaxi.taximetrousuario.helpers.putIfNotNull
 import com.mitarifamitaxi.taximetrousuario.viewmodels.AppViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+
 
 class TaximeterViewModel(context: Context, private val appViewModel: AppViewModel) :
     ViewModel() {
@@ -71,6 +70,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
 
     sealed class NavigationEvent {
         object GoBack : NavigationEvent()
+        object RequestBackgroundLocationPermission : NavigationEvent()
+        object StartLocationUpdateNotification : NavigationEvent()
+        object StopLocationUpdateNotification : NavigationEvent()
     }
 
     var startAddress by mutableStateOf("")
@@ -139,12 +141,29 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         getCityRates(appViewModel.userData?.city)
     }
 
+    fun validateLocationPermission() {
+        val backgroundLocationGranted = ContextCompat.checkSelfPermission(
+            appContext,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (backgroundLocationGranted) {
+            getCurrentLocation()
+        } else {
+            viewModelScope.launch {
+                _navigationEvents.emit(NavigationEvent.RequestBackgroundLocationPermission)
+            }
+        }
+    }
+
     fun requestBackgroundLocationPermission(activity: TaximeterActivity) {
         activity.backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     }
 
     @SuppressLint("MissingPermission")
     fun getCurrentLocation() {
+
+        appViewModel.isLoading = true
 
         val cancellationTokenSource = CancellationTokenSource()
 
@@ -154,12 +173,13 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         )
 
         task.addOnSuccessListener(executor) { location ->
+            appViewModel.isLoading = false
             if (location != null) {
                 currentPosition = UserLocation(
                     latitude = location.latitude,
                     longitude = location.longitude
                 )
-
+                startTaximeter()
             } else {
                 FirebaseCrashlytics.getInstance()
                     .recordException(Exception("TaximeterViewModel location null"))
@@ -170,6 +190,7 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                 )
             }
         }.addOnFailureListener {
+            appViewModel.isLoading = false
             FirebaseCrashlytics.getInstance().recordException(it)
             appViewModel.showMessage(
                 type = DialogType.ERROR,
@@ -201,8 +222,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                             if (ratesObj.value.validateHolidaySurcharge == true) {
                                 validateSurcharges()
                             }
-
-                            startTaximeter()
 
                         } catch (e: Exception) {
                             FirebaseCrashlytics.getInstance().recordException(e)
@@ -280,7 +299,6 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     private fun onUnitsChanged(newValue: Double) {
-        //total = newValue * (ratesObj.value.unitPrice ?: 0.0)
         total = (newValue + rechargeUnits) * (ratesObj.value.unitPrice ?: 0.0)
     }
 
@@ -294,6 +312,10 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
         startTime = Instant.now().toString()
         startTimer()
         startWatchLocation()
+
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.StartLocationUpdateNotification)
+        }
     }
 
     fun showFinishConfirmation() {
@@ -310,6 +332,9 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
     }
 
     fun stopTaximeter() {
+        viewModelScope.launch {
+            _navigationEvents.emit(NavigationEvent.StopLocationUpdateNotification)
+        }
         appViewModel.isLoading = true
         getAddressFromCoordinates(
             latitude = currentPosition.latitude ?: 0.0,
@@ -359,8 +384,8 @@ class TaximeterViewModel(context: Context, private val appViewModel: AppViewMode
                     dragTimeElapsed++
                     val waitTime = ratesObj.value.waitTime ?: 24
 
-                    Log.d("TaximeterViewModel", "waitTime: $waitTime")
-                    Log.d("TaximeterViewModel", "dragTimeElapsed: $dragTimeElapsed")
+                    //Log.d("TaximeterViewModel", "waitTime: $waitTime")
+                    //Log.d("TaximeterViewModel", "dragTimeElapsed: $dragTimeElapsed")
                     if (dragTimeElapsed >= waitTime) {
                         units += 1
                         dragTimeElapsed = 0

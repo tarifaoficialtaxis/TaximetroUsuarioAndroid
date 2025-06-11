@@ -79,6 +79,7 @@ dependencies {
 
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
+    implementation(libs.androidx.lifecycle.service)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
